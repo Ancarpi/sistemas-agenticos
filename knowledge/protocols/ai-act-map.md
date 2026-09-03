@@ -16,7 +16,7 @@ The competence this encodes: translating an obligation into an engineering artif
 
 **Why** — risk is set by purpose: the same graph is limited-risk answering a chat and high-risk scoring credit.
 **Violated by** — one classification row per model or per microservice; "we use a limited-risk model".
-**Checked by** — `banco-meridiano/compliance/clasificacion-ia.yaml` has one entry per use case, and a test fails when a required entry is missing (16.7).
+**Checked by** — `banco/compliance/clasificacion-ia.yaml` has one entry per use case, and a test fails when a required entry is missing (16.7).
 
 ## 2. Establish the role before the risk
 
@@ -28,7 +28,7 @@ The competence this encodes: translating an obligation into an engineering artif
 
 **Why** — a committee reads a classification document once and it then ages in silence, which is the most common way a compliance dossier becomes false without anyone lying.
 **Violated by** — a PDF; a classification with no next-review date; a review date that has passed and broke nothing.
-**Checked by** — `proximo_examen` in the file plus a test that fails when it expires (`banco-meridiano/tests/test_clasificacion.py`, 16.7). Systems that do not exist yet are classified in advance.
+**Checked by** — `proximo_examen` in the file plus a test that fails when it expires (`banco/tests/test_clasificacion.py`, 16.7). Systems that do not exist yet are classified in advance.
 
 ## 4. Every obligation names its technical artifact and its test
 
@@ -80,7 +80,7 @@ Legal basis and purpose **per use case** — not "for AI" but "to resolve transf
 
 **Why** — a routing fallback to a second provider can be a second jurisdiction, so the day the primary fails the data leaves the EEA with nobody having read Chapter V.
 **Violated by** — reviewing model routing as a performance concern only.
-**Checked by** — `banco-meridiano/config/model_routing.yaml` and the gateway fallback chain are reviewed as a transfer control, and each alias records its provider's jurisdiction. If a provider will not commit in writing to not training on your data, the decision stops being contractual and becomes architectural: do not send it personal data.
+**Checked by** — `banco/config/model_routing.yaml` and the gateway fallback chain are reviewed as a transfer control, and each alias records its provider's jurisdiction. If a provider will not commit in writing to not training on your data, the decision stops being contractual and becomes architectural: do not send it personal data.
 
 ## 12. AI literacy is an obligation with evidence
 

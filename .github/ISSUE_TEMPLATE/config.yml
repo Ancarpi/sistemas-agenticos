@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Erratas ya publicadas
+    url: https://github.com/Ancarpi/isa/blob/main/ERRATA.md
+    about: Antes de abrir una issue, mira si tu caso ya tiene corrección fechada aquí.

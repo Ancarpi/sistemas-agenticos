@@ -1,0 +1,27 @@
+# agent.yaml
+id: banco.cards.disputes.v1
+tenant: retail-banking
+version: 1.4.0            # el `.v1` del id es solo el major
+owner: tarjetas-operaciones
+runtime: langgraph
+entrypoint: src/agents/cards_disputes:graph
+risk_tier: L4
+channels: [chat, backoffice]
+models:
+  supervisor: agente-listo
+  workers: agente-rapido
+tools_allowed:
+  - core.cards.read_transactions
+  - core.cards.create_claim_dry_run
+  - core.cards.create_claim_commit
+memory_scopes:
+  read: [customer_profile, product_policy]
+  write: [case_summary, incident_pattern_candidate]
+evals:
+  release_gate: evals/cards_disputes.yaml
+human_in_the_loop:
+  required_for: [create_claim_commit]
+slo:
+  p95_latency_sec: 8
+  autonomous_resolution_rate_min: 0.55   # no es el 45% del 28.1
+  unsafe_tool_calls_max: 0

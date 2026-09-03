@@ -1,0 +1,33 @@
+# Caso negativo de isa_validate --- NO es un artefacto valido a proposito.
+# Es la capacidad sin `idempotency.key` que PLANO.md exige como prueba de que
+# el validador rechaza (verificacion de cierre, punto a). Si isa_validate
+# acepta este fichero, el validador esta roto, no el fichero.
+name: bloquear_tarjeta_mal
+version: 0.1.0
+owner: core-cards-platform
+risk_tier: L4
+intent: "bloquear temporalmente una tarjeta reportada como robada"
+auth:
+  subject_required: authenticated_customer
+  scopes: [cards:block]
+preconditions:
+  - identity_level >= 2
+effects:
+  writes: [core_cards.card_status]
+  emits_events: [card.blocked]
+idempotency:
+  # falta `key`: dos reintentos del agente son dos bloqueos.
+  duplicate_behavior: return_existing_result
+approval:
+  human_required: true
+  allowed_approvers: [fraud_ops]
+timeouts:
+  p95_ms: 1200
+  hard_timeout_ms: 4000
+audit:
+  log_args: masked
+  log_result: summary
+  pii: [customer_id]
+rollback:
+  type: compensating_action
+  tool: solicitar_desbloqueo_revision

@@ -1,0 +1,20 @@
+# Caso negativo de isa_validate --- NO es una eval card valida a proposito.
+# Es la card sin `n_cases` que PLANO.md exige como prueba de que el validador
+# rechaza (verificacion de cierre, punto a): un umbral sin tamano de muestra
+# es la supersticion que knowledge/protocols/release-gate.md prohibe.
+name: gate-sin-muestra
+owner: plataforma-agentes
+scope: extremo_a_extremo
+baseline: '2026-09-01'
+dataset:
+  path: evals/e2e_dataset.v4.jsonl
+  version: v4
+  pii: anonymized
+metrics:
+  - name: recall_at_5
+    threshold: 0.80
+    # falta n_cases: el umbral no es medible.
+    passes_per_case: 1
+    min_detectable_effect: 0.05
+release_gate: blocking
+cadence: en cada release candidate

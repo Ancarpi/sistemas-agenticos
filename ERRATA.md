@@ -9,7 +9,7 @@ El libro cierra su contenido en agosto de 2026 y lo dice en la página legal. Es
 Una entrada por corrección, la más reciente primero. Cada una lleva:
 
 - **Fecha** de publicación de la errata.
-- **Dónde** — el apartado del libro y, si aplica, el fichero de `banco-meridiano/`.
+- **Dónde** — el apartado del libro y, si aplica, el fichero de `banco/`.
 - **Qué cambió fuera** — la versión de la librería, el endpoint, la norma o el precio que dejó de ser válido, con su número.
 - **Qué hay que hacer** — el cambio concreto en el código o en la lectura.
 
@@ -35,7 +35,7 @@ No son erratas: son restricciones que el manual reconoce en el 0.4 y en el A·J.
 
 ## Versiones de referencia de esta edición
 
-Es la tabla del 0.4, para tenerla sin abrir el libro. `banco-meridiano/pyproject.toml` las declara y es la fuente ejecutable.
+Es la tabla del 0.4, para tenerla sin abrir el libro. `banco/pyproject.toml` las declara y es la fuente ejecutable.
 
 | Librería | Versión | Qué depende de ella |
 |---|---|---|

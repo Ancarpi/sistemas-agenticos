@@ -56,7 +56,7 @@ Six classes of rule that never live in a prompt: authorization by role, economic
 
 **Why** — if revoking a capability needs a release, the response time to an incident is a deploy pipeline, and the incident does not wait.
 **Violated by** — an allow-list compiled into the agent image; a tool catalogue that only reloads on restart.
-**Checked by** — a runtime test that removes a tool from the policy bundle and shows the running agent stops being offered it; `banco-meridiano/plataforma/runtime.py` resolves policy per call (37.2).
+**Checked by** — a runtime test that removes a tool from the policy bundle and shows the running agent stops being offered it; `banco/plataforma/runtime.py` resolves policy per call (37.2).
 
 ## 8. Every decision is evidence, and evidence outlives the trace
 

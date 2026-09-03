@@ -1,0 +1,81 @@
+# CI de este paquete. Cada paso comprueba una promesa concreta del README:
+# nada decorativo. Si un paso no puede comprobar su promesa (el libro no
+# esta en el repo), lo dice y salta --- nunca finge que paso.
+name: promesas
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  promesas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Promesa: todo .py del paquete compila, banco/ incluido.
+      # Los fragmentos didacticos son incompletos, no invalidos: compilan.
+      - name: compilan todos los .py
+        run: python3 -m compileall -q .
+
+      # Promesa: todo YAML y todo JSON del paquete parsea.
+      - name: parsean todos los YAML y JSON
+        run: |
+          pip install --quiet pyyaml
+          python3 - <<'PY'
+          import json, pathlib, sys, yaml
+          fallos = []
+          for p in sorted(pathlib.Path(".").rglob("*")):
+              if ".git" in p.parts or not p.is_file():
+                  continue
+              try:
+                  if p.suffix in (".yaml", ".yml"):
+                      list(yaml.safe_load_all(p.read_text(encoding="utf-8")))
+                  elif p.suffix == ".json":
+                      json.loads(p.read_text(encoding="utf-8"))
+              except Exception as e:
+                  fallos.append(f"{p}: {str(e).splitlines()[0]}")
+          print("\n".join(fallos) if fallos else "OK: todos los YAML/JSON parsean")
+          sys.exit(1 if fallos else 0)
+          PY
+
+      # Promesa del README: isa_validate valida en verde un ejemplo de cada
+      # uno de sus cuatro modos (la verificacion de cierre de PLANO.md).
+      - name: isa_validate en verde sobre los cuatro ejemplos
+        run: |
+          python3 tools/isa_validate/isa_validate.py context-contract banco/contratos/triage_sepa.contract.yaml
+          python3 tools/isa_validate/isa_validate.py capability       banco/tools/bloquear_tarjeta.capability.yaml
+          python3 tools/isa_validate/isa_validate.py eval-card        banco/evals/capstone_gate.eval.yaml
+          python3 tools/isa_validate/isa_validate.py agent-package    banco/catalogo/cards-disputes/agent.yaml
+
+      # Promesa simetrica: el validador RECHAZA, con codigo 1 exactamente
+      # (1 = artefacto invalido; 2 seria fallo del propio validador y no
+      # cuenta como rechazo). Un validador que acepta todo no valida nada.
+      - name: isa_validate en rojo sobre los dos negativos
+        run: |
+          set +e
+          python3 tools/isa_validate/isa_validate.py capability tools/isa_validate/casos-negativos/capability-sin-idempotencia.yaml
+          [ $? -eq 1 ] || { echo "ERROR: el negativo de capability no salio con codigo 1"; exit 1; }
+          python3 tools/isa_validate/isa_validate.py eval-card tools/isa_validate/casos-negativos/eval-card-sin-n-cases.yaml
+          [ $? -eq 1 ] || { echo "ERROR: el negativo de eval-card no salio con codigo 1"; exit 1; }
+          echo "OK: los dos negativos rechazados con codigo 1"
+
+      # Promesa: banco/ es la salida del extractor y sus anclas
+      # cuadran con el libro. El libro NO se publica en este repo, asi que
+      # en CI este paso salta con su motivo; se ejecuta en local, donde
+      # vive fuente/libro.md. LIBRO_MD permite apuntarlo desde un runner
+      # privado que si lo tenga.
+      - name: extractor --verificar contra el libro
+        env:
+          LIBRO_MD: ${{ vars.LIBRO_MD || '../fuente/libro.md' }}
+        run: |
+          if [ -f "$LIBRO_MD" ]; then
+            python3 tools/extraer_banco/extraer_banco.py --verificar --libro "$LIBRO_MD"
+          else
+            echo "SALTADO: libro.md no esta disponible en CI (la prosa del libro no se publica en este repo)."
+            echo "En local: python3 tools/extraer_banco/extraer_banco.py --verificar"
+          fi

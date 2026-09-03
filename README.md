@@ -1,25 +1,39 @@
-# `isa` --- el paquete de «Ingeniería de Sistemas Agénticos»
+# Ingeniería de Sistemas Agénticos --- el paquete del libro
+
+[![promesas](https://github.com/Ancarpi/sistemas-agenticos/actions/workflows/promesas.yml/badge.svg)](https://github.com/Ancarpi/sistemas-agenticos/actions/workflows/promesas.yml)
 
 El paquete de acompañamiento de **«Ingeniería de Sistemas Agénticos --- Manual completo de LangChain y LangGraph»**, de Antonio Carbonell (primera edición, septiembre de 2026). Presentado en el 0.1 del libro, con las versiones exactas en el 0.4 y su entrada en el Anexo C.
 
-**Esto es la herramienta, no el sustituto del libro.** Aquí está el código y está el criterio en forma comprobable; lo que no está --- ni puede estar --- es el razonamiento que lleva de un problema a esa decisión, que es lo que ocupa el libro entero. Si has llegado sin el libro, te falta la parte que importa.
+**Qué es.** Tres cosas en un árbol: el **código** del caso único del libro --- un banco ficticio con cinco superficies sobre un solo cerebro ---, extraído byte a byte del manual por un script que falla en voz alta si el libro se mueve; el **criterio** del libro en forma comprobable --- doce reglas, ocho skills y cinco lentes de revisión para Claude Code ---; y el **mecanismo** que convierte ese criterio en verificación y no en opinión: once esquemas y un validador sin dependencias.
 
-Y una honestidad de partida: esto es la **implementación de referencia extraída del libro**, no un producto terminado. Corre lo que el libro deja corriendo, y los fragmentos están marcados como fragmentos.
+**Qué hago con ello.** `QUICKSTART.md` te lleva de `git clone` a algo corriendo en tres escalones --- el primero sin montar absolutamente nada. Después, tres usos: seguir el libro con el código al lado (`banco/MAPEO.md` dice de qué página salió cada fichero); auditar tu propio sistema agéntico con las skills, las lentes y el validador; y consultar `ERRATA.md` antes de dar por roto un bloque del manual.
 
----
+**En qué se diferencia de un repo de ejemplos.** Un repo de ejemplos demuestra que algo puede funcionar; este paquete empaqueta el criterio para decidir si lo tuyo puede salir a producción. Las negativas aquí no son memoria de un modelo: son un script saliendo con código distinto de cero y nombrando el campo. Cada regla de `knowledge/` declara quién la comprueba, el CI de este repo comprueba las promesas de este README --- incluidos dos artefactos que **deben** fallar ---, y lo que no corre está dicho de frente en vez de disimulado.
 
-## Las cuatro partes
+**Esto es la herramienta, no el sustituto del libro.** Lo que no está --- ni puede estar --- es el razonamiento que lleva de un problema a cada decisión, que es lo que ocupa el libro entero. Y una honestidad de partida: esto es la implementación de referencia extraída del libro, no un producto terminado. Corre lo que el libro deja corriendo, y los fragmentos están marcados como fragmentos.
 
-| Parte | Qué es |
-|---|---|
-| `banco-meridiano/` | El código de Meridiano extraído del libro por un script, en el árbol del Ejercicio 0.1. Qué corre, qué corre con sus hermanos en el `PYTHONPATH` y qué es fragmento a propósito: su propio `README.md` lo dice fichero a fichero. |
-| `knowledge/` | El criterio. Trece ficheros: `INDEX.md`, que es la puerta de entrada, y **doce reglas, una por fichero**, cada una con su porqué en una línea y su localizador del libro. Son las doce reglas del Anexo D expandidas a forma comprobable. Nada se duplica entre ellas. |
-| `skills/`, `agents/isa/` | Ocho skills que citan `knowledge/` por ruta, y cinco lentes de revisión que auditan un sistema agéntico contra esas reglas. |
-| `schemas/` | Los datos que consume una herramienta: once esquemas y plantillas --- niveles de autonomía, contratos de contexto, manifiestos de capacidad, eval cards, obligaciones del AI Act, threat model, casos adversarios, checklist de producción, ADR y runbook. |
+## El árbol
 
-Más dos piezas: `tools/extraer_meridiano/`, el extractor que produce `banco-meridiano/` desde `libro.md` y que **falla en voz alta** cuando las líneas del libro se mueven en vez de escribir basura; y `tools/isa_validate/`, el validador sin dependencias que decide si un artefacto cumple su esquema --- es lo que hace que las negativas de las skills sean validación y no opinión del modelo.
-
-Y **`ERRATA.md`**, que es lo que el 0.4 del libro promete: las correcciones posteriores al cierre de agosto de 2026, fechadas y diciendo qué versión de qué librería provocó cada una. Antes de dar por roto un bloque de código del manual, es el primer sitio donde mirar.
+```
+.
+├── QUICKSTART.md            de git clone a algo corriendo, en tres escalones
+├── ERRATA.md                correcciones fechadas del libro: qué versión de qué librería rompió qué
+├── CONTRIBUTING.md          los dos carriles: errata del libro (issue) o problema del paquete (PR)
+├── banco/         el código del libro en el árbol del Ejercicio 0.1 — NO editar: se regenera
+│   ├── README.md            qué corre, qué corre con PYTHONPATH y qué es fragmento, fichero a fichero
+│   ├── MAPEO.md             generado: qué módulo del libro entrega cada fichero, con líneas exactas
+│   └── COSTURAS.md          generado: los fragmentos que el libro deja para pegar a mano
+├── knowledge/               el criterio: INDEX.md + doce reglas, una por fichero, con su localizador
+│   ├── protocols/           disciplinas: escalera de autonomía, release gate, threat model, memoria…
+│   └── patterns/            formas que se implementan en código: contratos de contexto, capacidades…
+├── skills/                  ocho skills para Claude Code; citan knowledge/ por ruta, nunca lo copian
+├── agents/isa/              cinco lentes de revisión, independientes, pensadas para correr en paralelo
+├── schemas/                 once esquemas y plantillas: exactamente lo que el validador exige
+└── tools/
+    ├── isa_validate/        el validador stdlib: la negativa es un exit code y un campo señalado
+    │   └── casos-negativos/ los dos artefactos que DEBEN fallar; el CI lo comprueba
+    └── extraer_banco/   reconstruye banco/ desde libro.md (el libro no está en el repo)
+```
 
 ## Las ocho skills
 
@@ -46,6 +60,10 @@ Cinco dimensiones independientes, pensadas para lanzarse en paralelo sobre un mi
 | `isa-idempotence` | Efectos externos sin red: sin clave de idempotencia, sin outbox, sin compensación. |
 | `isa-memory-governance` | Memoria escrita sin owner, caducidad o permiso. |
 
+## Lo que el CI comprueba
+
+El workflow (`.github/workflows/promesas.yml`) no decora: cada paso es una promesa de este README convertida en verdicto. Que todo `.py` compila --- fragmentos incluidos, porque incompleto no es inválido ---; que todo YAML y JSON parsea; que `isa_validate` valida en verde los cuatro artefactos del libro **y sale con código 1, señalando el campo, sobre los dos negativos de `tools/isa_validate/casos-negativos/`**; y que las anclas del extractor cuadran con el libro --- este último paso salta en CI con su motivo, porque la prosa del libro no se publica aquí, y se ejecuta en local donde vive `libro.md`.
+
 ## Cómo se cita `knowledge/`
 
 Tres reglas, y son las que evitan un paquete incoherente:
@@ -58,7 +76,7 @@ El libro se cita **por localizador** (`M21.4`, `15.6`, `A·H`), nunca textualmen
 
 ## Añadir una regla
 
-Una regla, un fichero, una fila en `INDEX.md`. `¿Cómo funciona la disciplina?` → `protocols/`. `¿Es una forma que se implementa en código?` → `patterns/`. `¿Es un dato que consume una herramienta?` → `schemas/`, no `knowledge/`. Por debajo de unas treinta líneas sustantivas, dentro de su fichero padre. El detalle está en `knowledge/INDEX.md`.
+Una regla, un fichero, una fila en `INDEX.md`. `¿Cómo funciona la disciplina?` → `protocols/`. `¿Es una forma que se implementa en código?` → `patterns/`. `¿Es un dato que consume una herramienta?` → `schemas/`, no `knowledge/`. Por debajo de unas treinta líneas sustantivas, dentro de su fichero padre. El detalle está en `knowledge/INDEX.md`, y las reglas de contribución, en `CONTRIBUTING.md`.
 
 ## Nombrado
 
@@ -66,12 +84,12 @@ Todo artefacto lleva el prefijo `isa-`. Una excepción, la única del paquete: l
 
 ## Estado
 
-Este README es la versión mínima; la completa que especifica `PLANO.md` --- las frases gatillo de cada skill y la escalera L0–L4 en línea --- está pendiente, igual que `CHANGELOG.md` y `plugin.json`. `tools/isa_validate/` ya existe: es el mecanismo real --- y no el criterio del modelo --- de las negativas que citan cuatro skills y cuatro ficheros de `knowledge/`. `PLANO.md` es el contrato de construcción, no documentación de usuario.
+La versión completa que especifica `PLANO.md` --- las frases gatillo de cada skill y la escalera L0–L4 en línea --- está pendiente, igual que `CHANGELOG.md` y `plugin.json`. `tools/isa_validate/` ya existe: es el mecanismo real --- y no el criterio del modelo --- de las negativas que citan cuatro skills y cuatro ficheros de `knowledge/`. `PLANO.md` es el contrato de construcción, no documentación de usuario.
 
 Las **erratas y actualizaciones** del libro se publican aquí.
 
 ## Licencia
 
-MIT --- `Copyright (c) 2026 Antonio Carbonell`. Cubre el paquete entero, `banco-meridiano/` incluido.
+MIT --- `Copyright (c) 2026 Antonio Carbonell`. Cubre el paquete entero, `banco/` incluido.
 
 La licencia cubre el **código**. La **prosa** del libro sigue siendo del autor y con todos sus derechos: por eso aquí solo hay código, esquemas y criterio destilado, y ni una página citada.

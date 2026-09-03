@@ -1,0 +1,26 @@
+name: Problema del paquete
+description: Un bug o una mejora en tools/, skills/, agents/, schemas/ o knowledge/ — no en el código del libro. Si el problema está en banco/, es una errata del libro (ese árbol se regenera desde el manual).
+title: "[Paquete] "
+labels: ["paquete"]
+body:
+  - type: dropdown
+    id: donde
+    attributes:
+      label: Dónde
+      options:
+        - tools/isa_validate
+        - tools/extraer_banco
+        - skills/
+        - agents/isa/
+        - schemas/
+        - knowledge/
+        - CI / documentación
+    validations:
+      required: true
+  - type: textarea
+    id: que-pasa
+    attributes:
+      label: Qué pasa
+      description: Qué hiciste, qué esperabas y qué salió. Si es un comando, pégalo con su salida.
+    validations:
+      required: true

@@ -1,0 +1,34 @@
+# despliegue-chat.yaml --- el servidor.py del 12.5 en un clúster.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: banco-chat}
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: banco-chat}}
+  template:
+    metadata: {labels: {app: banco-chat}}
+    spec:
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: api
+          image: registry.interna/banco-chat:${GIT_SHA}
+          ports: [{containerPort: 8000}]
+          # El entorno se fija al arrancar: cambiar el Secret NO
+          # lo actualiza. Rotar la clave virtual del 0.5 es un
+          # `kubectl rollout restart`, no un `kubectl apply`.
+          envFrom:
+            - secretRef: {name: banco-secrets}
+          lifecycle:
+            preStop:
+              exec: {command: ["sleep", "10"]}
+          readinessProbe:      # SÍ mira checkpointer y gateway
+            httpGet: {path: /health/ready, port: 8000}
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:       # NO mira nada de fuera del proceso
+            httpGet: {path: /health/live, port: 8000}
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            requests: {cpu: "300m", memory: "512Mi"}
+            limits: {memory: "512Mi"}     # memoria sí, CPU no

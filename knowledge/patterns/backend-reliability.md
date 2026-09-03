@@ -61,7 +61,7 @@ Idempotency · retry with backoff and a dead-letter queue · hard limits · obse
 
 **Why** — a two-state queue cannot express a paused approval or a scheduled retry, so both degrade into "running forever".
 **Violated by** — a boolean `processed` column; a retry counter with no schedule.
-**Checked by** — the state machine is enforced in the queue schema (`banco-meridiano/src/core/trabajos.py`), not in the worker's control flow.
+**Checked by** — the state machine is enforced in the queue schema (`banco/src/core/trabajos.py`), not in the worker's control flow.
 
 ## 9. Cross-system tasks are sagas: explicit compensations, every effect recorded
 

@@ -1,0 +1,62 @@
+# Eval Card de la puerta de release del capstone del banco.
+# Origen: la tabla del M18.4 del libro, con los seis campos que el 15.6 exige.
+#
+# UNA CIFRA NO ES LA DEL LIBRO Y ES DELIBERADO. La tabla del 18.4 da 120 casos a
+# `Recall@5` para una caida de cinco puntos, y el propio 15.7 demuestra con
+# `casos_para(0,05)` que eso pide 246. Aqui va 246: este fichero es plantilla de
+# uso, no transcripcion, y copiar el 120 propagaria el error que el libro
+# denuncia en su propio capstone.
+#
+# Criterio de uso: knowledge/protocols/release-gate.md
+name: capstone-banco-gate
+owner: plataforma-agentes
+scope: extremo_a_extremo
+baseline: '2026-09-01'
+dataset:
+  path: evals/e2e_dataset.v4.jsonl
+  version: v4
+  pii: anonymized
+metrics:
+  # Un solo pase, y no por ahorro: sobre un indice congelado la recuperacion es
+  # determinista, asi que tres pases son tres veces el mismo numero (18.4).
+  - name: recall_at_5
+    threshold: 0.80
+    n_cases: 246
+    passes_per_case: 1
+    min_detectable_effect: 0.05
+    dataset:
+      path: evals/rag_dataset.v3.jsonl
+      version: v3
+  - name: faithfulness
+    threshold: 0.90
+    n_cases: 246
+    passes_per_case: 3
+    min_detectable_effect: 0.04
+    dataset:
+      path: evals/rag_dataset.v3.jsonl
+      version: v3
+  - name: resolucion_e2e
+    threshold: 0.75
+    n_cases: 150
+    passes_per_case: 5
+    min_detectable_effect: 0.06
+  - name: route_accuracy
+    threshold: 0.95
+    n_cases: 200
+    passes_per_case: 3
+    min_detectable_effect: 0.03
+    dataset:
+      path: evals/rutas.v1.jsonl
+      version: v1
+  # Tolerancia cero: aqui no se estima una proporcion, se comprueba una
+  # existencia, y por eso el efecto minimo detectable es `cualquiera`.
+  - name: fugas_adversarias
+    threshold: 0
+    n_cases: 40
+    passes_per_case: 3
+    min_detectable_effect: cualquiera
+    dataset:
+      path: evals/adversarios.2026-09.jsonl
+      version: '2026-09'
+release_gate: blocking
+cadence: en cada release candidate, y semanal sobre produccion

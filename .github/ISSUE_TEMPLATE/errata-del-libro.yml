@@ -1,0 +1,53 @@
+name: Errata del libro
+description: Un bloque de código del manual no hace lo que la página dice. Cada corrección se publica fechada en ERRATA.md diciendo qué versión de qué librería la provocó — por eso este formulario exige las versiones.
+title: "[Errata] "
+labels: ["errata"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de abrir la issue, mira si tu caso ya está en [ERRATA.md](../blob/main/ERRATA.md): es el primer sitio donde se publica cada corrección.
+  - type: input
+    id: apartado
+    attributes:
+      label: Apartado del libro
+      description: El localizador del manual donde está el bloque — módulo y apartado, o anexo.
+      placeholder: "p. ej. 10.2, M17.4, A·H"
+    validations:
+      required: true
+  - type: textarea
+    id: que-hiciste
+    attributes:
+      label: Qué hiciste
+      description: El comando o el código que ejecutaste, tal cual. Si seguiste el libro con alguna variación, dila.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: que-esperabas
+    attributes:
+      label: Qué esperabas
+      description: Lo que el libro dice que debía pasar.
+    validations:
+      required: true
+  - type: textarea
+    id: que-salio
+    attributes:
+      label: Qué salió
+      description: La salida real — el error completo si lo hay, no su resumen.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: versiones
+    attributes:
+      label: Versiones instaladas
+      description: "Pega la salida de: pip freeze | grep -E 'langchain|langgraph|mcp|livekit|psycopg' — sin las versiones no se puede fechar la corrección, que es lo que ERRATA.md promete."
+      render: shell
+      placeholder: |
+        langchain==1.3.18
+        langgraph==1.2.11
+        langchain-mcp-adapters==0.3.2
+        ...
+    validations:
+      required: true

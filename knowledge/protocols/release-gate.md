@@ -61,7 +61,7 @@ Sampling noise (how many cases) · execution noise (how many passes) · judge no
 
 **Why** — in agents, what does not enter an evaluation comes back as an incident; a prompt fix with no test is a fix you cannot defend at the next release.
 **Violated by** — a post-mortem that closes with "improved the prompt"; a hotfix merged without a case added to the golden set.
-**Checked by** — the gate runs in CI on every pull request (`banco-meridiano/.github/workflows/agent-evals.yml`, 25.5), and the incident is closed by a versioned artifact change (36.5).
+**Checked by** — the gate runs in CI on every pull request (`banco/.github/workflows/agent-evals.yml`, 25.5), and the incident is closed by a versioned artifact change (36.5).
 
 ## 9. Retrieval gates are release gates
 

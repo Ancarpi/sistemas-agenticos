@@ -73,7 +73,7 @@ Fields: from, to, task, **authority** (`recommend` / `prepare` / `execute` / `ap
 
 **Why** — without a contract, agents pass whole conversations and each specialist re-interprets the world: latency, contradictions and context leaks. `authority` is what stops a recommending agent from being read as an executing one.
 **Violated by** — a handoff that forwards the message history; a receiving agent that infers its own authority; no return-to, so control is lost.
-**Checked by** — the typed handoff object crosses the boundary (`banco-meridiano/src/core/contratos.py`); lens `isa-autonomy-drift` checks that the authority granted does not exceed the receiver's declared tier.
+**Checked by** — the typed handoff object crosses the boundary (`banco/src/core/contratos.py`); lens `isa-autonomy-drift` checks that the authority granted does not exceed the receiver's declared tier.
 
 ## 9. Escalation to a human is a contract too, not a dead end
 

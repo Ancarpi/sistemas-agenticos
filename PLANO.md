@@ -4,7 +4,7 @@ Plano de construcción. **Esto no es contenido: es el contrato entre los agentes
 
 - Origen: `/mnt/c/Users/anton/Documents/Per/Libro Agentes/fuente/libro.md` (8.334 líneas, 38 módulos, anexos A–J, 114 bloques de código). **Solo lectura. No se toca `fuente/` ni `entrega/`.**
 - Destino: `/mnt/c/Users/anton/Documents/Per/Libro Agentes/paquete-agentes`
-- Ficheros a redactar a mano: **46**. Ficheros extraídos del libro por script: **~53** (`banco-meridiano/`).
+- Ficheros a redactar a mano: **46**. Ficheros extraídos del libro por script: **~53** (`banco/`).
 - Convenciones vinculantes: `/home/ancarpi/.claude/plugins/marketplaces/javbrain-claude-marketplace/knowledge/protocols/naming.md`, con la sustitución `jav` → `isa` y la única excepción documentada en §D.1.
 
 ---
@@ -129,7 +129,7 @@ Cinco lentes = cinco dimensiones independientes = un fanout en paralelo, que es 
 
 ---
 
-## F. `banco-meridiano/` — el repositorio de referencia.
+## F. `banco/` — el repositorio de referencia.
 
 ### F.1 El principio de mapeo (cuatro reglas, y cierran todos los casos)
 
@@ -197,7 +197,7 @@ Más, a mano: `README.md` (qué es, qué módulo entrega cada fichero, cómo arr
 
 ### F.3 Extracción
 
-**Con script, nunca a mano.** El mapeo vive una sola vez y como datos, en `tools/extraer_meridiano/mapeo.yaml`: por entrada, `bloques: [Lini-Lfin, ...]`, `destino`, `modo: verbatim|concat|patch|stub`, `modulo`. `extraer_meridiano.py` lo aplica sobre `libro.md`, escribe el árbol, genera `banco-meridiano/MAPEO.md` y **falla si un rango ya no empieza donde decía** — el libro sigue vivo en `fuente/`, así que la extracción tiene que romperse en voz alta cuando las líneas se muevan, en vez de escribir basura. Solo stdlib.
+**Con script, nunca a mano.** El mapeo vive una sola vez y como datos, en `tools/extraer_banco/mapeo.yaml`: por entrada, `bloques: [Lini-Lfin, ...]`, `destino`, `modo: verbatim|concat|patch|stub`, `modulo`. `extraer_banco.py` lo aplica sobre `libro.md`, escribe el árbol, genera `banco/MAPEO.md` y **falla si un rango ya no empieza donde decía** — el libro sigue vivo en `fuente/`, así que la extracción tiene que romperse en voz alta cuando las líneas se muevan, en vez de escribir basura. Solo stdlib.
 
 ---
 
@@ -206,12 +206,12 @@ Más, a mano: `README.md` (qué es, qué módulo entrega cada fichero, cómo arr
 | Fichero | Especificación |
 |---|---|
 | `README.md` | Qué es y para quién (las dos audiencias del encargo, literal). Instalación como plugin del marketplace. Las cuatro partes en una línea cada una. **La tabla de las 8 skills con su frase gatillo y la de las 5 lentes.** La escalera L0–L4 inline, porque es la tabla más usada y hace útil el README solo. Cómo se cita `knowledge/` (§D.2, resumido en tres líneas). La excepción de nombrado de §D.1. Cómo añadir una regla (una regla, un fichero, una fila en `INDEX.md`). Y la frase que hay que escribir sin adornos: **esto es la herramienta, no el sustituto del libro** + enlace a Amazon. |
-| `LICENSE` | MIT, `Copyright (c) 2026 Antonio Carbonell`. Cubre paquete y `banco-meridiano/`. |
+| `LICENSE` | MIT, `Copyright (c) 2026 Antonio Carbonell`. Cubre paquete y `banco/`. |
 | `CHANGELOG.md` | Sección `## 0.1.0` con el contenido inicial. Lo exige la regla de manifiestos del estándar. |
 | `plugin.json` | `name: "isa"`, `version: "0.1.0"`, descripción y autor. La fila de `marketplace.json` se añade en el repo del marketplace, **no aquí**. |
-| `tools/extraer_meridiano/extraer_meridiano.py` | Extractor de §F.3. stdlib. |
-| `tools/extraer_meridiano/mapeo.yaml` | El mapeo de §F.2 como datos. **Única fuente del mapeo.** |
-| `tools/extraer_meridiano/API.md` | Qué hace, cómo se invoca, `## Consumers`. |
+| `tools/extraer_banco/extraer_banco.py` | Extractor de §F.3. stdlib. |
+| `tools/extraer_banco/mapeo.yaml` | El mapeo de §F.2 como datos. **Única fuente del mapeo.** |
+| `tools/extraer_banco/API.md` | Qué hace, cómo se invoca, `## Consumers`. |
 | `tools/isa_validate/isa_validate.py` | Valida cualquier `*.capability.yaml`, `agent.yaml`, eval card o contrato de un repo contra `schemas/`. Exit ≠ 0 si falta un campo `required`. Es el mecanismo real de la negativa de `isa-eval-gate` y `isa-tool-manifest`. stdlib. |
 | `tools/isa_validate/API.md` | Ídem, con sus consumidores. |
 
@@ -222,7 +222,7 @@ Más, a mano: `README.md` (qué es, qué módulo entrega cada fichero, cómo arr
 1. **Prefijo e identidad.** Plugin `isa`; todo artefacto lleva `isa-`; `naming.md` del autor íntegro con `jav`→`isa`; única excepción, los stems de `agents/isa/` (§D.1).
 2. **Cita de knowledge.** Ruta relativa a la raíz del plugin, entre backticks, en una sección `## Canon` al principio de cada skill; `${CLAUDE_PLUGIN_ROOT}` en ejecución; los agentes paran si no reciben la raíz. Nunca nombre de regla suelto. Nunca copia. (§D.2)
 3. **Cita del libro.** Localizadores propios del libro (`M21.4`, `15.6`, `A·H`), en una línea `> Origen:` bajo el título. Prosa citada literalmente: **solo** las doce reglas del A·D y la frase del 26.2. Todo lo demás destilado.
-4. **Idioma.** `description`, prosa de `knowledge/` y campos de `schemas/` en inglés (convención del marketplace y lo que lee el router); frases gatillo en español **y** inglés; `banco-meridiano/` en español y verbatim del libro, incluidos los comentarios, porque tiene que coincidir con la página impresa. `README.md` y `PLANO.md` en español.
+4. **Idioma.** `description`, prosa de `knowledge/` y campos de `schemas/` en inglés (convención del marketplace y lo que lee el router); frases gatillo en español **y** inglés; `banco/` en español y verbatim del libro, incluidos los comentarios, porque tiene que coincidir con la página impresa. `README.md` y `PLANO.md` en español.
 5. **Markdown vs datos.** `knowledge/` solo `.md`; todo lo que consume una herramienta, solo en `schemas/`; ninguna skill lleva `references/`. Un esquema no puede existir dos veces.
 6. **Las negativas son validación, no criterio del modelo.** `isa-eval-gate` se niega porque `n_cases` es `required` en el esquema y `isa_validate.py` sale con error; no porque el modelo se acuerde. Lo mismo con el manifiesto sin rollback. Esta es la diferencia entre una regla y una recomendación.
 7. **Alias, jamás id de proveedor.** Todo lo generado habla los alias del libro (`agente-rapido`, `agente-equilibrado`, `agente-listo`, `emb-multilingue`, `rerank-multilingue`), nunca `claude-*` ni `gpt-*`. Coherente con el 0.5 y con el `stack.md` del autor.
@@ -241,6 +241,6 @@ Cuatro lotes; dentro de cada lote, todo en paralelo. **Nadie escribe fuera de su
 - **Lote 1 (bloqueante, uno solo):** `knowledge/` completo, 13 ficheros. Es el canon; nada puede citarlo antes de que exista.
 - **Lote 2 (en paralelo con el 3):** `schemas/`, 11 ficheros — transcripción mecánica de los anexos, no requiere juicio.
 - **Lote 3:** `skills/` (8) y `agents/isa/` (5), en paralelo, cada uno citando el canon del lote 1 por ruta. Un builder por familia.
-- **Lote 4:** `tools/` (5) + `banco-meridiano/` por extracción + raíz (4). `MAPEO.md` y el árbol de `banco-meridiano/` los produce el script, no un agente.
+- **Lote 4:** `tools/` (5) + `banco/` por extracción + raíz (4). `MAPEO.md` y el árbol de `banco/` los produce el script, no un agente.
 
-Verificación de cierre, y sin ella el paquete no está hecho: (a) `isa_validate.py` valida en verde un ejemplo de cada uno de sus cuatro modos --- `banco-meridiano/contratos/triage_sepa.contract.yaml`, `banco-meridiano/evals/capstone_gate.eval.yaml`, `banco-meridiano/tools/bloquear_tarjeta.capability.yaml` y `banco-meridiano/catalogo/cards-disputes/agent.yaml` --- y sale con código 1 y el campo señalado sobre los dos negativos de §227, una capacidad sin `idempotency.key` y una eval card sin `n_cases`; (b) `extraer_meridiano.py` corre limpio y `MAPEO.md` cuadra con §F.2; (c) el `naming_lint.py` del autor, apuntado a este árbol, sale sin errores salvo la excepción de §D.1; (d) cada `owners` de `knowledge/` resuelve a una skill o lente real **y** esa skill lo cita en su `## Canon`; (e) ninguna regla de `knowledge/` aparece copiada dentro de un `SKILL.md` — un grep de las frases clave lo prueba.
+Verificación de cierre, y sin ella el paquete no está hecho: (a) `isa_validate.py` valida en verde un ejemplo de cada uno de sus cuatro modos --- `banco/contratos/triage_sepa.contract.yaml`, `banco/evals/capstone_gate.eval.yaml`, `banco/tools/bloquear_tarjeta.capability.yaml` y `banco/catalogo/cards-disputes/agent.yaml` --- y sale con código 1 y el campo señalado sobre los dos negativos de §227, una capacidad sin `idempotency.key` y una eval card sin `n_cases`; (b) `extraer_banco.py` corre limpio y `MAPEO.md` cuadra con §F.2; (c) el `naming_lint.py` del autor, apuntado a este árbol, sale sin errores salvo la excepción de §D.1; (d) cada `owners` de `knowledge/` resuelve a una skill o lente real **y** esa skill lo cita en su `## Canon`; (e) ninguna regla de `knowledge/` aparece copiada dentro de un `SKILL.md` — un grep de las frases clave lo prueba.

@@ -78,7 +78,7 @@ obligations:
     risk_class: [limitado, alto]
     artifact: One notice text per surface, versioned, plus the proof that it was given
     module: 16.5, M12, M13, M14
-    evidence: banco-meridiano/src/core/cumplimiento.py::AVISOS
+    evidence: banco/src/core/cumplimiento.py::AVISOS
     test: tests/test_art50.py::test_las_cuatro_superficies
     note: >-
       Five surfaces, five ways of complying, and one of them is out of scope:
@@ -95,7 +95,7 @@ obligations:
     risk_class: [limitado, alto]
     artifact: Marking of generated audio, image and video on the surfaces that produce it
     module: 16.5, M14
-    evidence: banco-meridiano/src/channels/avatar/cara.py
+    evidence: banco/src/channels/avatar/cara.py
     test: null
     note: >-
       Deferred to 2026-12-02 only for systems already on the market before
@@ -111,7 +111,7 @@ obligations:
     risk_class: [alto]
     artifact: Approval barrier on irreversible actions, with the durable interrupt and the queue behind it
     module: M6, M11, 4.3, M35.4
-    evidence: banco-meridiano/src/agents/backoffice/agente_backoffice.py
+    evidence: banco/src/agents/backoffice/agente_backoffice.py
     test: null
     note: The human-in-the-loop of M6 is literally this obligation. A maker-checker signed by someone who does not understand what they are looking at is not oversight, it is a signature.
 
@@ -123,7 +123,7 @@ obligations:
     risk_class: [alto]
     artifact: Append-only register queried by subject and time, with a nullable link to the trace
     module: 16.6
-    evidence: banco-meridiano/db/schema.sql::registro_ia
+    evidence: banco/db/schema.sql::registro_ia
     test: tests/test_registro.py::test_solo_anadir
     note: >-
       This is not your observability. Art. 12(2) states the purposes -
@@ -140,7 +140,7 @@ obligations:
     risk_class: [alto]
     artifact: A retention deadline per store, taken from the institution's retention policy
     module: 16.6, 16.4
-    evidence: banco-meridiano/compliance/clasificacion-ia.yaml
+    evidence: banco/compliance/clasificacion-ia.yaml
     test: null
     note: >-
       Six months is a floor, not a deadline. The second paragraph of
@@ -168,7 +168,7 @@ obligations:
     risk_class: [alto]
     artifact: Corpus provenance, freshness and reindex plan; ACLs on what is indexed
     module: M7, M8, 24.1, 35.5
-    evidence: banco-meridiano/src/rag/indexar.py
+    evidence: banco/src/rag/indexar.py
     test: null
 
   - id: art11_documentacion_tecnica
@@ -179,7 +179,7 @@ obligations:
     risk_class: [alto]
     artifact: Agent Package plus the ADRs of the critical decisions
     module: M32.3, A·G.1
-    evidence: banco-meridiano/catalogo/cards-disputes/agent.yaml
+    evidence: banco/catalogo/cards-disputes/agent.yaml
     test: null
     note: Simplified technical documentation is available to small mid-caps (16.2).
 
@@ -191,7 +191,7 @@ obligations:
     risk_class: [alto]
     artifact: Release gate with the six fields, run in CI, plus the OWASP mapping
     module: 15.6, 18.4, 16.1
-    evidence: banco-meridiano/.github/workflows/agent-evals.yml
+    evidence: banco/.github/workflows/agent-evals.yml
     test: null
 
   - id: art49_registro_ue
@@ -252,7 +252,7 @@ obligations:
     risk_class: [limitado, alto, minimo]
     artifact: One row per use case with purpose and basis; reusing conversations for training is a different purpose needing its own basis
     module: 16.4
-    evidence: banco-meridiano/compliance/clasificacion-ia.yaml
+    evidence: banco/compliance/clasificacion-ia.yaml
     test: null
 
   - id: rgpd_minimizacion
@@ -263,7 +263,7 @@ obligations:
     risk_class: [limitado, alto, minimo]
     artifact: The Context Contract's forbidden data, asserted before the call
     module: M19.1, 4.3, 34.6
-    evidence: banco-meridiano/src/core/context_contracts.py::ContextContract
+    evidence: banco/src/core/context_contracts.py::ContextContract
     test: null
     note: The forbidden-data field of the contract is, literally, minimization implemented.
 
@@ -309,7 +309,7 @@ obligations:
     risk_class: [limitado, alto, minimo]
     artifact: The routing and fallback chain reviewed as a transfer control, with each alias recording its provider's jurisdiction
     module: 16.4, 19.2, 0.5
-    evidence: banco-meridiano/config/model_routing.yaml
+    evidence: banco/config/model_routing.yaml
     test: null
     note: The transfer is decided by a `fallbacks:` line. The day the primary fails, the data leaves the EEA with nobody having read Chapter V.
 
@@ -344,6 +344,6 @@ obligations:
     risk_class: [limitado, alto, minimo]
     artifact: Contractual registration, audit rights, exit strategy and substitution plan for the model provider
     module: 16.4, 17.3
-    evidence: banco-meridiano/gateway/config.yaml
+    evidence: banco/gateway/config.yaml
     test: null
     note: Decide explicitly whether the gateway supports a critical or important function - that box drives the Art. 28(3) register of information and which Art. 30 clauses are mandatory. The gateway is the documentary proof that you have an exit strategy.
