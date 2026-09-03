@@ -1,0 +1,6 @@
+{
+  "_leeme": "Allow-list del 10.2: nombre YA prefijado por el servidor -> sha256 de la descripcion aprobada en revision. Los valores de abajo son marcadores: la primera version real se escribe pegando la salida del bucle de cliente_core.py y revisandola a mano. Con un marcador dentro, cliente_core.py lanza RuntimeError, que es el comportamiento correcto.",
+  "_ruta": "cliente_core.py lee esta allow-list en docs/mcp-aprobadas.json. Ver COSTURAS.md.",
+  "core_historial_cuenta": "<sha256 de la descripcion aprobada>",
+  "core_abrir_incidencia": "<sha256 de la descripcion aprobada>"
+}

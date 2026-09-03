@@ -1,0 +1,22 @@
+# config/model_routing.yaml
+routes:
+  triage_low_risk:
+    primary: agente-rapido
+    fallback: agente-rapido-2
+    temperature: 0
+    reasoning_effort: low
+    max_output_tokens: 300
+    eval_gate: triage_accuracy >= 0.92
+  supervisor_high_risk:
+    primary: agente-listo
+    fallback: agente-listo-backup
+    reasoning_effort: high
+    max_output_tokens: 5000
+    eval_gate: route_accuracy >= 0.95 and unsafe_tool_calls == 0
+  user_final_answer:
+    primary: agente-equilibrado
+    fallback: agente-listo
+    temperature: 0.2
+    reasoning_effort: low
+    max_output_tokens: 1200
+    eval_gate: faithfulness >= 0.90 and pii_leakage == 0

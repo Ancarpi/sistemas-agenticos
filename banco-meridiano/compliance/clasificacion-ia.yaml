@@ -1,0 +1,38 @@
+# compliance/clasificacion-ia.yaml --- el Anexo III, en el repo.
+# Una entrada por CASO DE USO, nunca por modelo ni por servicio:
+# el riesgo lo fija la finalidad, y el mismo grafo es de riesgo
+# limitado atendiendo un chat y de alto riesgo puntuando crédito.
+# Y antes que el riesgo se mira `papel`: proveedor y responsable
+# del despliegue tienen listas de obligaciones distintas, y el
+# mismo sistema puede ser las dos cosas a la vez.
+version: 3
+revisado: 2026-08-14
+proximo_examen: 2027-02-14       # caduca: ver el test de abajo
+marco: "Reglamento (UE) 2024/1689, consolidado por UE 2026/1744"
+sistemas:
+  - id: asistente-clientes
+    canales: [chat, slack, voz, avatar]
+    papel: [proveedor, responsable_del_despliegue]
+    riesgo: limitado
+    fundamento: "Art. 50(1); en avatar, además el 50(2)"
+    obligaciones:
+      art50_aviso:
+        estado: implementado
+        evidencia: cumplimiento.py::AVISOS
+        prueba: tests/test_art50.py::test_las_cuatro_superficies
+      art12_registro:
+        estado: implementado
+        evidencia: schema.sql::registro_ia
+        prueba: tests/test_registro.py::test_solo_anadir
+        retencion: politica_financiera  # NO los 6 meses del 26(6)
+  # Falta backoffice-nocturno, que es el Ejercicio 16.2: sin
+  # Art. 50 y con el 14 implementado en el 4.3.
+  - id: scoring-solvencia
+    canales: []              # no existe aún, y ya está clasificado
+    papel: [responsable_del_despliegue]
+    riesgo: alto
+    fundamento: "Anexo III, punto 5.b; aplicable el 2027-12-02"
+    obligaciones:
+      art26_uso_conforme: {estado: pendiente, responsable: riesgos}
+      art26_11_informar: {estado: pendiente, responsable: riesgos}
+      art86_explicacion: {estado: pendiente, responsable: riesgos}

@@ -1,0 +1,289 @@
+# schemas/production-checklist.yaml
+# The ten areas that stand between a working agent and a production agent,
+# item by item, so a script can count what is missing.
+# Origen: A·F (the areas and their items, verbatim in substance), M30.1 (the
+# seven roles that sign), M30.3 (which changes need a committee).
+#
+# `blocking: true` marks the items whose absence is not recoverable by a later
+# patch - an irreversible action with no approval, memory with no expiry, a
+# corpus with no permissions. `owner_role` is the role from M30.1 that signs,
+# by name and date. Criterion for use:
+# knowledge/protocols/production-checklist.md.
+
+version: 1
+
+# M30.1 - central platform team plus domain squads. The signature is what
+# turns a tick into an accepted responsibility.
+owner_roles:
+  agent_product_owner: Value, scope, UX, escalation and KPIs
+  agent_engineer: Graph, tools, state, integration
+  evaluation_engineer: Datasets, metrics, CI gates
+  ai_sre: Operation, SLOs, incidents, cost
+  security_risk_partner: Threat model, permissions, compliance
+  knowledge_owner: Corpus, currency, provenance
+  human_ops_lead: Human queues, review, feedback
+
+areas:
+  - area: arquitectura
+    criterion: knowledge/patterns/tool-capability.md
+    items:
+      - id: arq.agent_package
+        item: Agent Package complete
+        owner_role: agent_engineer
+        blocking: true
+      - id: arq.diagrama_confianza
+        item: Diagram with trust boundaries
+        owner_role: security_risk_partner
+        blocking: false
+      - id: arq.adrs
+        item: ADRs of the critical decisions
+        owner_role: agent_engineer
+        blocking: false
+
+  - area: herramientas
+    criterion: knowledge/patterns/tool-capability.md
+    items:
+      - id: tools.esquemas_estrictos
+        item: Strict schemas
+        owner_role: agent_engineer
+        blocking: true
+      - id: tools.idempotencia
+        item: Idempotency
+        owner_role: agent_engineer
+        blocking: true
+      - id: tools.errores_utiles
+        item: Useful errors - typed, compact, actionable
+        owner_role: agent_engineer
+        blocking: false
+      - id: tools.owner
+        item: Owner
+        owner_role: agent_product_owner
+        blocking: true
+      - id: tools.tests
+        item: Tests
+        owner_role: agent_engineer
+        blocking: true
+      - id: tools.scopes
+        item: Scopes
+        owner_role: security_risk_partner
+        blocking: true
+      - id: tools.dryrun_commit
+        item: dry-run and commit separated
+        owner_role: agent_engineer
+        blocking: true
+
+  - area: rag_conocimiento
+    criterion: knowledge/patterns/knowledge-governance.md
+    items:
+      - id: rag.metadatos
+        item: Metadata
+        owner_role: knowledge_owner
+        blocking: false
+      - id: rag.acls
+        item: ACLs
+        owner_role: security_risk_partner
+        blocking: true
+      - id: rag.recall_at_k
+        item: Recall@k evaluation
+        owner_role: evaluation_engineer
+        blocking: true
+      - id: rag.citas
+        item: Citations
+        owner_role: knowledge_owner
+        blocking: false
+      - id: rag.frescura
+        item: Freshness
+        owner_role: knowledge_owner
+        blocking: false
+      - id: rag.plan_reindexacion
+        item: Reindexing plan
+        owner_role: knowledge_owner
+        blocking: false
+
+  - area: memoria
+    criterion: knowledge/protocols/memory-governance.md
+    items:
+      - id: mem.namespaces
+        item: Namespaces
+        owner_role: agent_engineer
+        blocking: true
+      - id: mem.permisos
+        item: Permissions
+        owner_role: security_risk_partner
+        blocking: true
+      - id: mem.ttl
+        item: TTL
+        owner_role: agent_engineer
+        blocking: true
+      - id: mem.procedencia
+        item: Provenance
+        owner_role: knowledge_owner
+        blocking: false
+      - id: mem.propuesta_revision
+        item: Proposal and review for collective memory
+        owner_role: human_ops_lead
+        blocking: true
+      - id: mem.olvido
+        item: Forgetting
+        owner_role: agent_engineer
+        blocking: false
+
+  - area: seguridad
+    criterion: knowledge/protocols/agent-threat-model.md
+    items:
+      - id: sec.threat_model
+        item: Threat model
+        owner_role: security_risk_partner
+        blocking: true
+      - id: sec.owasp_edicion
+        item: Both OWASP lists in their edition in force, recorded with their year (16.1, A·J.4)
+        owner_role: security_risk_partner
+        blocking: true
+      - id: sec.dlp
+        item: DLP
+        owner_role: security_risk_partner
+        blocking: true
+      - id: sec.pii_masking
+        item: PII masking
+        owner_role: agent_engineer
+        blocking: true
+      - id: sec.sandbox
+        item: Sandbox
+        owner_role: security_risk_partner
+        blocking: true
+      - id: sec.cadena_suministro
+        item: Supply chain
+        owner_role: security_risk_partner
+        blocking: true
+      - id: sec.red_team
+        item: Red team
+        owner_role: security_risk_partner
+        blocking: true
+
+  - area: hitl
+    criterion: knowledge/protocols/autonomy-ladder.md
+    items:
+      - id: hitl.acciones_aprobacion
+        item: Actions that require approval
+        owner_role: security_risk_partner
+        blocking: true
+      - id: hitl.colas
+        item: Queues
+        owner_role: human_ops_lead
+        blocking: true
+      - id: hitl.sla
+        item: SLA
+        owner_role: human_ops_lead
+        blocking: true
+      - id: hitl.maker_checker
+        item: Maker-checker
+        owner_role: security_risk_partner
+        blocking: true
+      - id: hitl.receipts
+        item: Receipts
+        owner_role: agent_engineer
+        blocking: false
+      - id: hitl.reanudacion
+        item: Resumption
+        owner_role: agent_engineer
+        blocking: true
+
+  - area: observabilidad
+    criterion: knowledge/protocols/observability-contract.md
+    items:
+      - id: obs.trazas_por_run
+        item: Traces per run
+        owner_role: ai_sre
+        blocking: true
+      - id: obs.metricas_por_capa
+        item: Metrics per layer
+        owner_role: ai_sre
+        blocking: false
+      - id: obs.online_evals
+        item: Online evals
+        owner_role: evaluation_engineer
+        blocking: false
+      - id: obs.alertas
+        item: Alerts
+        owner_role: ai_sre
+        blocking: true
+      - id: obs.runbooks
+        item: Runbooks
+        owner_role: ai_sre
+        blocking: true
+
+  - area: despliegue
+    criterion: knowledge/protocols/release-gate.md
+    items:
+      - id: dep.cicd
+        item: CI/CD
+        owner_role: agent_engineer
+        blocking: true
+      - id: dep.eval_gates
+        item: Eval gates
+        owner_role: evaluation_engineer
+        blocking: true
+      - id: dep.canary_shadow
+        item: Canary or shadow
+        owner_role: ai_sre
+        blocking: false
+      - id: dep.rollback
+        item: Rollback
+        owner_role: ai_sre
+        blocking: true
+      - id: dep.migraciones_estado
+        item: State migrations
+        owner_role: agent_engineer
+        blocking: true
+
+  - area: operacion
+    criterion: knowledge/patterns/backend-reliability.md
+    items:
+      - id: ops.slos
+        item: SLOs
+        owner_role: ai_sre
+        blocking: true
+      - id: ops.owners
+        item: Owners
+        owner_role: agent_product_owner
+        blocking: true
+      - id: ops.on_call
+        item: On-call
+        owner_role: ai_sre
+        blocking: true
+      - id: ops.post_mortem
+        item: Post-mortem
+        owner_role: ai_sre
+        blocking: false
+      - id: ops.budgets
+        item: Budgets - steps, tokens, euros, per run and per batch
+        owner_role: ai_sre
+        blocking: true
+      - id: ops.revision_costes
+        item: Cost review
+        owner_role: agent_product_owner
+        blocking: false
+
+  - area: cumplimiento
+    criterion: knowledge/protocols/ai-act-map.md
+    items:
+      - id: cmp.dossier
+        item: AI Act and GDPR dossier
+        owner_role: security_risk_partner
+        blocking: true
+      - id: cmp.resiliencia_operativa
+        item: The operational-resilience regime that applies to your sector, DORA or NIS2, and not both (16.4)
+        owner_role: security_risk_partner
+        blocking: true
+      - id: cmp.retencion
+        item: Retention, per store
+        owner_role: security_risk_partner
+        blocking: true
+      - id: cmp.auditoria
+        item: Audit - the Art. 12 register, chained
+        owner_role: security_risk_partner
+        blocking: true
+      - id: cmp.transparencia
+        item: Transparency, surface by surface
+        owner_role: agent_product_owner
+        blocking: true

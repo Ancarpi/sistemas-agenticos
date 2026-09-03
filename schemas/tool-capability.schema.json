@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://javbrain.com/isa/schemas/tool-capability.schema.json",
+  "title": "Tool Capability Manifest",
+  "description": "The control document a tool ships with, written before the tool is exposed to a model and versioned with the code. Origen: M20.1 (the manifest), Ejercicio 20.1 (owner, risk_tier, auth, effects, timeouts, audit, idempotency all validated by a script), M20.2 (phase separation), M20.3 (typed errors). Criterion for use: knowledge/patterns/tool-capability.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "version",
+    "owner",
+    "risk_tier",
+    "intent",
+    "auth",
+    "effects",
+    "idempotency",
+    "timeouts",
+    "audit",
+    "rollback"
+  ],
+  "properties": {
+    "name": {
+      "description": "Stable name, readable by models and humans alike.",
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "description": "The manifest is versioned with the code.",
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": {
+      "description": "Who answers when this tool causes an incident. A queue is not an owner.",
+      "type": "string",
+      "minLength": 1
+    },
+    "risk_tier": {
+      "$comment": "Enum bound to schemas/autonomy-levels.yaml: the canonical L0-L4 ids plus the aliases the book itself uses for the same rungs (irreversible_high in 20.1 and 26.2; read/analysis/reversible_write in 20.4; high in 30.2 and 32.3). A private vocabulary such as `medium` makes the tier unenforceable and is refused here.",
+      "type": "string",
+      "enum": [
+        "L0", "L1", "L2", "L3", "L4",
+        "read", "analysis", "dry_run", "reversible_write", "high",
+        "irreversible_high", "irreversible", "sensitive"
+      ]
+    },
+    "intent": {
+      "description": "What the capability is for, in business terms. An intent that restates the name says nothing.",
+      "type": "string",
+      "minLength": 1
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_required", "scopes"],
+      "properties": {
+        "subject_required": { "type": "string", "minLength": 1 },
+        "scopes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "preconditions": {
+      "description": "When the call is legal, evaluated against authoritative state and never against the argument the model wrote.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "effects": {
+      "description": "What there is to compensate. `writes` may be empty for a read tool, but it is declared.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["writes"],
+      "properties": {
+        "writes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "emits_events": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "default": []
+        }
+      }
+    },
+    "idempotency": {
+      "description": "What a retry does. The key is composed of business fields (subject + resource + reason + window): a key built from a timestamp or a UUID never collides, so it never deduplicates.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "duplicate_behavior"],
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "duplicate_behavior": { "type": "string", "minLength": 1 }
+      }
+    },
+    "approval": {
+      "description": "Who signs. Mandatory at the irreversible tier, see the conditional at the end of this schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["human_required"],
+      "properties": {
+        "human_required": { "type": "boolean" },
+        "allowed_approvers": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "timeouts": {
+      "description": "When to stop waiting.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p95_ms", "hard_timeout_ms"],
+      "properties": {
+        "p95_ms": { "type": "integer", "exclusiveMinimum": 0 },
+        "hard_timeout_ms": { "type": "integer", "exclusiveMinimum": 0 }
+      }
+    },
+    "audit": {
+      "description": "What is provable afterwards, and what must not be written down.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["log_args", "log_result"],
+      "properties": {
+        "log_args": { "type": "string", "minLength": 1 },
+        "log_result": { "type": "string", "minLength": 1 },
+        "pii": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "rollback": {
+      "description": "A named compensating action that exists and has been tested. Declared as an object, so `rollback: manual` does not validate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "tool"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "tool": {
+          "description": "Must resolve to a real capability with its own manifest.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "A·H, L4: an irreversible or regulated action with none of HITL, maker-checker or step-up auth is not graduated autonomy. The manifest carries the human barrier or it does not validate.",
+      "if": {
+        "properties": {
+          "risk_tier": {
+            "enum": ["L4", "irreversible_high", "irreversible", "sensitive"]
+          }
+        },
+        "required": ["risk_tier"]
+      },
+      "then": {
+        "required": ["approval"],
+        "properties": {
+          "approval": {
+            "required": ["human_required", "allowed_approvers"],
+            "properties": {
+              "human_required": { "const": true },
+              "allowed_approvers": { "minItems": 1 }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+# schemas/autonomy-levels.yaml
+# The canonical autonomy scale of the book, as data.
+# Origen: A·H (the table), M21.4 (the grading variable), M20.1 and M20.4
+# (`risk_tier` of a capability manifest), M32.3 (`risk_tier` of an Agent
+# Package), M30.2 (`autonomy_level` of an agent card), M35.2 (the five
+# decisions the policy engine returns).
+#
+# One scale, several artifacts. Read the controls from here; never
+# paraphrase them. The criterion for using this table is
+# knowledge/protocols/autonomy-ladder.md.
+
+version: 1
+graded_by: effect_on_the_world   # M21.4 — never by trust in the model
+policy_decisions:                # M35.2 — what the engine may return
+  - allow
+  - deny
+  - require_human
+  - require_dry_run
+  - require_step_up_auth
+
+levels:
+  - level: L0
+    ordinal: 0
+    autonomy: Read, no external effect
+    aliases: [read, analysis]            # M20.4
+    examples:
+      - Consult an FAQ
+      - Search public regulation
+    required_controls:
+      - logging
+      - context limits
+    forbidden:
+      - any write or externally visible side effect
+      - unbounded context assembled from whatever is in state
+
+  - level: L1
+    ordinal: 1
+    autonomy: Draft or recommendation
+    aliases: []
+    examples:
+      - Draft a reply
+      - Classify an incident
+    required_controls:
+      - output validation
+      - feedback
+    forbidden:
+      - applying the draft without a human or a validator in between
+      - an unvalidated free-text output reaching a downstream effect
+
+  - level: L2
+    ordinal: 2
+    autonomy: Dry-run or simulation
+    aliases: [dry_run]
+    examples:
+      - Compute a proposed refund
+    required_controls:
+      - evidence
+      - estimated cost
+      - no commit
+    forbidden:
+      - writing anything, including state mutated to compute the estimate
+      - a dry-run reachable only as a flag on the commit path
+      - sharing a transaction with the commit path
+
+  - level: L3
+    ordinal: 3
+    autonomy: Reversible commit
+    aliases: [reversible_write, high]    # M20.4, M30.2, M32.3
+    examples:
+      - Create a ticket
+      - Update a non-critical status
+    required_controls:
+      - idempotency
+      - rollback
+      - policy allow
+    forbidden:
+      - an idempotency key derived from a timestamp or a UUID
+      - an empty or manual rollback
+      - a commit callable with no prior dry-run where the phases are required
+
+  - level: L4
+    ordinal: 4
+    autonomy: Irreversible or regulated action
+    aliases: [irreversible_high, irreversible, sensitive]  # M20.1, M20.4, M26.2
+    examples:
+      - Block a card
+      - Release funds
+      - Change contractual conditions
+    required_controls:                   # A·H — or the action is prohibited
+      - HITL
+      - maker-checker
+      - step-up auth
+    forbidden:
+      - none of the three controls present, which is an incident with no date on it yet
+      - approval by the same identity that proposed the action
+      - an approval queue with no SLA and no expiry
+      - a confirmation turn inside the same conversation the attacker controls
+      - the tool offered to a model without the read/plan/dry-run/commit barrier

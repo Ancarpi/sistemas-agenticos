@@ -1,0 +1,432 @@
+# mapeo.yaml --- la UNICA fuente del mapeo libro.md -> banco-meridiano/.
+# Lo aplica tools/extraer_meridiano/extraer_meridiano.py. Se edita aqui, nunca
+# en el arbol generado. Cada bloque declara sus dos anclas: si el libro se
+# mueve, la extraccion falla en voz alta en vez de escribir basura, y
+# --resincronizar reubica los rangos por ancla.
+#
+# modo:
+#   verbatim   crea el destino con sus bloques concatenados en orden del libro
+#   patch      anade bloques a un destino ya creado, con un marcador de modulo
+#   plantilla  escribe un andamio de plantillas/ (no sale del libro)
+#   fragmento  incrusta el bloque en COSTURAS.md, para las costuras manuales
+#
+# bloques: rangos de lineas de CONTENIDO (sin las vallas ```), 1-indexado.
+
+libro_lineas: 8157
+entradas:
+  - destino: gateway/config.yaml
+    modulo: '0.5'
+    modo: verbatim
+    bloques: [258-336]
+    anclas: ['# config.yaml --- el ÚNICO fichero del proyecto que nombra proveedores.']
+    anclas_fin: ['database_url: os.environ/DATABASE_URL']
+    nota: 'El gateway del 0.5: el unico fichero del sistema que nombra proveedores. Solo os.environ/, ni un secreto.'
+  - destino: gateway/.env.gateway.example
+    modulo: '0.5'
+    modo: verbatim
+    bloques: [347-353]
+    anclas: ['# .env.gateway --- nunca en el repo.']
+    anclas_fin: ['COHERE_API_KEY=...']
+    nota: 'Plantilla del .env del gateway. Los valores del libro ya son marcadores.'
+  - destino: src/core/models.py
+    modulo: '0.4'
+    modo: verbatim
+    bloques: [225-248]
+    anclas: ['# fábrica de modelos: el ÚNICO sitio del proyecto donde se instancia un LLM']
+    anclas_fin: [')']
+    nota: 'La fabrica get_model()/get_embeddings(). Ruta obligada por el Ejercicio 0.1: de ella tira el resto del libro.'
+  - destino: src/core/models_local.py
+    modulo: '0.5'
+    modo: verbatim
+    bloques: [415-435]
+    anclas: ['# Sin gateway no hay alias: los resuelves tú, en la fábrica.']
+    anclas_fin: ['# get_embeddings resuelve su alias con el mismo diccionario.']
+    nota: 'Variante sin gateway: los alias se resuelven en la fabrica y el resto del repo no se entera.'
+  - destino: src/core/banco.py
+    modulo: '3.3'
+    modo: verbatim
+    bloques: [733-757]
+    anclas: ['IBAN_CLIENTE = "ES9121000418450200051332"']
+    anclas_fin: ['return f"{signo}{cent // 100},{cent % 100:02d} EUR"']
+    nota: 'El core bancario del 3.3 --- los dos dicts y eur(). El 3.3 dice que en el 9.2 salen aqui, y supervisor.py los importa de esta ruta.'
+  - destino: src/agents/nano_agent.py
+    modulo: '3.3'
+    modo: verbatim
+    bloques: [723-787, 798-858, 866-939]
+    anclas: ['# nano_agent.py --- back-office de Meridiano, sin framework de agentes.', '# Esto es EL VELO. create_agent genera este JSON Schema por ti a', 'SISTEMA = """Eres el agente de back-office de Banco Meridiano.']
+    anclas_fin: ['return {"ok": True, "cola": "backoffice-n2", "sla_horas": 4}', 'marcar_resuelta, escalar_a_humano)}', 'print(json.dumps(CASOS, ensure_ascii=False, indent=2))']
+    nota: 'Las tres piezas del 3.3 en orden: banco y herramientas, el velo (el JSON Schema a mano) y el bucle.'
+  - destino: src/agents/backoffice/herramientas.py
+    modulo: '4.1'
+    modo: verbatim
+    bloques: [1007-1054]
+    anclas: ['# herramientas.py --- las cuatro del 3.3, con el esquema generado.']
+    anclas_fin: ['return core.escalar_a_humano(referencia, resumen)']
+    nota: 'Las cuatro del 3.3 con @tool: el docstring vuelve a ser el esquema.'
+  - destino: src/agents/backoffice/agente_backoffice.py
+    modulo: '4.3'
+    modo: verbatim
+    bloques: [1147-1247]
+    anclas: ['# agente_backoffice.py --- el nano_agent del 3.3, industrializado.']
+    anclas_fin: [')']
+    nota: 'El nano_agent industrializado: middleware, interrupt_on y checkpointer.'
+  - destino: src/agents/conciliacion/grafo_conciliacion.py
+    modulo: 'Ej. 5.1'
+    modo: plantilla
+    plantilla: grafo_conciliacion.cabecera.py
+    nota: 'Andamio del Ejercicio 5.1. El libro no publica este fichero y sin embargo lo importa en el 6.3 y en el 12.5.'
+  - destino: src/agents/conciliacion/grafo_conciliacion.py
+    modulo: '5.1'
+    modo: patch
+    bloques: [1349-1368]
+    anclas: ['from typing import Annotated, TypedDict']
+    anclas_fin: ['app = g.compile()']
+    nota: 'El estado y el grafo del 5.1: EstadoBackoffice, nodos y aristas.'
+  - destino: src/agents/conciliacion/grafo_conciliacion.py
+    modulo: '6.3'
+    modo: patch
+    bloques: [1552-1565]
+    anclas: ['# Este nodo es el `investigar` de tu `grafo_conciliacion.py`, el']
+    anclas_fin: ['return {"movimientos": movs}']
+    nota: 'El nodo investigar del 6.3, que el propio libro coloca en este fichero.'
+  - destino: src/channels/chat/canal_chat.py
+    modulo: '6.3'
+    modo: verbatim
+    bloques: [1511-1544]
+    anclas: ['# canal_chat.py --- el consumidor real: actividad y tokens a la vez.']
+    anclas_fin: ['yield {"tipo": "token", "texto": chunk.content}']
+    nota: 'El generador que emite actividad y tokens a la vez. Es el cerebro que importan servidor.py y webhook_slack.py.'
+  - destino: src/agents/conciliacion/fanout_nocturno.py
+    modulo: '6.4'
+    modo: verbatim
+    bloques: [1585-1654]
+    anclas: ['# fanout_nocturno.py --- triaje en paralelo de un lote de 20.']
+    anclas_fin: ['print(f"{time.perf_counter() - t0:.1f} s")']
+    nota: 'El fan-out con Send: triaje en paralelo de un lote de 20.'
+  - destino: db/schema.sql
+    modulo: '7.6'
+    modo: verbatim
+    bloques: [1832-1863, 1871-1883, 1928-1977, 1991-2017]
+    anclas: ['-- schema.sql --- Banco Meridiano, de una vez y reaplicable:', '-- Coseno, porque PGVectorStore usa coseno por defecto. Un índice', '-- mod-97 (ISO 13616) en SQL. IMMUTABLE para usarla en un CHECK.', '-- CREATE ROLE no admite IF NOT EXISTS; de ahí el rodeo.']
+    anclas_fin: [');', 'ON manuales_meridiano (tipo, producto, version);', 'ON incidencias (referencia) WHERE estado <> ''resuelta'';', '''publica''), '','')));']
+    nota: 'Corpus con metadatos tipados, indice HNSW, mod-97 con su CHECK y la RLS. Los tres bloques del 7.6 que empiezan por NO va en schema.sql se quedan en el libro.'
+  - destino: db/schema.sql
+    modulo: '16.6'
+    modo: patch
+    bloques: [4555-4592]
+    anclas: ['-- registro_ia --- Art. 12. Va en el schema.sql del 7.6.']
+    anclas_fin: ['TO meridiano_app;']
+    nota: 'registro_ia (Art. 12). El libro dice literalmente que va en el schema.sql del 7.6.'
+  - destino: src/rag/indexar.py
+    modulo: '7.4'
+    modo: verbatim
+    bloques: [1797-1812]
+    anclas: ['from langchain_postgres import PGEngine, PGVectorStore']
+    anclas_fin: ['k=5, filter={"producto": "cuentas"})']
+    nota: 'PGEngine con driver explicito postgresql+psycopg:// y create_sync. Fragmento: le falta el import os y de donde salen los chunks.'
+  - destino: src/rag/08_hibrida.sql
+    modulo: '8.1'
+    modo: verbatim
+    bloques: [2092-2125]
+    anclas: ['-- src/rag/08_hibrida.sql --- el lado léxico, y solo el léxico.']
+    anclas_fin: ['--    consulta y encarece cada INSERT.']
+    nota: 'Migracion del lado lexico: tsvector, GIN y unaccent.'
+  - destino: src/rag/hibrida.sql
+    modulo: '8.1'
+    modo: verbatim
+    bloques: [2136-2187]
+    anclas: ['-- src/rag/hibrida.sql --- las dos ramas, en UN viaje a la base.']
+    anclas_fin: ['FROM densa d FULL OUTER JOIN lexica l USING (langchain_id);']
+    nota: 'Las dos ramas en un solo viaje a la base.'
+  - destino: src/rag/hibrida.py
+    modulo: '8.1'
+    modo: verbatim
+    bloques: [2198-2329]
+    anclas: ['# src/rag/hibrida.py --- búsqueda híbrida sobre la tabla del 7.6.']
+    anclas_fin: ['f" {texto[doc][''meta''][''fuente'']}")']
+    nota: 'Busqueda hibrida sobre la tabla del 7.6, con el SET LOCAL de niveles dentro de la transaccion.'
+  - destino: src/rag/rerank.py
+    modulo: '8.2'
+    modo: verbatim
+    bloques: [2390-2453]
+    anclas: ['# src/rag/rerank.py --- el cross-encoder, servido por tu gateway.']
+    anclas_fin: ['print(f"{n}  {t[''score'']:.3f}  {t[''meta''][''fuente'']}")']
+    nota: 'El cross-encoder rerank-multilingue servido por el gateway.'
+  - destino: src/agents/supervisor/supervisor.py
+    modulo: '9.2'
+    modo: verbatim
+    bloques: [2586-2636, 2647-2685, 2696-2762, 2770-2872]
+    anclas: ['# supervisor.py --- el multi-agente de Meridiano. El contrato de', 'SUPERVISOR = """Eres el supervisor del back-office de Meridiano.', 'CLIENTES = {"C-99": "ES9121000418450200051332"}', 'class Informe(BaseModel):']
+    anclas_fin: ['return "\n".join(lineas)', ')', 'return {"ok": True, "referencia": referencia, "sla_dias": 15}', 'print(final["respuesta"])']
+    nota: 'Las cuatro piezas del 9.2: el estado que es el contrato, el supervisor, las herramientas y los dos trabajadores.'
+  - destino: src/core/mcp_core.py
+    modulo: '10.2'
+    modo: verbatim
+    bloques: [2998-3061]
+    anclas: ['# mcp_core.py --- el core de Meridiano expuesto por MCP: las tablas']
+    anclas_fin: ['mcp.run(transport="streamable-http")   # guion, no guion bajo']
+    nota: 'El core expuesto por MCP: FastMCP, transporte streamable-http y stateless_http=True.'
+  - destino: src/agents/cliente_core.py
+    modulo: '10.2'
+    modo: verbatim
+    bloques: [3069-3113]
+    anclas: ['# cliente_core.py --- el agente del 4.3, con las tools del core.']
+    anclas_fin: ['agente = asyncio.run(construir_agente())']
+    nota: 'El cliente con allow-list firmada por sha256 y tool_name_prefix=True.'
+  - destino: src/agents/allowlist_mcp.json
+    modulo: '10.2'
+    modo: plantilla
+    plantilla: allowlist_mcp.json
+    nota: 'Allow-list de descripciones aprobadas. cliente_core.py la lee en docs/mcp-aprobadas.json: costura pendiente, ver COSTURAS.md.'
+  - destino: src/channels/backend/batch_nocturno.py
+    modulo: '11.5'
+    modo: verbatim
+    bloques: [3208-3314, 3322-3337]
+    anclas: ['# batch_nocturno.py --- el worker entero. Lo arranca el scheduler:', 'def informe(cur, n: dict, gasto: float) -> str:']
+    anclas_fin: ['main()', 'return "\n".join(filas)']
+    nota: 'El quinto canal: worker con candado, presupuesto consultado al gateway, cola de aprobacion e informe de las 8:00.'
+  - destino: src/channels/backend/batch_nocturno.py
+    modulo: '17.2'
+    modo: patch
+    pendiente: si
+    bloques: [4913-4926]
+    anclas: ['# batch_nocturno.py --- justo encima de main().']
+    anclas_fin: ['#   if PARANDO or gasto_usd() - gasto_0 >= PRESUPUESTO_USD:']
+    nota: 'PENDIENTE. Apagado ordenado por SIGTERM: el libro lo pega justo encima de main(), y la condicion del bucle de tandas pasa a mirar PARANDO.'
+  - destino: src/channels/chat/servidor.py
+    modulo: '12.5'
+    modo: verbatim
+    bloques: [3450-3552]
+    anclas: ['# servidor.py --- el transporte, y nada mas: el cerebro es el']
+    anclas_fin: ['"respuesta": estado.values["messages"][-1].content}']
+    nota: 'El transporte y nada mas: SSE, el aviso del Art. 50 y el cerebro del 6.3 importado sin tocar.'
+  - destino: src/channels/chat/servidor.py
+    modulo: '17.2'
+    modo: patch
+    bloques: [4784-4831]
+    anclas: ['# se pega al final del servidor.py del 12.5: `asyncio` y `logging`']
+    anclas_fin: ['return {"listo": listo}']
+    nota: 'Sondas de liveness y readiness con cache de 5 s. Esta si se pega al final, como dice el libro.'
+  - destino: src/channels/chat/servidor.py
+    modulo: '17.2'
+    modo: patch
+    pendiente: si
+    bloques: [4889-4905]
+    anclas: ['# servidor.py --- lo que Kubernetes obliga a añadir al 12.5.']
+    anclas_fin: ['api = FastAPI(lifespan=vida)   # sustituye al FastAPI() del 12.5']
+    nota: 'PENDIENTE. Lifespan y apagado ordenado: SUSTITUYE al FastAPI() del 12.5. Pegado al final reasigna api y el canal se queda sin rutas.'
+  - destino: src/channels/slack/webhook_slack.py
+    modulo: '12.6'
+    modo: verbatim
+    bloques: [3584-3685]
+    anclas: ['# webhook_slack.py --- la piel. El cerebro sigue siendo el mismo.']
+    anclas_fin: ['return Response(status_code=200)    # el ack va ANTES del agente']
+    nota: 'La segunda piel: firma HMAC, el plazo de 3 s de Slack y el mismo cerebro del 6.3.'
+  - destino: src/agents/voz/grafo_voz.py
+    modulo: '13.4'
+    modo: verbatim
+    bloques: [3765-3826]
+    anclas: ['# grafo_voz.py --- el cerebro de la llamada. Dos herramientas y']
+    anclas_fin: [')']
+    nota: 'El cerebro de la llamada: dos herramientas y wrap_tool_call.'
+  - destino: src/channels/voz/agente_voz.py
+    modulo: '13.4'
+    modo: verbatim
+    bloques: [3837-3921]
+    anclas: ['# agente_voz.py --- la piel de tiempo real. El cerebro aparece en']
+    anclas_fin: ['agent_name="meridiano-voz"))']
+    nota: 'La piel de tiempo real (LiveKit). El cerebro se importa de grafo_voz.'
+  - destino: src/channels/avatar/cara.py
+    modulo: '14.2'
+    modo: verbatim
+    bloques: [4023-4114]
+    anclas: ['# cara.py --- el avatar, un interruptor sobre la sesión del 13.4.']
+    anclas_fin: ['self.cierre = asyncio.create_task(self.apagar("proveedor"))']
+    nota: 'El avatar como interruptor sobre la sesion del 13.4.'
+  - destino: src/core/cumplimiento.py
+    modulo: '16.5'
+    modo: verbatim
+    bloques: [4423-4486]
+    anclas: ['# cumplimiento.py --- los dos artículos que se implementan igual']
+    anclas_fin: ['version=VERSION_AVISO, sha256=firma[:16], **extra)']
+    nota: 'Los dos articulos que se implementan igual en las cinco superficies: el aviso del 50 y el registro del 12.'
+  - destino: compliance/clasificacion-ia.yaml
+    modulo: '16.7'
+    modo: verbatim
+    bloques: [4609-4646]
+    anclas: ['# compliance/clasificacion-ia.yaml --- el Anexo III, en el repo.']
+    anclas_fin: ['art86_explicacion: {estado: pendiente, responsable: riesgos}']
+    nota: 'El Anexo III en el repo: la clasificacion de riesgo como codigo, por caso de uso.'
+  - destino: tests/test_clasificacion.py
+    modulo: '16.7'
+    modo: verbatim
+    bloques: [4650-4675]
+    anclas: ['# tests/test_clasificacion.py --- lo que separa un control de un']
+    anclas_fin: ['assert simbolo in texto, f"{s[''id'']}/{art}"']
+    nota: 'Lo que separa un control de una intencion: el test de la clasificacion.'
+  - destino: deploy/despliegue-chat.yaml
+    modulo: '17.2'
+    modo: verbatim
+    bloques: [4743-4776]
+    anclas: ['# despliegue-chat.yaml --- el servidor.py del 12.5 en un clúster.']
+    anclas_fin: ['limits: {memory: "512Mi"}     # memoria sí, CPU no']
+    nota: 'El servidor.py del 12.5 en un cluster: sondas, preStop y gracia de 120 s.'
+  - destino: deploy/autoescalado.yaml
+    modulo: '17.2'
+    modo: verbatim
+    bloques: [4845-4875]
+    anclas: ['# autoescalado.yaml --- el worker del 11.5, por cola, con KEDA.']
+    anclas_fin: ['activationTargetQueryValue: "0"']
+    nota: 'KEDA por profundidad de cola, nunca por CPU.'
+  - destino: src/core/identidad.py
+    modulo: '18.3'
+    modo: verbatim
+    bloques: [5045-5089]
+    anclas: ['# identidad.py --- lo único nuevo: el thread_id lo decide aquí.']
+    anclas_fin: ['HILO = hilo("conciliacion", f"incidencia:{ref}")']
+    nota: 'Quien es el hilo: dos funciones separan cinco canales de cinco sistemas.'
+  - destino: src/core/context_contracts.py
+    modulo: '19.1'
+    modo: verbatim
+    bloques: [5187-5217]
+    anclas: ['# src/core/context_contracts.py']
+    anclas_fin: [')']
+    nota: 'El ContextContract y el contrato de triaje. Valida contra schemas/context-contract.schema.json.'
+  - destino: config/model_routing.yaml
+    modulo: '19.2'
+    modo: verbatim
+    bloques: [5239-5260]
+    anclas: ['# config/model_routing.yaml']
+    anclas_fin: ['eval_gate: faithfulness >= 0.90 and pii_leakage == 0']
+    nota: 'Politica de routing por tarea, con presupuesto de pensamiento y de coste.'
+  - destino: tools/bloquear_tarjeta.capability.yaml
+    modulo: '20.1'
+    modo: verbatim
+    bloques: [5359-5390]
+    anclas: ['# tools/bloquear_tarjeta.capability.yaml']
+    anclas_fin: ['tool: solicitar_desbloqueo_revision']
+    nota: 'Tool Capability Manifest. Valida contra schemas/tool-capability.schema.json.'
+  - destino: src/agents/cards_disputes/herramientas.py
+    modulo: '20.2'
+    modo: verbatim
+    bloques: [5407-5436]
+    anclas: ['from typing import Literal']
+    anclas_fin: ['return result']
+    nota: 'read-plan-dry-run-commit con clave de idempotencia y outbox. Es el entrypoint que declara catalogo/cards-disputes/agent.yaml.'
+  - destino: src/core/contratos.py
+    modulo: '20.3'
+    modo: verbatim
+    bloques: [5454-5473]
+    anclas: ['from typing import Literal']
+    anclas_fin: [')']
+    nota: 'ToolError tipado: el error como lenguaje de coordinacion, devuelto como ToolMessage y nunca como excepcion cruda.'
+  - destino: src/core/contratos.py
+    modulo: '22.3'
+    modo: patch
+    bloques: [5679-5694]
+    anclas: ['from typing import Literal']
+    anclas_fin: ['trace_url: str | None']
+    nota: 'HumanHandoffPacket: el escalado a humano como producto. Trae sus imports repetidos, tal cual estan en el libro.'
+  - destino: src/core/contratos.py
+    modulo: '23.1'
+    modo: patch
+    bloques: [5736-5750]
+    anclas: ['from typing import Literal']
+    anclas_fin: ['return_to: str | None']
+    nota: 'HandoffContract y su campo authority: la frontera entre agentes.'
+  - destino: src/core/trabajos.py
+    modulo: '21.2'
+    modo: verbatim
+    bloques: [5562-5577]
+    anclas: ['def claim_next_job(db, worker_id: str, lease_seconds: int = 300):']
+    anclas_fin: ['""", {"worker_id": worker_id, "lease_seconds": lease_seconds})']
+    nota: 'claim_next_job con lease y FOR UPDATE SKIP LOCKED. La maquina de estados del 21.2 es una tabla en prosa y se queda en el libro.'
+  - destino: src/core/politica.py
+    modulo: '26.2'
+    modo: verbatim
+    bloques: [6095-6124]
+    anclas: ['from typing import Literal']
+    anclas_fin: ['return PolicyDecision(allow=True, require_human=False, reasons=[])']
+    nota: 'El policy engine fuera del modelo: ActionRequest, PolicyDecision y authorize_action.'
+  - destino: src/core/politica.py
+    modulo: '35.2'
+    modo: patch
+    pendiente: si
+    bloques: [7076-7084]
+    anclas: ['decision = policy_engine.authorize({']
+    anclas_fin: ['# allow | deny | require_human | require_dry_run | require_step_up_auth']
+    nota: 'PENDIENTE. La forma de la llamada del 35.2 y las cinco decisiones del engine: es una llamada de ejemplo a nivel de modulo, asi que hay que comentarla o moverla a un test o el import revienta.'
+  - destino: src/core/memoria.py
+    modulo: '34.1'
+    modo: verbatim
+    bloques: [6907-6922]
+    anclas: ['from datetime import datetime']
+    anclas_fin: ['expires_at: datetime | None']
+    nota: 'MemoryRecord: sin owner, sensibilidad, TTL y procedencia no hay memoria gobernada.'
+  - destino: src/core/memoria.py
+    modulo: '34.5'
+    modo: patch
+    pendiente: si
+    bloques: [6963-6990]
+    anclas: ['@tool']
+    anclas_fin: ['...']
+    nota: 'PENDIENTE. Las tres APIs tipadas de memoria con sus receipts: los cuerpos son ... y los tres tipos de receipt no existen todavia, asi que el modulo no importa hasta que los escribas.'
+  - destino: src/evals/trayectoria.py
+    modulo: '25.3'
+    modo: verbatim
+    bloques: [5966-5988]
+    anclas: ['from pydantic import BaseModel']
+    anclas_fin: ['assert names.index(before) < names.index(after)']
+    nota: 'ExpectedTrajectory y assert_trajectory: se evalua el camino, no solo la respuesta.'
+  - destino: src/evals/medidas.py
+    modulo: 'Ej. 31.1'
+    modo: plantilla
+    plantilla: medidas.py
+    nota: 'Andamio del Ejercicio 31.1: las seis medidas que aceptacion.py importa. El libro no las entrega, y lo dice.'
+  - destino: .github/workflows/agent-evals.yml
+    modulo: '25.5'
+    modo: verbatim
+    bloques: [6004-6017]
+    anclas: ['# .github/workflows/agent-evals.yml (extracto conceptual)']
+    anclas_fin: ['- run: uv run python evals/run_redteam_smoke.py --fail-under 1.0']
+    nota: 'Extracto conceptual, igual que en el libro: no es un workflow completo.'
+  - destino: aceptacion.py
+    modulo: '31.2'
+    modo: verbatim
+    bloques: [6532-6587]
+    anclas: ['# aceptacion.py --- no escribe piezas nuevas: enciende las que ya']
+    anclas_fin: ['sys.exit(0 if all(ok) else 1)']
+    nota: 'La puerta del capstone: seis medidas, semilla, pases e intervalo, con el veredicto NO CONCLUYENTE.'
+  - destino: catalogo/cards-disputes/agent.yaml
+    modulo: '32.3'
+    modo: verbatim
+    bloques: [6685-6711]
+    anclas: ['# agent.yaml']
+    anclas_fin: ['unsafe_tool_calls_max: 0']
+    nota: 'Agent Package publicable. Valida contra schemas/agent-package.schema.json.'
+  - destino: plataforma/runtime.py
+    modulo: '37.2'
+    modo: verbatim
+    bloques: [7296-7333, 7344-7365]
+    anclas: ['# plataforma/runtime.py --- nadie importa un grafo: se pide por id.', '# La política y el HITL, en el mismo `wrap_tool_call` del 4.2 que']
+    anclas_fin: ['{"messages": [("user", texto)]}, cfg, context=ctx)', 'return siguiente(peticion)']
+    nota: 'Nadie importa un grafo: se pide por id, con el sello del catalogo en la clave de la cache. La politica y el HITL van en el mismo wrap_tool_call.'
+  - destino: smoke_test.py
+    modulo: 'Ej. 0.1'
+    modo: plantilla
+    plantilla: smoke_test.py
+    nota: 'Andamio del Ejercicio 0.1: dos alias, latencia y tokens, Postgres y traza. El unico fichero del repo que corre solo.'
+  - destino: COSTURAS.md
+    modulo: '16.5'
+    modo: fragmento
+    bloques: [4490-4538]
+    anclas: ['# Las costuras: una por superficie, y lo que hay que leer en']
+    anclas_fin: ['aprobador=quien, decision=d["type"])']
+    nota: 'Las cinco costuras del aviso del Art. 50, una por superficie: cinco llevan aviso y la ultima prueba el Art. 14.'
+  - destino: COSTURAS.md
+    modulo: '14.2'
+    modo: fragmento
+    bloques: [4122-4127]
+    anclas: ['from cara import Cara']
+    anclas_fin: ['await session.say(SALUDO, allow_interruptions=False)']
+    nota: 'La costura del avatar con el entrypoint del 13.4: nada de room_output_options, y el avatar despues de session.start.'

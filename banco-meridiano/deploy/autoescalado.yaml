@@ -1,0 +1,31 @@
+# autoescalado.yaml --- el worker del 11.5, por cola, con KEDA.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata: {name: meridiano-nocturno}
+spec:
+  scaleTargetRef: {name: meridiano-nocturno}
+  pollingInterval: 30      # cada cuánto pregunta KEDA
+  cooldownPeriod: 300      # cinco minutos sin cola y baja a cero
+  minReplicaCount: 0
+  maxReplicaCount: 3       # sale de una división: ver abajo
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          # Un lote drena a tirones: sin ventana, KEDA arranca y
+          # mata pods cada minuto, y pagas arranques en frío.
+          stabilizationWindowSeconds: 600
+  triggers:
+    - type: postgresql
+      metadata:
+        # KEDA lo lee del entorno del propio worker, o sea del
+        # Secret de arriba: la credencial no se copia dos veces.
+        connectionFromEnv: DATABASE_URL
+        # El corte por `abierta_en` NO es opcional: es el mismo
+        # que el lote del 11.5. Sin él la métrica cuenta también
+        # los casos de hoy, que el worker no toca, y nunca baja.
+        query: >-
+          SELECT count(*) FROM meridiano.incidencias
+          WHERE estado = 'abierta' AND abierta_en < CURRENT_DATE
+        targetQueryValue: "40"          # POR RÉPLICA, no total
+        activationTargetQueryValue: "0"

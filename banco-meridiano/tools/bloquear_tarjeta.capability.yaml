@@ -1,0 +1,32 @@
+# tools/bloquear_tarjeta.capability.yaml
+name: bloquear_tarjeta
+version: 1.2.0
+owner: core-cards-platform
+risk_tier: irreversible_high
+intent: "bloquear temporalmente una tarjeta reportada como robada"
+auth:
+  subject_required: authenticated_customer
+  scopes: [cards:block]
+preconditions:
+  - identity_level >= 2
+  - card_status in [active, suspected_fraud]
+  - fraud_signal or explicit_customer_request
+effects:
+  writes: [core_cards.card_status]
+  emits_events: [card.blocked, ticket.created]
+idempotency:
+  key: "customer_id + masked_pan + reason + day"
+  duplicate_behavior: return_existing_result
+approval:
+  human_required: true
+  allowed_approvers: [fraud_ops, cards_ops]
+timeouts:
+  p95_ms: 1200
+  hard_timeout_ms: 4000
+audit:
+  log_args: masked
+  log_result: summary
+  pii: [customer_id, masked_pan]
+rollback:
+  type: compensating_action
+  tool: solicitar_desbloqueo_revision

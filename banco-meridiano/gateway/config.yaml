@@ -1,0 +1,79 @@
+# config.yaml --- el ÚNICO fichero del proyecto que nombra proveedores.
+# Los identificadores de modelo caducan cada trimestre: comprueba los
+# vigentes antes de copiar. Los alias, no: esos son tu contrato.
+
+model_list:
+  # agente-rapido --- triaje, extracción, trabajadores del M9.
+  - model_name: agente-rapido
+    litellm_params:
+      model: anthropic/claude-haiku-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+      rpm: 400
+  # Repetir el MISMO model_name reparte carga entre las dos entradas.
+  # Un alias DISTINTO es un fallback. Confundirlos es el error clásico.
+  - model_name: agente-rapido
+    litellm_params:
+      model: openai/gpt-5-mini
+      api_key: os.environ/OPENAI_API_KEY
+      rpm: 400
+
+  # agente-rapido-2 --- el fallback que el 19.2 da por existente.
+  - model_name: agente-rapido-2
+    litellm_params:
+      model: mistral/mistral-small-latest
+      api_key: os.environ/MISTRAL_API_KEY
+
+  # agente-equilibrado --- la respuesta final que lee un cliente.
+  - model_name: agente-equilibrado
+    litellm_params:
+      model: openai/gpt-5
+      api_key: os.environ/OPENAI_API_KEY
+
+  # agente-listo --- supervisor del M9 y todo lo que razona (2.5).
+  - model_name: agente-listo
+    litellm_params:
+      model: anthropic/claude-sonnet-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+      drop_params: false        # deliberado: ver la trampa 3
+
+  # agente-listo-backup --- otro PROVEEDOR, no otro modelo del mismo.
+  # Un fallback dentro de la misma casa no te salva de una caída.
+  - model_name: agente-listo-backup
+    litellm_params:
+      model: openai/gpt-5
+      api_key: os.environ/OPENAI_API_KEY
+
+  # emb-multilingue --- 1024 dimensiones, que es exactamente el
+  # vector_size de la tabla del 7.4. Cambiar de modelo aquí obliga
+  # a reindexar TODO el corpus: no es un cambio de configuración.
+  # Y como no es OpenAI, get_embeddings necesita el flag del 0.4.
+  - model_name: emb-multilingue
+    litellm_params:
+      model: cohere/embed-multilingual-v3.0
+      api_key: os.environ/COHERE_API_KEY
+    model_info:
+      mode: embedding   # sin esto /health lo prueba como chat y falla
+
+router_settings:
+  routing_strategy: simple-shuffle
+  num_retries: 2
+  fallbacks:
+    - agente-listo: [agente-listo-backup]
+    - agente-rapido: [agente-rapido-2]
+    - agente-equilibrado: [agente-listo]
+  # Desbordar el contexto no se arregla reintentando: se arregla
+  # yendo a un modelo con más ventana.
+  context_window_fallbacks:
+    - agente-rapido: [agente-equilibrado]
+
+litellm_settings:
+  drop_params: true             # global; se apaga por modelo (arriba)
+  request_timeout: 120
+  max_budget: 50                # tope de emergencia de TODO el proxy
+  budget_duration: 30d          # no sustituye al tope por clave
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  # Sin database_url no hay claves virtuales, ni presupuestos, ni
+  # gasto por proyecto: el proxy arranca y no sirve para el M15.
+  database_url: os.environ/DATABASE_URL

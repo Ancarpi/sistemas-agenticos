@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://javbrain.com/isa/schemas/context-contract.schema.json",
+  "title": "Context Contract",
+  "description": "The contract every node that calls a model declares, per call. Origen: 19.1 (the eight design questions and the Pydantic model of src/core/context_contracts.py). It is not aesthetic documentation: it is a security interface. Criterion for use: knowledge/patterns/context-contract.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "node",
+    "objective",
+    "allowed_state_keys",
+    "visible_tools",
+    "max_input_tokens",
+    "max_output_tokens",
+    "latency_budget_ms",
+    "fallback"
+  ],
+  "properties": {
+    "node": {
+      "description": "The node this contract governs. One call, one contract.",
+      "type": "string",
+      "minLength": 1
+    },
+    "objective": {
+      "description": "What this call must decide or produce.",
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed_state_keys": {
+      "description": "Allow-list of state, memory or RAG fragments the call may see. An allow-list, never a deny-list: the next key added must not be visible by default.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "forbidden_patterns": {
+      "description": "Second barrier: patterns that must never enter the call. This is GDPR minimization implemented (16.4). Optional in the schema because the allow-list is the first barrier; skill isa-context-contract refuses a contract that declares allowed data and no forbidden data.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "default": []
+    },
+    "visible_tools": {
+      "description": "Capabilities offered to this call, and nothing else. May be empty: a triage node offers none.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "output_schema": {
+      "description": "The schema that validates the response, or null when the output is free text.",
+      "type": ["string", "null"]
+    },
+    "max_input_tokens": {
+      "description": "Hard input limit. An unset limit is an unlimited limit.",
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "max_output_tokens": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "latency_budget_ms": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "max_cost_eur": {
+      "description": "Euro ceiling for this call.",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "fallback": {
+      "description": "What happens when the call fails. Origen: 19.1, Literal of the Pydantic model.",
+      "type": "string",
+      "enum": ["retry", "escalate", "abort", "degrade"]
+    }
+  }
+}

@@ -1,0 +1,159 @@
+# schemas/threat-model.yaml
+# The agent threat model as data: asset -> threats -> controls -> OWASP.
+# Origen: M26.1 (the matrix), 16.1 (the two lists and the mapping rule),
+# M26.3 (sandboxing), M26.4 (MCP and A2A), A·J.4 (the editions).
+#
+# Model the assets, not the attacks: attack names change every edition, the
+# asset list does not, so a per-asset matrix survives a renumbering and can be
+# fanned out one asset at a time. The third column - what the control does NOT
+# cover, who accepts that residual risk, by name and date - is produced per
+# system by skill isa-threat-model; it is not in this file because it is not
+# generic. Criterion for use: knowledge/protocols/agent-threat-model.md.
+
+version: 1
+verified_on: 2026-09-02
+
+# Always cite an edition with its year: these lists renumber, and an "LLM01"
+# with no year ages badly inside a control document (A·J.4).
+lists:
+  owasp_llm:
+    title: OWASP Top 10 for LLM Applications
+    edition: "2025"
+    identifiers: "LLM01:2025 to LLM10:2025"
+    note: No later edition as of 2026-09-02.
+    source: A·J.4
+  owasp_agentic:
+    title: OWASP Top 10 for Agentic Applications
+    edition: "2025"
+    published: 2025-12-09
+    identifiers: ASI01 to ASI10
+    note: The list that actually describes an agent with tools, and the one to use in an agentic threat model.
+    source: A·J.4, M26.1
+
+# The ASI enumeration of 26.1, in the order A·J.4 fixes it.
+asi_catalog:
+  ASI01: Agent goal hijacking
+  ASI02: Tool misuse
+  ASI03: Identity and privilege abuse
+  ASI04: Agentic supply chain
+  ASI05: Unexpected code execution
+  ASI06: Memory and context poisoning
+  ASI07: Insecure inter-agent communication
+  ASI08: Cascading failures
+  ASI09: Trust exploitation
+  ASI10: Runaway agents
+
+# The LLM identifiers the book itself pins, with the names it uses (16.1, A·J.4).
+llm_catalog:
+  "LLM01:2025": Prompt injection, direct and indirect
+  "LLM02:2025": Sensitive information disclosure
+  "LLM03:2025": Supply chain
+  "LLM06:2025": Excessive agency
+
+# What is not mapped is written down as not mapped: silence in a mapping reads
+# as coverage. The book's own mapping (16.1) covers three entries of the LLM
+# list and two of the agentic one and says so out loud - the remaining seven
+# and eight "are not covered: they are unassessed, and that gets written down
+# too". This file maps by asset and therefore reaches further, but any entry
+# absent from a delivered matrix is enumerated explicitly in the output.
+unmapped_policy: enumerate_explicitly
+
+assets:
+  - asset: herramientas
+    threats:
+      - threat: Unauthorized execution, or execution with manipulated arguments
+        controls:
+          - capability manifest
+          - scopes
+          - policy engine
+          - dry-run
+        owasp: ["LLM06:2025", ASI02]
+      - threat: Excessive agency - permissions, tools or autonomy beyond need
+        controls:
+          - minimum agency and least privilege
+          - dynamic tool selection by risk_tier and context
+          - approval on the irreversible
+        owasp: ["LLM06:2025", ASI03]
+    note: The authoritative value of an argument is read from the record, never from what the model wrote. This is the single line that caps most injection damage (16.1, 4.3).
+
+  - asset: contexto
+    threats:
+      - threat: Indirect injection from RAG, email or a ticket
+        controls:
+          - data and instruction separation
+          - sanitization
+          - citations and permissions
+        owasp: ["LLM01:2025", ASI01]
+      - threat: Corpus poisoning through the knowledge supply chain
+        controls:
+          - provenance
+          - review
+          - signature
+          - version
+        owasp: [ASI04, ASI06]
+        note: This one is not stopped at the agent but in the knowledge supply chain (24.1, 35.5) - the single exception when the matrix is read from the attacker's side (18.4).
+    owasp_note: The LLM 2025 entry for data and model poisoning is not among the three the book pins; map it against the edition in force before it enters a risk register.
+
+  - asset: memoria
+    threats:
+      - threat: Persisting false or sensitive data
+        controls:
+          - typed memory
+          - expiry
+          - review
+          - sources
+        owasp: [ASI06]
+    note: Official source wins over individual memory, and the memory entry is flagged as conflicting (A·I).
+
+  - asset: trazas
+    threats:
+      - threat: Exposure of PII or secrets
+        controls:
+          - redaction
+          - minimization
+          - access control
+        owasp: ["LLM02:2025"]
+    note: Masking the trace is not enough where the checkpoint keeps the value in clear; the real control is not writing it (4.3, 34.6).
+
+  - asset: mcp_server
+    threats:
+      - threat: Tool poisoning or exfiltration
+        controls:
+          - allow-list
+          - pinning
+          - scopes
+          - schema review
+        owasp: ["LLM03:2025", ASI02, ASI04]
+      - threat: Insecure communication across an agent or protocol boundary
+        controls:
+          - separate credentials per boundary
+          - end-to-end audit across systems
+          - no internal memory or credentials crossing the boundary
+        owasp: [ASI07, ASI09]
+    note: A signed tool description detects a change of contract, not a lie in the content. Against a compromised server what defends you is not the description, it is the effect - which is the autonomy ladder, not trust.
+
+  - asset: agente
+    threats:
+      - threat: Unlimited consumption or loops
+        controls:
+          - step budget
+          - token budget
+          - rate limits
+          - circuit breakers
+        owasp: [ASI10]
+      - threat: Unexpected code execution, browsing or computer use outside a sandbox
+        controls:
+          - ephemeral filesystem and non-root user
+          - controlled egress with a domain allow-list
+          - secrets not mounted by default
+          - hard CPU, memory and time limits
+          - auditable captures and approval to cross a boundary
+        owasp: [ASI05]
+        note: Computer use is a last resort for systems with no API; never combined with privileged credentials or a real human session (M26.3).
+      - threat: Cascading failure across agents
+        controls:
+          - bounded fan-out
+          - typed handoff contract
+          - per-run and per-batch budgets
+        owasp: [ASI08]
+    owasp_note: Unbounded consumption has its own entry in the LLM 2025 list; it is not one of the three the book pins, so check the identifier against the edition in force.

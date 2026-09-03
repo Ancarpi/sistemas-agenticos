@@ -1,0 +1,349 @@
+# schemas/ai-act-obligations.yaml
+# Obligation -> article -> technical artifact demanded -> book module that
+# implements it -> where the evidence lives.
+# Origen: 16.2 (the framework and its dated state), 16.3 (regulation to code),
+# 16.4 (GDPR, DORA, AI literacy), 16.5 (Art. 50 surface by surface),
+# 16.6 (the Art. 12 register), 16.7 (classification as code).
+#
+# The symmetry this file encodes: every AI Act obligation has a technical
+# implementation you already built. An obligation with no artifact is a
+# promise; an artifact with no test is a promise with a filename.
+# Criterion for use: knowledge/protocols/ai-act-map.md.
+
+version: 1
+verified_on: 2026-09-02          # re-verify before any compliance decision
+
+# Provenance of the article numbers, because an undated or unsourced
+# regulatory claim is the one thing an auditor is guaranteed to test.
+# Pinned by the book itself: AI Act Arts. 5, 12, 12(2), 14, 19, 26(5), 26(6),
+# 26(11), 49(1), 49(3), 50 with 50(1)/50(2)/50(4), 3(60), 72, 79(1), 86, 111,
+# 113 and Annex III point 5.b (16.2, 16.3, 16.5, 16.6, 16.7, A·J.5); GDPR
+# Arts. 22 and 28; DORA Arts. 28(3) and 30 (16.4). The remaining article
+# numbers below - the high-risk package of Arts. 9, 10, 11 and 15, AI
+# literacy in Art. 4, and the GDPR and DORA ranges - name obligations the
+# book states without citing their article: check them against the
+# consolidated text before they enter a dossier.
+
+frameworks:
+  ai_act:
+    reference: Regulation (EU) 2024/1689
+    celex: "32024R1689"
+    in_force: 2024-08-01
+    consolidated_as_of: 2026-07-27
+    consolidated_celex: "02024R1689-20260727"
+    amended_by:
+      reference: Regulation (EU) 2026/1744 (Digital Omnibus on AI)
+      celex: "32026R1744"
+      dated: 2026-07-08
+      in_force: 2026-07-27
+    key_dates:
+      art50_transparency_applicable: 2026-08-02
+      art50_2_synthetic_marking_deferred_to: 2026-12-02   # only for systems on the market before 2026-08-02
+      annex_iii_high_risk_applicable: 2027-12-02
+      annex_i_high_risk_applicable: 2028-08-02
+      legacy_public_authority_systems: 2030-08-02
+    locator: A·J.5
+  gdpr:
+    reference: Regulation (EU) 2016/679
+    locator: 16.4
+  dora:
+    reference: Regulation (EU) 2022/2554
+    applicable_since: 2025-01-17
+    note: In a financial entity DORA displaces NIS2. You comply with DORA as the special regime, not with both.
+    locator: 16.4, A·J.5
+
+# Role is read before risk: provider and deployer carry different obligation
+# lists, and the same system can be both at once (16.7). Putting an obligation
+# in a dossier that does not fall to your role is the fastest way for an
+# auditor to stop believing the rest of the document.
+roles:
+  - proveedor
+  - responsable_del_despliegue
+
+# Risk is classified per USE CASE, never per model and never per service:
+# purpose sets the class, and the same graph is limited risk answering a chat
+# and high risk scoring credit (16.7).
+risk_classes:
+  - prohibido          # Art. 5
+  - alto               # Annex III / Annex I
+  - limitado           # Art. 50 transparency
+  - minimo
+
+obligations:
+  - id: art50_aviso
+    framework: ai_act
+    obligation: Disclose that the person is interacting with an AI system
+    article: Art. 50(1)
+    applies_to_role: [proveedor]
+    risk_class: [limitado, alto]
+    artifact: One notice text per surface, versioned, plus the proof that it was given
+    module: 16.5, M12, M13, M14
+    evidence: banco-meridiano/src/core/cumplimiento.py::AVISOS
+    test: tests/test_art50.py::test_las_cuatro_superficies
+    note: >-
+      Five surfaces, five ways of complying, and one of them is out of scope:
+      Art. 50 does not reach the back-office, which interacts with no natural
+      person. Declaring transparency on five channels when one is exempt lies
+      by excess; declaring four and forgetting the Slack thread lies by
+      default. Both cost the same in front of an auditor.
+
+  - id: art50_2_marcado
+    framework: ai_act
+    obligation: Mark synthetic content in a machine-readable form
+    article: Art. 50(2)
+    applies_to_role: [proveedor]
+    risk_class: [limitado, alto]
+    artifact: Marking of generated audio, image and video on the surfaces that produce it
+    module: 16.5, M14
+    evidence: banco-meridiano/src/channels/avatar/cara.py
+    test: null
+    note: >-
+      Deferred to 2026-12-02 only for systems already on the market before
+      2026-08-02; anything launched later complies from the day it ships. Not
+      to be confused with Art. 50(4): Art. 3(60) reserves the deep fake for a
+      resemblance to a person or an event that exists.
+
+  - id: art14_supervision_humana
+    framework: ai_act
+    obligation: Human oversight of a high-risk system
+    article: Art. 14
+    applies_to_role: [proveedor, responsable_del_despliegue]
+    risk_class: [alto]
+    artifact: Approval barrier on irreversible actions, with the durable interrupt and the queue behind it
+    module: M6, M11, 4.3, M35.4
+    evidence: banco-meridiano/src/agents/backoffice/agente_backoffice.py
+    test: null
+    note: The human-in-the-loop of M6 is literally this obligation. A maker-checker signed by someone who does not understand what they are looking at is not oversight, it is a signature.
+
+  - id: art12_registro
+    framework: ai_act
+    obligation: Automatic recording of events over the system's lifetime
+    article: Art. 12, purposes in Art. 12(2)
+    applies_to_role: [proveedor, responsable_del_despliegue]
+    risk_class: [alto]
+    artifact: Append-only register queried by subject and time, with a nullable link to the trace
+    module: 16.6
+    evidence: banco-meridiano/db/schema.sql::registro_ia
+    test: tests/test_registro.py::test_solo_anadir
+    note: >-
+      This is not your observability. Art. 12(2) states the purposes -
+      identifying Art. 79(1) risk situations, feeding Art. 72 post-market
+      monitoring, supporting Art. 26(5) oversight - and none of them is
+      debugging. The trace is technical and perishable; the register is legal
+      evidence and outlives it by years.
+
+  - id: art19_26_6_conservacion
+    framework: ai_act
+    obligation: Keep the logs
+    article: Art. 19 (provider), Art. 26(6) (deployer)
+    applies_to_role: [proveedor, responsable_del_despliegue]
+    risk_class: [alto]
+    artifact: A retention deadline per store, taken from the institution's retention policy
+    module: 16.6, 16.4
+    evidence: banco-meridiano/compliance/clasificacion-ia.yaml
+    test: null
+    note: >-
+      Six months is a floor, not a deadline. The second paragraph of
+      Art. 26(6) folds these records into the documentation a financial entity
+      already keeps under financial-services law, which is measured in years.
+      Conversation, checkpoint, trace and audit register cannot share a
+      deadline.
+
+  - id: art9_gestion_riesgos
+    framework: ai_act
+    obligation: Risk management system
+    article: Art. 9
+    applies_to_role: [proveedor]
+    risk_class: [alto]
+    artifact: Threat model with residual risk signed per row, plus the failure documents
+    module: 16.1, M26.1, M3, M11
+    evidence: schemas/threat-model.yaml
+    test: null
+
+  - id: art10_gobierno_datos
+    framework: ai_act
+    obligation: Data governance - quality, bias, provenance
+    article: Art. 10
+    applies_to_role: [proveedor]
+    risk_class: [alto]
+    artifact: Corpus provenance, freshness and reindex plan; ACLs on what is indexed
+    module: M7, M8, 24.1, 35.5
+    evidence: banco-meridiano/src/rag/indexar.py
+    test: null
+
+  - id: art11_documentacion_tecnica
+    framework: ai_act
+    obligation: Technical documentation
+    article: Art. 11, Annex IV
+    applies_to_role: [proveedor]
+    risk_class: [alto]
+    artifact: Agent Package plus the ADRs of the critical decisions
+    module: M32.3, A·G.1
+    evidence: banco-meridiano/catalogo/cards-disputes/agent.yaml
+    test: null
+    note: Simplified technical documentation is available to small mid-caps (16.2).
+
+  - id: art15_robustez
+    framework: ai_act
+    obligation: Accuracy, robustness and cybersecurity
+    article: Art. 15
+    applies_to_role: [proveedor]
+    risk_class: [alto]
+    artifact: Release gate with the six fields, run in CI, plus the OWASP mapping
+    module: 15.6, 18.4, 16.1
+    evidence: banco-meridiano/.github/workflows/agent-evals.yml
+    test: null
+
+  - id: art49_registro_ue
+    framework: ai_act
+    obligation: Register the system in the EU database
+    article: Art. 49(1) provider; Art. 49(3) deployer
+    applies_to_role: [proveedor]
+    risk_class: [alto]
+    artifact: Registration record
+    module: 16.2, 16.7
+    evidence: null
+    test: null
+    note: >-
+      Art. 49(3) reaches a deployer only where it is a public authority or acts
+      on its behalf, which a private bank is not. The proposal to exempt
+      self-assessed non-high-risk systems from registration was rejected in
+      the negotiation.
+
+  - id: art26_11_informar
+    framework: ai_act
+    obligation: Inform the natural persons subject to a high-risk decision
+    article: Art. 26(11)
+    applies_to_role: [responsable_del_despliegue]
+    risk_class: [alto]
+    artifact: Notice on the decision path, recorded as an event of the register
+    module: 16.5, 16.6
+    evidence: null
+    test: null
+
+  - id: art86_explicacion
+    framework: ai_act
+    obligation: Right to an explanation of the system's role in the decision
+    article: Art. 86
+    applies_to_role: [responsable_del_despliegue]
+    risk_class: [alto]
+    artifact: Reconstructible decision months later, from the register and not from a purged trace
+    module: 16.6
+    evidence: null
+    test: null
+
+  - id: alfabetizacion_ia
+    framework: ai_act
+    obligation: AI literacy of the staff that operates and uses the system
+    article: Art. 4
+    applies_to_role: [proveedor, responsable_del_despliegue]
+    risk_class: [limitado, alto]
+    artifact: Training material, a record of who received it, and a periodic review
+    module: 16.4, M30.4
+    evidence: null
+    test: null
+    note: Lightened by the Digital Omnibus, not removed. Three artifacts, not a slide.
+
+  - id: rgpd_base_juridica
+    framework: gdpr
+    obligation: Legal basis and purpose per use case
+    article: Arts. 5, 6
+    applies_to_role: [proveedor, responsable_del_despliegue]
+    risk_class: [limitado, alto, minimo]
+    artifact: One row per use case with purpose and basis; reusing conversations for training is a different purpose needing its own basis
+    module: 16.4
+    evidence: banco-meridiano/compliance/clasificacion-ia.yaml
+    test: null
+
+  - id: rgpd_minimizacion
+    framework: gdpr
+    obligation: Data minimization where the decision is made
+    article: Art. 5(1)(c)
+    applies_to_role: [proveedor, responsable_del_despliegue]
+    risk_class: [limitado, alto, minimo]
+    artifact: The Context Contract's forbidden data, asserted before the call
+    module: M19.1, 4.3, 34.6
+    evidence: banco-meridiano/src/core/context_contracts.py::ContextContract
+    test: null
+    note: The forbidden-data field of the contract is, literally, minimization implemented.
+
+  - id: rgpd_retencion
+    framework: gdpr
+    obligation: Retention deadlines per store
+    article: Art. 5(1)(e)
+    applies_to_role: [proveedor, responsable_del_despliegue]
+    risk_class: [limitado, alto, minimo]
+    artifact: Four stores, four deadlines - conversation, checkpoint, trace, audit register
+    module: 16.4, 16.6, M6.2
+    evidence: null
+    test: null
+
+  - id: rgpd_art22
+    framework: gdpr
+    obligation: Safeguards for automated decisions affecting a person
+    article: Art. 22, plus the DPIA of Art. 35
+    applies_to_role: [responsable_del_despliegue]
+    risk_class: [alto]
+    artifact: Impact assessment and the human intervention path
+    module: 16.4, M6
+    evidence: null
+    test: null
+
+  - id: rgpd_art28_encargado
+    framework: gdpr
+    obligation: The model provider as processor
+    article: Art. 28
+    applies_to_role: [responsable_del_despliegue]
+    risk_class: [limitado, alto, minimo]
+    artifact: Contract, express prohibition on training with your data, list of sub-processors
+    module: 16.4
+    evidence: null
+    test: null
+    note: If you cannot get it in writing the decision stops being contractual and becomes architectural - do not send that provider personal data (4.3, 34.6).
+
+  - id: rgpd_capitulo_v
+    framework: gdpr
+    obligation: International transfers
+    article: Chapter V
+    applies_to_role: [responsable_del_despliegue]
+    risk_class: [limitado, alto, minimo]
+    artifact: The routing and fallback chain reviewed as a transfer control, with each alias recording its provider's jurisdiction
+    module: 16.4, 19.2, 0.5
+    evidence: banco-meridiano/config/model_routing.yaml
+    test: null
+    note: The transfer is decided by a `fallbacks:` line. The day the primary fails, the data leaves the EEA with nobody having read Chapter V.
+
+  - id: dora_riesgo_tic
+    framework: dora
+    obligation: ICT risk management
+    article: Arts. 5-15
+    applies_to_role: [responsable_del_despliegue]
+    risk_class: [limitado, alto, minimo]
+    artifact: Threat model, budgets, circuit breakers and the runbook
+    module: 16.4, M26, M28
+    evidence: schemas/runbook.template.md
+    test: null
+
+  - id: dora_notificacion_incidentes
+    framework: dora
+    obligation: Notification of major incidents in short deadlines
+    article: Arts. 17-23
+    applies_to_role: [responsable_del_despliegue]
+    risk_class: [limitado, alto, minimo]
+    artifact: A "is this notifiable?" step in the runbook, and a detection timestamp the system produces
+    module: 16.4, M28, 16.6
+    evidence: schemas/runbook.template.md
+    test: null
+    note: Four hours from classifying it as major, never more than twenty-four from becoming aware. Detection is an event of the Art. 12 register, not an observability entry.
+
+  - id: dora_terceros_tic
+    framework: dora
+    obligation: Management of ICT third parties
+    article: Arts. 28-30
+    applies_to_role: [responsable_del_despliegue]
+    risk_class: [limitado, alto, minimo]
+    artifact: Contractual registration, audit rights, exit strategy and substitution plan for the model provider
+    module: 16.4, 17.3
+    evidence: banco-meridiano/gateway/config.yaml
+    test: null
+    note: Decide explicitly whether the gateway supports a critical or important function - that box drives the Art. 28(3) register of information and which Art. 30 clauses are mandatory. The gateway is the documentary proof that you have an exit strategy.

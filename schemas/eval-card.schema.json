@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://javbrain.com/isa/schemas/eval-card.schema.json",
+  "title": "Eval Card",
+  "description": "The Eval Card of A·G.2, extended with the six fields 15.6 requires of a release gate: metric, dataset and its version, n_cases, passes_per_case, threshold and min_detectable_effect. A threshold with no sample size and no passes per case is not a gate, it is a superstition. The six fields are per metric, as the capstone gate of 18.4 tabulates them. Criterion for use: knowledge/protocols/release-gate.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "owner",
+    "scope",
+    "baseline",
+    "metrics",
+    "dataset",
+    "release_gate",
+    "cadence"
+  ],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "owner": {
+      "description": "Who is accountable for this gate.",
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "description": "Which layer is being measured. Origen: A·G.2 and 15.2 (component, trajectory, end to end).",
+      "type": "string",
+      "enum": ["componente", "trayectoria", "extremo_a_extremo"]
+    },
+    "baseline": {
+      "description": "The date of the series this run is compared against.",
+      "$comment": "Loader contract: an eval card is written in YAML (A\u00b7G.2) and `baseline: 2026-07-01` is parsed by yaml.safe_load as a date object, not a string. Whatever validates a card must serialize YAML timestamps to ISO-8601 strings first, or the book's own card fails on a type error that has nothing to do with the gate.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "format": "date"
+    },
+    "dataset": {
+      "description": "The card's dataset. A threshold against a moving set measures the set, not the agent, so the version is required.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "version"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "pii": {
+          "description": "How personal data was handled in the set. A·G.2 spells this `anonymized`.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "metrics": {
+      "description": "One entry per gate. Each entry carries the six fields of 15.6.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "threshold",
+          "n_cases",
+          "passes_per_case",
+          "min_detectable_effect"
+        ],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "threshold": {
+            "description": "The number that blocks the release.",
+            "type": "number"
+          },
+          "n_cases": {
+            "description": "Sampling noise. Size the set for the drop you care about before fixing the threshold: the relation is quadratic (15.6).",
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "passes_per_case": {
+            "description": "Execution noise. A single pass is an observation, not a measurement; report an interval (15.6). One pass is legitimate only where retrieval is deterministic over a frozen index (18.4, Recall@5).",
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "min_detectable_effect": {
+            "description": "The difference considered real. Below it the verdict is neither pass nor fail: it is inconclusive, and the response is more sample, not more argument. A number in metric points, or `cualquiera` where any occurrence counts (18.4, adversarial leaks).",
+            "oneOf": [
+              { "type": "number", "exclusiveMinimum": 0 },
+              { "type": "string", "const": "cualquiera" }
+            ]
+          },
+          "dataset": {
+            "description": "Override, only when this metric runs against a different set than the card's.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "version"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "version": { "type": "string", "minLength": 1 }
+            }
+          },
+          "judge": {
+            "description": "Judge noise. When an LLM scores the result it is a second non-deterministic system measuring the first: record its id, its version and its agreement with hand labels. Changing the judge invalidates the historical series (15.6).",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "version", "agreement"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "version": { "type": "string", "minLength": 1 },
+              "agreement": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "release_gate": {
+      "description": "Whether this card stops a release. A card nobody executes is documentation.",
+      "type": "string",
+      "enum": ["blocking", "non_blocking"]
+    },
+    "cadence": {
+      "description": "Where it runs. Origen: A·G.2.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
