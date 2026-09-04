@@ -12,7 +12,9 @@ import psycopg
 
 def test_solo_anadir():
     sujeto = "prueba:" + uuid.uuid4().hex[:8]
-    with psycopg.connect(os.environ["DATABASE_URL"]) as bd:
+    # El rol de aplicación, no el superusuario: con un superusuario
+    # este test pasa en verde midiendo lo contrario de lo que dice.
+    with psycopg.connect(os.environ["DATABASE_URL_APP"]) as bd:
         bd.execute("SET search_path = banco, public")
         bd.execute("INSERT INTO registro_ia (tipo, canal, sujeto)"
                    " VALUES ('art50_aviso', 'chat', %s)", (sujeto,))

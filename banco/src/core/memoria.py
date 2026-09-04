@@ -238,7 +238,8 @@ def proponer_memoria_colectiva(
         antes = cur.fetchone()["n"]
     pid = hitl.encolar(
         hilo=f"memoria|{ref}", run=ctx["run"], agente=ctx["agente"],
-        accion="memoria.publicar", propone=ctx["humano"],
+        accion="memoria.publicar",
+        propone=f"human:{ctx['humano']['id']}",
         propuesta={"referencia": ref, "dominio": dominio,
                    "tipo": tipo, "resumen": resumen,
                    "evidencias_run_ids": list(evidencias_run_ids)})

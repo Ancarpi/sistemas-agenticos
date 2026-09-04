@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .venv/
 .env
+banco/.venv/
+banco/.pytest_cache/
+banco/uv.lock

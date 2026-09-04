@@ -43,7 +43,14 @@ def main():
             declarados[f["fichero"]] = f.get("localizador", "")
 
     try:
-        salida = subprocess.run([sys.executable, "-m", "pyflakes", a.arbol],
+        # Solo los .py del arbol, y no el `.venv` que el QUICKSTART manda
+        # crear ahi: pyflakes sobre 600 MB de dependencias tarda minutos y no
+        # dice nada del libro.
+        IGNORA = {".venv", "venv", ".git", "__pycache__", "node_modules",
+                  ".pytest_cache", ".mypy_cache", "site-packages"}
+        fs = [str(p) for p in pathlib.Path(a.arbol).rglob("*.py")
+              if not (set(p.parts) & IGNORA)]
+        salida = subprocess.run([sys.executable, "-m", "pyflakes", *fs],
                                 capture_output=True, text=True).stdout
     except FileNotFoundError:
         print("  SALTADO: pyflakes no esta instalado (pip install pyflakes)")

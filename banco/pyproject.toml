@@ -60,7 +60,7 @@ voz = [
 
 [dependency-groups]
 dev = [
-    "pytest",
+    "pytest>=7",   # 7.0: el `pythonpath` de la seccion de abajo
     "ruff",
 ]
 
@@ -68,6 +68,16 @@ dev = [
 # importa como `src.core.models` (Ejercicio 0.1), no como un paquete
 # instalado. Así que no hay build backend: se ejecuta con el repo en el
 # PYTHONPATH. El README dice el comando exacto por fichero.
+
+# `uv run pytest tests/` --- las dos rutas sin las que la coleccion
+# muere. El libro escribe los ficheros planos y los importa planos
+# (`from cumplimiento import AVISOS`, 16.7), y el Ejercicio 0.1 los
+# reparte por `src/`: sin `src/core` aqui, tests/test_art50.py no
+# importa, pytest aborta la tanda entera y ejecuta cero tests. El
+# `.env` lo carga conftest.py, que dice por que si falta.
+[tool.pytest.ini_options]
+pythonpath = [".", "src/core"]
+testpaths = ["tests"]
 
 [tool.uv]
 package = false        # proyecto virtual: no se instala, se ejecuta desde el repo

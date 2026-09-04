@@ -38,6 +38,17 @@ EXTERNO = {
 }
 
 
+# Directorios que no son del arbol aunque vivan dentro: el QUICKSTART manda al
+# lector crear su entorno virtual justo aqui, y un `.venv` de 600 MB hace que
+# las comprobaciones que recorren el arbol tarden minutos en vez de segundos.
+IGNORA = {".venv", "venv", ".git", "__pycache__", "node_modules",
+          ".pytest_cache", ".mypy_cache", ".ruff_cache", "site-packages"}
+
+
+def del_arbol(p):
+    return not (set(p.parts) & IGNORA)
+
+
 def raiz(modulo):
     return (modulo or "").split(".")[0]
 
@@ -58,7 +69,7 @@ def main():
         deudas[d["modulo"]] = set(d["nombres"])
         localiza[d["modulo"]] = d.get("localizador", "")
 
-    ficheros = sorted(p for p in arbol.rglob("*.py") if "__pycache__" not in p.parts)
+    ficheros = sorted(p for p in arbol.rglob("*.py") if del_arbol(p))
     # Indice doble: por ruta de paquete y por nombre suelto, porque el libro usa
     # las dos formas a proposito (la Parte I tiene el arbol plano).
     define, por_nombre = {}, {}

@@ -84,6 +84,18 @@ def encolar(*, hilo, run, agente, propone, propuesta, accion=None,
     with _cx() as cx, cx.cursor() as cur:
         if receipt is not None:
             return _verificar(cur, hilo, huella, propone, receipt)
+        # Se pregunta ANTES de insertar, y en CUALQUIER estado. El
+        # `decidir` del 37.2 reejecuta su primera línea al reanudar,
+        # y para entonces esta fila ya está `aprobada`: contra una
+        # aprobada el índice parcial no tiene conflicto que ver, así
+        # que sin este SELECT el INSERT entraría y abriría una
+        # segunda pendiente por cada aprobación.
+        cur.execute("SELECT id FROM banco.aprobaciones WHERE hilo=%s"
+                    " AND huella=%s ORDER BY id DESC LIMIT 1",
+                    (hilo, huella))
+        vieja = cur.fetchone()
+        if vieja is not None:
+            return vieja["id"]
         cur.execute(
             "INSERT INTO banco.aprobaciones (hilo, huella, run_id,"
             " agente, version, accion, propuesta, propone) VALUES"
@@ -94,9 +106,8 @@ def encolar(*, hilo, run, agente, propone, propuesta, accion=None,
         fila = cur.fetchone()
         if fila is not None:
             return fila["id"]
-        # La misma propuesta del mismo hilo no abre una segunda
-        # fila mientras la primera siga viva, y el índice parcial
-        # que lo impide es el de la cola del 21.5.
+        # Aquí solo se llega en la carrera: dos workers reclamando la
+        # misma propuesta a la vez. Eso sí lo cubre el índice parcial.
         cur.execute("SELECT id FROM banco.aprobaciones WHERE hilo=%s"
                     " AND huella=%s AND estado='pendiente'",
                     (hilo, huella))

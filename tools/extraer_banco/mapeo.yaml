@@ -12,19 +12,19 @@
 #
 # bloques: rangos de lineas de CONTENIDO (sin las vallas ```), 1-indexado.
 
-libro_lineas: 13577
+libro_lineas: 13593
 entradas:
   - destino: src/core/memoria.sql
     modulo: '34.7'
     modo: verbatim
-    bloques: [10974-11064]
+    bloques: [10976-11066]
     anclas: ["-- src/core/memoria.sql --- lo que le falta al schema.sql del 7.6"]
     anclas_fin: ["$$;"]
     nota: 'Entregado del M34.7.'
   - destino: tests/test_registro.py
     modulo: '16.7'
     modo: verbatim
-    bloques: [5872-5898]
+    bloques: [5872-5900]
     anclas: ["# tests/test_registro.py --- el `prueba` de `art12_registro`."]
     anclas_fin: ["assert fila == (\"chat\",)        # sigue ahí, y sin tocar"]
     nota: 'Entregado del M16.7.'
@@ -38,7 +38,7 @@ entradas:
   - destino: src/core/supresion.py
     modulo: '34.7'
     modo: verbatim
-    bloques: [11472-11666]
+    bloques: [11475-11669]
     anclas: ["# src/core/supresion.py --- la operación distribuida del 34.6:"]
     anclas_fin: ["print(f\"\\nTTL vencido: {purgar_caducadas()}\")"]
     nota: 'Entregado del M34.7.'
@@ -59,35 +59,35 @@ entradas:
   - destino: src/core/hitl.py
     modulo: '35.6'
     modo: verbatim
-    bloques: [11921-12158]
+    bloques: [11924-12172]
     anclas: ["# src/core/hitl.py --- el servicio de aprobaciones del 35.4. La cola"]
     anclas_fin: ["return caducadas"]
     nota: 'Entregado del M35.6.'
   - destino: src/core/router.py
     modulo: '19.6'
     modo: verbatim
-    bloques: [6545-6677]
+    bloques: [6547-6679]
     anclas: ["# src/core/router.py --- el router del 19.2, ya ejecutable: lee"]
     anclas_fin: ["return [m for i in sorted(quedan) for m in bloq[i]], parte"]
     nota: 'Entregado del M19.6.'
   - destino: src/core/catalogo_tools.py
     modulo: '20.6'
     modo: verbatim
-    bloques: [6945-7087]
+    bloques: [6947-7089]
     anclas: ["# src/core/catalogo_tools.py --- el catálogo del 20.4: carga los"]
     anclas_fin: ["return m[\"audit\"][\"data_class\"], m[\"risk_tier\"]"]
     nota: 'Entregado del M20.6.'
   - destino: src/evals/trayectoria.py
     modulo: '25.7'
     modo: verbatim
-    bloques: [8601-8673]
+    bloques: [8603-8675]
     anclas: ["# src/evals/trayectoria.py --- los casos de los dos planos que el"]
     anclas_fin: ["cargar(\"trayectorias\", \"v1\", n, semilla), _un_caso))"]
     nota: 'Entregado del M25.7.'
   - destino: src/evals/trayectoria.py
     modulo: '25.7'
     modo: patch
-    bloques: [8681-8756]
+    bloques: [8683-8758]
     anclas: ["# src/evals/trayectoria.py (sigue) --- el usuario simulado del"]
     anclas_fin: ["cargar(\"conversaciones\", \"v1\", n, semilla), _una_charla))"]
     nota: 'Anadido del M25.7.'
@@ -101,112 +101,112 @@ entradas:
   - destino: src/channels/confianza.py
     modulo: '22.5'
     modo: verbatim
-    bloques: [7563-7653]
+    bloques: [7565-7655]
     anclas: ["# src/channels/confianza.py --- lo que un canal tiene que emitir"]
     anclas_fin: ["yield ev"]
     nota: 'Entregado del M22.5.'
   - destino: src/agents/handoff.py
     modulo: '23.5'
     modo: verbatim
-    bloques: [7896-8045]
+    bloques: [7898-8047]
     anclas: ["# src/agents/handoff.py --- la frontera entre DOS agentes. El"]
     anclas_fin: ["return \"\\n\".join(lineas)"]
     nota: 'Entregado del M23.5.'
   - destino: src/rag/gobierno.sql
     modulo: '24.6'
     modo: verbatim
-    bloques: [8258-8320]
+    bloques: [8260-8322]
     anclas: ["-- src/rag/gobierno.sql --- lo que le falta al schema.sql del 7.6"]
     anclas_fin: ["ON manuales (valid_from, valid_to);"]
     nota: 'Entregado del M24.6.'
   - destino: src/rag/gobierno.py
     modulo: '24.6'
     modo: verbatim
-    bloques: [8328-8450]
+    bloques: [8330-8452]
     anclas: ["# src/rag/gobierno.py --- frescura, procedencia y permisos de"]
     anclas_fin: ["f\"  {c['trozos']:>3} trozos  {c['dueno']}\")"]
     nota: 'Entregado del M24.6.'
   - destino: config/politica.yaml
     modulo: '26.2'
     modo: verbatim
-    bloques: [8871-8917]
+    bloques: [8873-8919]
     anclas: ["# config/politica.yaml --- las reglas del banco, como datos. Se"]
     anclas_fin: ["entonces: require_dry_run"]
     nota: 'Entregado del M26.2.'
   - destino: src/ops/migrar_checkpoints.py
     modulo: '27.4'
     modo: verbatim
-    bloques: [9210-9341]
+    bloques: [9212-9343]
     anclas: ["# src/ops/migrar_checkpoints.py --- lleva el estado persistido de"]
     anclas_fin: ["asyncio.run(main(a.aplicar, a.apartados))"]
     nota: 'Entregado del M27.4.'
   - destino: runbooks/deriva.py
     modulo: '28.5'
     modo: verbatim
-    bloques: [9587-9676]
+    bloques: [9589-9678]
     anclas: ["# runbooks/deriva.py --- la deriva del 28.3 como código: la"]
     anclas_fin: ["for e in filas.values()) else 1)"]
     nota: 'Entregado del M28.5.'
   - destino: src/finops/coste_por_resolucion.py
     modulo: '29.4'
     modo: verbatim
-    bloques: [9774-9961]
+    bloques: [9776-9963]
     anclas: ["# src/finops/coste_por_resolucion.py --- la métrica del 28.1,"]
     anclas_fin: ["print(cuadrar(m, t, desde, hasta))"]
     nota: 'Entregado del M29.4.'
   - destino: equipo.yaml
     modulo: '30.5'
     modo: verbatim
-    bloques: [10076-10131]
+    bloques: [10078-10133]
     anclas: ["# equipo.yaml --- quién responde por cada agente publicado. Va en"]
     anclas_fin: ["firmado_el: 2026-07-30"]
     nota: 'Entregado del M30.5.'
   - destino: equipo.py
     modulo: '30.5'
     modo: verbatim
-    bloques: [10142-10231]
+    bloques: [10144-10233]
     anclas: ["# equipo.py --- el validador de `equipo.yaml`. Dos funciones: si"]
     anclas_fin: ["return aviso"]
     nota: 'Entregado del M30.5.'
   - destino: src/core/trabajos.py
     modulo: '21.5'
     modo: verbatim
-    bloques: [7208-7404]
+    bloques: [7210-7406]
     anclas: ["# src/core/trabajos.py --- la cola con leases del 21.1: reclamo con"]
     anclas_fin: ["prioridad=10)"]
     nota: 'Entregado del M21.5.'
   - destino: src/core/politica.py
     modulo: '26.5'
     modo: verbatim
-    bloques: [8968-9093]
+    bloques: [8970-9095]
     anclas: ["# src/core/politica.py --- el motor de política de la plataforma."]
     anclas_fin: ["return \"deny\""]
     nota: 'Entregado del M26.5.'
   - destino: plataforma/estado.py
     modulo: '32.2'
     modo: verbatim
-    bloques: [10426-10459]
+    bloques: [10428-10461]
     anclas: ['# estado.py --- un pool, un checkpointer y un store para todo el']
     anclas_fin: ['# los dos `SAVER`/`STORE` de `compilar` y el `ENTORNO` de `ejecutar`.']
     nota: 'Un pool, un checkpointer y un store para toda la plataforma: el estado deja de ser de cada agente.'
   - destino: plataforma/registro.py
     modulo: '32.3'
     modo: verbatim
-    bloques: [10514-10557]
+    bloques: [10516-10559]
     anclas: ['# registro.py --- el control plane resolviendo un id. El publicador']
     anclas_fin: ['return pk, fab                  # acierto: el hilo() lo exige']
     nota: 'El control plane resolviendo un id a paquete y fabrica. Sin publicacion no hay produccion.'
   - destino: plataforma/catalogo.py
     modulo: '33.6'
     modo: verbatim
-    bloques: [10716-10781]
+    bloques: [10718-10783]
     anclas: ['# catalogo.py --- el recorte, servido. Pega aquí el CATALOGO del']
     anclas_fin: [')).encode()).hexdigest()[:12]']
     nota: 'El resolutor del catalogo compartido: seleccion dinamica por contexto y permisos, con el sello que invalida la cache.'
   - destino: plataforma/trazas.py
     modulo: '36.6'
     modo: verbatim
-    bloques: [12349-12411]
+    bloques: [12365-12427]
     anclas: ['# trazas.py --- la tabla del 36.1 como código. Es la función que']
     anclas_fin: ['return dentro']
     nota: 'El esquema de traza del 36.1 como codigo: la unidad de observacion de una flota es la decision, no la CPU.'
@@ -356,7 +356,7 @@ entradas:
   - destino: src/agents/supervisor/supervisor.py
     modulo: '23.5'
     modo: patch
-    bloques: [8062-8130]
+    bloques: [8064-8132]
     anclas: ["# supervisor.py (9.2) --- el reparto, con la frontera puesta."]
     anclas_fin: ["print(\"muerto:\", m)"]
     nota: 'Anadido del M23.5.'
@@ -390,7 +390,7 @@ entradas:
     modulo: '17.2'
     modo: patch
     pendiente: si
-    bloques: [6138-6151]
+    bloques: [6140-6153]
     anclas: ['# batch_nocturno.py --- justo encima de main().']
     anclas_fin: ['#   if PARANDO or gasto_usd() - gasto_0 >= PRESUPUESTO_USD:']
     nota: 'PENDIENTE. Apagado ordenado por SIGTERM: el libro lo pega justo encima de main(), y la condicion del bucle de tandas pasa a mirar PARANDO.'
@@ -404,7 +404,7 @@ entradas:
   - destino: src/channels/chat/servidor.py
     modulo: '17.2'
     modo: patch
-    bloques: [6007-6056]
+    bloques: [6009-6058]
     anclas: ['# se pega al final del servidor.py del 12.5: `logging` y `config`']
     anclas_fin: ['return {"listo": listo}']
     nota: 'Sondas de liveness y readiness con cache de 5 s. Esta si se pega al final, como dice el libro.'
@@ -412,7 +412,7 @@ entradas:
     modulo: '17.2'
     modo: patch
     pendiente: si
-    bloques: [6114-6130]
+    bloques: [6116-6132]
     anclas: ['# servidor.py --- lo que Kubernetes obliga a añadir al 12.5.']
     anclas_fin: ['api = FastAPI(lifespan=vida)   # sustituye al FastAPI() del 12.5']
     nota: 'PENDIENTE. Lifespan y apagado ordenado: SUSTITUYE al FastAPI() del 12.5. Pegado al final reasigna api y el canal se queda sin rutas.'
@@ -468,91 +468,91 @@ entradas:
   - destino: deploy/despliegue-chat.yaml
     modulo: '17.2'
     modo: verbatim
-    bloques: [5966-5999]
+    bloques: [5968-6001]
     anclas: ['# despliegue-chat.yaml --- el servidor.py del 12.5 en un clúster.']
     anclas_fin: ['limits: {memory: "512Mi"}     # memoria sí, CPU no']
     nota: 'El servidor.py del 12.5 en un cluster: sondas, preStop y gracia de 120 s.'
   - destino: deploy/despliegue-chat.yaml
     modulo: '27.2'
     modo: patch
-    bloques: [9165-9184]
+    bloques: [9167-9186]
     anclas: ["# despliegue-chat.yaml --- lo que el 27.2 añade al 17.2. Todo lo"]
     anclas_fin: ["readOnly: true"]
     nota: 'Anadido del M27.2.'
   - destino: deploy/autoescalado.yaml
     modulo: '17.2'
     modo: verbatim
-    bloques: [6070-6100]
+    bloques: [6072-6102]
     anclas: ['# autoescalado.yaml --- el worker del 11.5, por cola, con KEDA.']
     anclas_fin: ['activationTargetQueryValue: "0"']
     nota: 'KEDA por profundidad de cola, nunca por CPU.'
   - destino: src/core/identidad.py
     modulo: '18.3'
     modo: verbatim
-    bloques: [6270-6314]
+    bloques: [6272-6316]
     anclas: ['# identidad.py --- lo único nuevo: el thread_id lo decide aquí.']
     anclas_fin: ['HILO = hilo("conciliacion", f"incidencia:{ref}")']
     nota: 'Quien es el hilo: dos funciones separan cinco canales de cinco sistemas.'
   - destino: src/core/context_contracts.py
     modulo: '19.1'
     modo: verbatim
-    bloques: [6415-6445]
+    bloques: [6417-6447]
     anclas: ['# src/core/context_contracts.py']
     anclas_fin: [')']
     nota: 'El ContextContract y el contrato de triaje. Valida contra schemas/context-contract.schema.json.'
   - destino: config/model_routing.yaml
     modulo: '19.2'
     modo: verbatim
-    bloques: [6467-6488]
+    bloques: [6469-6490]
     anclas: ['# config/model_routing.yaml']
     anclas_fin: ['eval_gate: faithfulness >= 0.90 and pii_leakage == 0']
     nota: 'Politica de routing por tarea, con presupuesto de pensamiento y de coste.'
   - destino: config/model_routing.yaml
     modulo: '19.6'
     modo: patch
-    bloques: [6685-6701]
+    bloques: [6687-6703]
     anclas: ["# config/model_routing.yaml --- lo que el 19.2 no declaraba: el"]
     anclas_fin: ["agente-listo-backup: [2.50, 10.00]"]
     nota: 'Anadido del M19.6.'
   - destino: tools/bloquear_tarjeta.capability.yaml
     modulo: '20.1'
     modo: verbatim
-    bloques: [6755-6804]
+    bloques: [6757-6806]
     anclas: ['# tools/bloquear_tarjeta.capability.yaml']
     anclas_fin: ['tool: solicitar_desbloqueo_revision']
     nota: 'Tool Capability Manifest. Valida contra schemas/tool-capability.schema.json.'
   - destino: src/agents/cards_disputes/herramientas.py
     modulo: '20.2'
     modo: verbatim
-    bloques: [6821-6867]
+    bloques: [6823-6869]
     anclas: ['from typing import Literal']
     anclas_fin: ['return result']
     nota: 'read-plan-dry-run-commit con clave de idempotencia y outbox. Es el entrypoint que declara catalogo/cards-disputes/agent.yaml.'
   - destino: src/core/contratos.py
     modulo: '20.3'
     modo: verbatim
-    bloques: [6885-6910]
+    bloques: [6887-6912]
     anclas: ['from typing import Literal']
     anclas_fin: [')']
     nota: 'ToolError tipado: el error como lenguaje de coordinacion, devuelto como ToolMessage y nunca como excepcion cruda.'
   - destino: src/core/contratos.py
     modulo: '22.3'
     modo: patch
-    bloques: [7532-7547]
+    bloques: [7534-7549]
     anclas: ['from typing import Literal']
     anclas_fin: ['trace_url: str | None']
     nota: 'HumanHandoffPacket: el escalado a humano como producto. Trae sus imports repetidos, tal cual estan en el libro.'
   - destino: src/core/contratos.py
     modulo: '23.1'
     modo: patch
-    bloques: [7824-7838]
+    bloques: [7826-7840]
     anclas: ['from typing import Literal']
     anclas_fin: ['return_to: str | None']
     nota: 'HandoffContract y su campo authority: la frontera entre agentes.'
   - destino: src/core/memoria.py
     modulo: '34.5'
     modo: fragmento
-    bloques: [10906-10945]
+    bloques: [10908-10947]
     anclas: ["# src/core/memoria.py --- las tres APIs tipadas del 34.5. El fichero"]
     anclas_fin: ["..."]
     nota: 'La cara publica del 34.5, con los cuerpos en ... El fichero de verdad
@@ -561,21 +561,21 @@ entradas:
   - destino: src/core/memoria.py
     modulo: '34.1'
     modo: verbatim
-    bloques: [10850-10865]
+    bloques: [10852-10867]
     anclas: ['from datetime import datetime']
     anclas_fin: ['expires_at: datetime | None']
     nota: 'MemoryRecord: sin owner, sensibilidad, TTL y procedencia no hay memoria gobernada.'
   - destino: src/core/memoria.py
     modulo: '34.7'
     modo: patch
-    bloques: [11144-11262]
+    bloques: [11146-11264]
     anclas: ["# src/core/memoria.py --- las tres APIs del 34.5 con cuerpo, sus"]
     anclas_fin: ["return cur.fetchone()[\"hay\"]"]
     nota: 'Anadido del M34.7.'
   - destino: src/core/memoria.py
     modulo: '34.7'
     modo: patch
-    bloques: [11266-11464]
+    bloques: [11268-11467]
     anclas: ["ESCRIBIR = \"\"\""]
     anclas_fin: ["return cuenta"]
     nota: 'Continuacion del M34.7. El bloque no lleva cabecera con su ruta:
@@ -597,28 +597,28 @@ entradas:
   - destino: .github/workflows/agent-evals.yml
     modulo: '25.5'
     modo: verbatim
-    bloques: [8563-8576]
+    bloques: [8565-8578]
     anclas: ['# .github/workflows/agent-evals.yml (extracto conceptual)']
     anclas_fin: ['- run: uv run python evals/run_redteam_smoke.py --fail-under 1.0']
     nota: 'Extracto conceptual, igual que en el libro: no es un workflow completo.'
   - destino: aceptacion.py
     modulo: '31.2'
     modo: verbatim
-    bloques: [10289-10330]
+    bloques: [10291-10332]
     anclas: ['# aceptacion.py --- no escribe piezas nuevas: enciende las que ya']
     anclas_fin: ['sys.exit(0 if all(ok) else 1)']
     nota: 'La puerta del capstone: seis medidas, semilla, pases e intervalo, con el veredicto NO CONCLUYENTE.'
   - destino: catalogo/cards-disputes/agent.yaml
     modulo: '32.3'
     modo: verbatim
-    bloques: [10476-10502]
+    bloques: [10478-10504]
     anclas: ['# agent.yaml']
     anclas_fin: ['unsafe_tool_calls_max: 0']
     nota: 'Agent Package publicable. Valida contra schemas/agent-package.schema.json.'
   - destino: plataforma/runtime.py
     modulo: '37.2'
     modo: verbatim
-    bloques: [12472-12625, 12636-12745]
+    bloques: [12488-12641, 12652-12761]
     anclas: ['# runtime.py --- nadie importa un grafo: se pide por id. Ni', '# La política y el HITL: una decisión por llamada, para los']
     anclas_fin: ['{"messages": [("user", texto)]}, cfg, context=ctx)', "else herramienta.invoke(llamada[\"args\"]))"]
     nota: 'Nadie importa un grafo: se pide por id, con el sello del catalogo en la clave de la cache. La politica y el HITL van en el mismo wrap_tool_call.'
