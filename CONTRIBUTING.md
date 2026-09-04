@@ -14,7 +14,7 @@ Bugs en `tools/`, mejoras en `skills/`, `agents/isa/`, `schemas/` o `knowledge/`
 
 ### La regla que no se negocia: `banco/` no se edita
 
-Ese árbol lo genera `tools/extraer_banco/` desde el libro, byte a byte. Cualquier edición ahí la pisa la siguiente extracción sin dejar rastro. Si algo está mal en `banco/`, el arreglo es una errata (carril de arriba) que acaba corrigiendo el libro, y el árbol se re-extrae. Los únicos ficheros de ese directorio que no genera el extractor son `README.md`, `pyproject.toml`, `.env.example` y `docker-compose.yml` --- y aun así van con el autor, porque hablan con la voz del libro.
+Ese árbol lo genera `tools/extraer_banco/` desde el libro, byte a byte. Cualquier edición ahí la pisa la siguiente extracción sin dejar rastro. Si algo está mal en `banco/`, el arreglo es una errata (carril de arriba) que acaba corrigiendo el libro, y el árbol se re-extrae. Los únicos ficheros de ese directorio que no genera el extractor son `README.md`, `pyproject.toml`, `conftest.py` y `docker-compose.yml` --- y aun así van con el autor, porque hablan con la voz del libro. `.env.example` tampoco lo genera el extractor, y tampoco se edita: lo escribe `tools/generar_env/generar_env.py` desde el bloque `.env` del 0.4.
 
 ### Reglas del resto del árbol
 

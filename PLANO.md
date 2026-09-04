@@ -193,7 +193,7 @@ Cinco lentes = cinco dimensiones independientes = un fanout en paralelo, que es 
 | `plataforma/runtime.py` (37.2) | `plataforma/runtime.py` | verbatim, con la política y el HITL del 37.2 en el mismo `wrap_tool_call` |
 | *(Ejercicio 0.1)* | `smoke_test.py` | dos alias, latencia y tokens, Postgres y traza |
 
-Más, a mano: `README.md` (qué es, qué módulo entrega cada fichero, cómo arrancar), `pyproject.toml` (`uv`, como el libro), `.env.example`, `MAPEO.md` (**generado**, no escrito).
+Más, a mano: `README.md` (qué es, qué módulo entrega cada fichero, cómo arrancar), `pyproject.toml` (`uv`, como el libro), `conftest.py` (el `.env` que pytest no lee solo), `MAPEO.md` (**generado**, no escrito) y `.env.example` (**generado** por `tools/generar_env/` desde el bloque `.env` del 0.4).
 
 ### F.3 Extracción
 

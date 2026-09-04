@@ -205,11 +205,14 @@ def decidir(ctx, llamada) -> str | None:
         # encima del `interrupt()` es el efecto externo, y esto
         # escribe en la cola de aprobaciones. Al reanudar, esta
         # función se reejecuta desde su primera línea y vuelve a
-        # pasar por aquí: mientras la propuesta siga pendiente, el
-        # `ON CONFLICT ... WHERE estado='pendiente'` del 35.6
-        # devuelve la misma fila. La carga del `interrupt()` lleva
-        # la propuesta porque es lo que `get_state` enseña de un
-        # hilo pausado.
+        # pasar por aquí con la fila original ya `aprobada`, así
+        # que quien impide la segunda es el `SELECT` por `(hilo,
+        # huella)` de `encolar` del 35.6, que pregunta en
+        # cualquier estado antes de insertar; contra una fila
+        # decidida, el `ON CONFLICT` del índice parcial no tiene
+        # conflicto que ver. La carga del `interrupt()` lleva la
+        # propuesta porque es lo que `get_state` enseña de un hilo
+        # pausado.
         encolar(hilo=ctx["hilo"], run=ctx["run"], accion=llamada["name"],
                 agente=ctx["agente"], propuesta=llamada["args"],
                 propone=f"{quien['kind']}:{quien['user_id']}")

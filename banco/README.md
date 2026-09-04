@@ -24,6 +24,8 @@ Consecuencia práctica: **no edites estos ficheros.** Se edita `mapeo.yaml`, o s
 - **`MAPEO.md`** --- generado. Qué módulo del libro entrega cada fichero, con las líneas exactas. Es la tabla que buscas si te preguntas de dónde salió algo.
 - **`COSTURAS.md`** --- generado. Los fragmentos que el libro deja para pegar a mano, y dónde van.
 
+Cinco ficheros de este directorio no los escribe el extractor. Cuatro son el empaquetado y se editan a mano: `README.md`, `pyproject.toml`, `docker-compose.yml` y `conftest.py`. El quinto, `.env.example`, también sale del libro, solo que por otro script: lo genera `../tools/generar_env/generar_env.py` desde el bloque `.env` del 0.4, y ese script sale con código 1 y nombra la variable cuando algo de este árbol lee con `os.environ` una que el libro no declara.
+
 ## Qué corre y qué no
 
 El libro es didáctico: algunos bloques son ficheros completos y otros son fragmentos que ilustran una idea. Se han extraído tal cual, comentarios incluidos, porque tienen que coincidir con la página impresa. Eso significa que **este repo no arranca entero de un `uv run`, y decirlo es más útil que fingir lo contrario.** Tres niveles:
@@ -37,7 +39,11 @@ El libro es didáctico: algunos bloques son ficheros completos y otros son fragm
 | `src/agents/supervisor/supervisor.py` | `PYTHONPATH=. uv run python src/agents/supervisor/supervisor.py` | 9.2 |
 | `src/rag/hibrida.py` | `uv run python -m src.rag.hibrida "comisión por devolver la REF-4471"` | 8.1 |
 | `db/schema.sql`, `src/rag/08_hibrida.sql` | `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/schema.sql` | 7.6, 16.6, 8.1 |
-| `tests/test_clasificacion.py` | `uv run pytest tests/` | 16.7 |
+| `tests/` (los tres) | `uv run pytest tests/` | 16.7 |
+
+Esa última fila es la que más letra pequeña tiene, así que va entera. `pytest` se ejecuta desde `banco/`, y necesita dos cosas que el árbol del Ejercicio 0.1 no da solo. Las dos están puestas: el `pythonpath` de `[tool.pytest.ini_options]` en `pyproject.toml`, porque `tests/test_art50.py` importa `cumplimiento` plano, igual que el libro, y aquí ese fichero vive en `src/core/`; y `conftest.py`, que carga el `.env`, porque `src/core/cumplimiento.py` abre su pool a nivel de módulo y sin `DATABASE_URL` el import muere antes de la primera aserción, pytest aborta la tanda entera y ejecuta cero tests. Si falta el `.env`, la cabecera de pytest lo dice en una línea.
+
+Comprobado sobre este árbol: con `.env` puesto y Postgres arriba, `3 passed`. Con `.env` puesto y sin Postgres, `2 passed, 1 failed`, y ese fallo es el resultado correcto: `tests/test_registro.py` mide la RLS del 16.6 contra la base de datos, y un test de RLS sin base de datos no mide nada. Falla, y no se salta. Lo que sale es `psycopg.OperationalError: connection failed`. Ese test se conecta con `DATABASE_URL_APP`, que es el rol `banco_app` del 16.6 y no el superusuario, por lo que dice la arruga de abajo.
 
 **2. Corre con sus hermanos en el `PYTHONPATH`.** El libro pone estos ficheros unos al lado de otros y los importa planos --- `from herramientas import ...`, `from canal_chat import canal_chat` ---, mientras que el Ejercicio 0.1 los reparte por `src/`. Los dos son correctos y son incompatibles, y no se ha tocado ni un `import` para disimularlo. Se resuelve al ejecutar:
 
@@ -66,7 +72,7 @@ Afecta a `herramientas.py` y `agente_backoffice.py` (4.1, 4.3), `canal_chat.py`,
 ## Arrancar
 
 ```bash
-cp .env.example .env          # y rellenar; sin OPENAI_API_BASE no hay nada que hacer
+cp .env.example .env          # generado del 0.4; sin OPENAI_API_BASE no hay nada que hacer
 uv sync                       # núcleo. --extra chat para M12/M17, --extra voz para M13/M14
 docker compose up -d          # Postgres con pgvector
 docker compose exec -T db psql -U banco -d banco \
@@ -76,10 +82,9 @@ uv run python smoke_test.py   # cuatro comprobaciones y un resumen tabulado
 
 El gateway LiteLLM va aparte: su `config.yaml` está en `gateway/`, y el `docker run` que lo levanta, en el 0.5. **Sin gateway no hay alias**, y todo este repo habla alias --- `agente-rapido`, `agente-equilibrado`, `agente-listo`, `emb-multilingue`, `rerank-multilingue` ---, nunca el identificador de un proveedor. Si no quieres gateway, `src/core/models_local.py` es la salida de emergencia del 0.5 y resuelve los alias en la propia fábrica.
 
-Dos arrugas del `schema.sql`, que son del libro y no del empaquetado:
+Se anuncia reaplicable y lo es: comprobado sobre este árbol, el fichero entero aplica con `ON_ERROR_STOP=1` dos veces seguidas y sale con 0 en las dos pasadas, porque el `CREATE ROLE banco_app` del 16.6 lleva el rodeo con `DO $do$` del 7.6. Queda una arruga, y es del libro y no del empaquetado:
 
-- Se anuncia reaplicable y casi lo es: el `CREATE ROLE banco_app` del 16.6 no lleva `IF NOT EXISTS`, así que la segunda pasada falla en esa línea. El rodeo con `DO $do$` del 7.6 es el patrón correcto.
-- Ese rol nace sin contraseña. Dale una antes de ponerlo en tu `DATABASE_URL`, y **usa ese rol y no el superusuario**: la RLS del 7.6 y del 16.6 no vale nada contra un `BYPASSRLS`, y el superusuario es el `DATABASE_URL` por defecto de casi cualquier portátil.
+- Ese rol nace sin contraseña. Dale una antes de ponerlo en tu `DATABASE_URL_APP`, que es la variable que el 0.4 reserva para él, y **usa ese rol y no el superusuario**: la RLS del 7.6 y del 16.6 no vale nada contra un `BYPASSRLS`, y el superusuario es el `DATABASE_URL` por defecto de casi cualquier portátil.
 
 ## Secretos
 
@@ -91,4 +96,4 @@ MIT --- `Copyright (c) 2026 Antonio Carbonell`. El texto está en el `LICENSE` d
 
 La licencia cubre el **código**. La **prosa** del libro sigue siendo del autor y con todos sus derechos: por eso aquí solo hay código y comentarios de código, y por eso el resto del paquete destila el criterio en vez de citarlo.
 
-[El libro, en Amazon](https://www.amazon.es/dp/) --- *Ingeniería de Sistemas Agénticos*, Antonio Carbonell, primera edición, julio de 2026.
+[El libro, en Amazon](https://www.amazon.es/dp/) --- *Ingeniería de Sistemas Agénticos*, Antonio Carbonell, primera edición, septiembre de 2026.

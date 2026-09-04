@@ -183,7 +183,7 @@ _CANDADO = asyncio.Lock()
 
 
 async def obtener_app():
-    """Una vez por proceso. Y el `autocommit` no es adorno: sin
+    """Una vez por proceso. Y el `autocommit` hace falta: sin
     él, el `setup()` no falla en silencio --- revienta en el acto
     con `ActiveSqlTransaction --- CREATE INDEX CONCURRENTLY cannot
     run inside a transaction block`, porque tres de las

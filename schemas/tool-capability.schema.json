@@ -58,6 +58,45 @@
    "type": "string",
    "minLength": 1
   },
+  "disponibilidad": {
+   "description": "Donde y para que la capacidad esta disponible: el eje que el catalogo del 20.4 compara con el CONTEXTO y no con el sujeto. Un objeto vacio quiere decir «en todas partes», que tambien es una respuesta; lo que el catalogo no puede hacer es adivinarla, porque leerla con `.get` deja el eje inerte y sin recortar nada.",
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "jurisdiccion": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "minLength": 1
+     },
+     "uniqueItems": true,
+     "description": "Jurisdicciones donde la llamada es legal, en ISO 3166-1 alfa-2."
+    },
+    "estado_caso": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "minLength": 1
+     },
+     "uniqueItems": true,
+     "description": "Estados del caso en los que la capacidad cabe."
+    },
+    "proposito": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "minLength": 1
+     },
+     "uniqueItems": true,
+     "description": "Propositos declarados que admiten la llamada. Un proposito fuera de esta lista es un uso distinto, no el mismo uso."
+    }
+   }
+  },
+  "coste_eur": {
+   "description": "Lo que factura la llamada al sistema de origen (29.4), en euros. El catalogo del 20.4 lo compara con el presupuesto del contexto. Un cero es «gratis» y vale: el valor queda libre, la clave no.",
+   "type": "number",
+   "minimum": 0
+  },
   "auth": {
    "type": "object",
    "additionalProperties": false,

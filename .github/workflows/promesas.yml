@@ -86,9 +86,16 @@ jobs:
             # ENTERO. Sin esta, ocho ficheros salieron truncados con los otros
             # dos en verde --- `agente_backoffice.py` con 6 lineas de 101.
             python3 tools/extraer_banco/integridad.py --libro "$LIBRO_MD"
+            # Y la cuarta, que no es del extractor: banco/.env.example lo
+            # genera generar_env.py desde el bloque `.env` del 0.4, y este
+            # paso comprueba que sigue cuadrando Y que ni una os.environ del
+            # arbol lee una variable que el libro no declara. Sin esto, un
+            # fichero se importa y muere en su primera linea.
+            python3 tools/generar_env/generar_env.py --verificar \
+                --libro "$LIBRO_MD"
           else
             echo "SALTADO: libro.md no esta disponible en CI (la prosa del libro no se publica aqui)."
-            echo "En local, las tres: extraer_banco.py --verificar, cobertura.py e integridad.py."
+            echo "En local, las cuatro: extraer_banco.py --verificar, cobertura.py, integridad.py y generar_env.py --verificar."
           fi
       # Esta no necesita el libro: se contesta sobre el arbol extraido.
       - name: los imports internos del arbol resuelven

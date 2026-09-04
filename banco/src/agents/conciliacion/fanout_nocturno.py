@@ -23,17 +23,45 @@ TRIAJE = SystemMessage(
     "Clasifica la incidencia SEPA en una sola palabra: duplicado, "
     "fraude, comision o desconocido. Responde solo la palabra.")
 
+# Las veinte del lote, con el texto que el modelo clasifica. La
+# semilla vive junto al fichero que la usa, igual que las tres
+# transferencias del 3.3; en el M11 estas veinte salen de una
+# consulta a `banco.incidencias` y el resto no cambia.
+INCIDENCIAS = {
+    "REF-4451": "Dos cargos iguales de 1.284,50 EUR el mismo día.",
+    "REF-4452": "Me han cobrado 12,00 EUR de gastos sin avisarme.",
+    "REF-4453": "El recibo del gimnasio lo han pasado dos veces.",
+    "REF-4454": "Pago de 890,00 EUR en Ucrania que no autoricé.",
+    "REF-4455": "Mismo importe y beneficiario, un minuto de hueco.",
+    "REF-4456": "Cargo de mantenimiento de cuenta que no esperaba.",
+    "REF-4457": "Pagué la luz una vez y veo dos apuntes idénticos.",
+    "REF-4458": "Repetido: 249,00 EUR a la misma cuenta, dos veces.",
+    "REF-4459": "Gastos por transferencia inmediata, 1,50 EUR.",
+    "REF-4460": "La renta de mi casero salió duplicada en agosto.",
+    "REF-4461": "Compra con mi tarjeta a las 04:12, no soy yo.",
+    "REF-4462": "Dos transferencias gemelas de 90,00 EUR seguidas.",
+    "REF-4463": "Comisión de 3,00 EUR por sacar en otro cajero.",
+    "REF-4464": "Me consta un solo envío y el extracto trae dos.",
+    "REF-4465": "Cargo doble del seguro, 412,30 EUR cada apunte.",
+    "REF-4466": "Me aplican gastos de descubierto de 18,00 EUR.",
+    "REF-4467": "Cinco cargos seguidos de una web que no conozco.",
+    "REF-4468": "Envié una transferencia y el banco emitió dos.",
+    "REF-4469": "Cobro de 30,00 EUR por reclamación de recibo.",
+    "REF-4470": "Duplicidad de 75,00 EUR, quince segundos de hueco.",
+}
+
 
 def abanico(estado: EstadoLote) -> list[Send]:
     # El segundo argumento del Send es el estado ENTERO con el que
     # arranca la rama, no una actualización parcial del padre.
-    return [Send("triar_una", {"referencia": r})
+    return [Send("triar_una", {"referencia": r,
+                               "texto": INCIDENCIAS[r]})
             for r in estado["referencias"]]
 
 
 def triar_una(estado: dict) -> dict:
     modelo = get_model("agente-rapido", temperature=0)
-    r = modelo.invoke([TRIAJE, HumanMessage(estado["referencia"])])
+    r = modelo.invoke([TRIAJE, HumanMessage(estado["texto"])])
     # Lista de un elemento: es lo que el reducer concatena. Y la
     # referencia va DENTRO, nunca implícita en la posición.
     return {"veredictos": [{"referencia": estado["referencia"],
@@ -60,7 +88,7 @@ app = g.compile()
 if __name__ == "__main__":
     t0 = time.perf_counter()
     salida = app.invoke(
-        {"referencias": [f"REF-{n}" for n in range(4451, 4471)],
+        {"referencias": list(INCIDENCIAS),
          "veredictos": []},
         # El techo mantiene la ráfaga por debajo de la cuota
         # que ata, el `rpm_limit: 60` de la clave virtual del

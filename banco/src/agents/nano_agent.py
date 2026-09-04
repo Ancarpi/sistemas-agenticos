@@ -64,9 +64,9 @@ def buscar_transferencia(referencia: str) -> dict:
 
 
 def historial_cuenta(iban: str, dias: int = 7) -> dict:
-    if dias > 90:
+    if not 1 <= dias <= 90:
         return {"error": "INVALID_ARGUMENT",
-                "mensaje": "dias <= 90; más allá no hay retención"}
+                "mensaje": "dias entre 1 y 90; más allá no hay retención"}
     # El filtro que hacía falta para que `dias` signifique algo
     # y para que el docstring de `hace()` sea verdad: las cadenas
     # ISO con el mismo `timespec` se ordenan como fechas.

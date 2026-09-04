@@ -1,4 +1,5 @@
-# cumplimiento.py --- los dos artículos que se implementan igual
+# src/core/cumplimiento.py --- los dos artículos que se
+# implementan igual
 # en todos los canales: el aviso del 50 y el registro del 12.
 import hashlib
 import json

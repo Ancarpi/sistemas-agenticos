@@ -1,9 +1,10 @@
 # tests/test_registro.py --- el `prueba` de `art12_registro`.
 # Este sí toca Postgres, porque lo que se comprueba es la RLS y
 # no una línea de Python: UPDATE y DELETE tienen que salir SIN
-# error y con cero filas afectadas. Con el DATABASE_URL del rol
-# de aplicación: con un superusuario el test pasa en verde
-# midiendo lo contrario de lo que dice medir.
+# error y con cero filas afectadas. Con el `DATABASE_URL_APP` del
+# `.env` del 0.4, que es el rol NOBYPASSRLS del 16.6: con un
+# superusuario el test pasa en verde midiendo lo contrario de lo
+# que dice medir.
 import os
 import uuid
 
@@ -12,8 +13,6 @@ import psycopg
 
 def test_solo_anadir():
     sujeto = "prueba:" + uuid.uuid4().hex[:8]
-    # El rol de aplicación, no el superusuario: con un superusuario
-    # este test pasa en verde midiendo lo contrario de lo que dice.
     with psycopg.connect(os.environ["DATABASE_URL_APP"]) as bd:
         bd.execute("SET search_path = banco, public")
         bd.execute("INSERT INTO registro_ia (tipo, canal, sujeto)"

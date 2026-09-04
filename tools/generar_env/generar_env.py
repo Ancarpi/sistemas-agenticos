@@ -30,7 +30,8 @@ BANCO = AQUI / ".." / ".." / "banco"
 PRIMERA = "OPENAI_API_BASE="        # la primera linea del bloque del 0.4
 MARCADORES = ("...", "<")           # un valor con esto no es un valor
 COLUMNA = 41                        # donde se alinea el comentario
-AJENOS = (".venv", "__pycache__", ".pytest_cache", ".git")
+AJENOS = (".venv", "venv", "__pycache__", ".pytest_cache",
+          ".git", "site-packages")
 
 USO = re.compile(
     r'os\.(?:environ\[|environ\.get\(|getenv\()["\']([A-Z0-9_]+)["\']')

@@ -221,6 +221,14 @@ def proponer_memoria_colectiva(
         raise MemoriaRechazada("candidato sin evidencias (34.3)")
     sin_personal({"resumen": resumen})
     ctx = CTX()
+    h = ctx.get("humano")
+    # La misma línea que el `decidir` del 37.2, y por el mismo
+    # motivo: `propone` es una columna `text NOT NULL` y el lote
+    # nocturno del 11.5 no trae humano ninguno, así que la clase
+    # va delante y ese caso llega a la cola como carga de trabajo
+    # en lugar de reventar el INSERT con un `None`.
+    propone = (f"human:{h['id']}" if h
+               else f"workload:{ctx['agente']['id']}")
     # La referencia es la clave de NEGOCIO del candidato, así que
     # proponer dos veces lo mismo no abre una segunda fila.
     ref = "mem-" + hashlib.sha256(
@@ -239,7 +247,7 @@ def proponer_memoria_colectiva(
     pid = hitl.encolar(
         hilo=f"memoria|{ref}", run=ctx["run"], agente=ctx["agente"],
         accion="memoria.publicar",
-        propone=f"human:{ctx['humano']['id']}",
+        propone=propone,
         propuesta={"referencia": ref, "dominio": dominio,
                    "tipo": tipo, "resumen": resumen,
                    "evidencias_run_ids": list(evidencias_run_ids)})

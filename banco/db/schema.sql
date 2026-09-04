@@ -1,4 +1,4 @@
--- schema.sql --- de una vez y reaplicable:
+-- db/schema.sql --- de una vez y reaplicable:
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f schema.sql
 
 CREATE EXTENSION IF NOT EXISTS vector;      -- pgvector 0.8.0+
@@ -126,7 +126,7 @@ CREATE POLICY manuales_por_nivel ON manuales
 
 -- --- anadido del M16.6 (extraer_banco) ---
 -- registro_ia (Art. 12). El libro dice literalmente que va en el schema.sql del 7.6.
--- registro_ia --- Art. 12. Va en el schema.sql del 7.6.
+-- registro_ia --- Art. 12. Va en el db/schema.sql del 7.6.
 CREATE TABLE IF NOT EXISTS registro_ia (
     id      bigserial   PRIMARY KEY,
     ts      timestamptz NOT NULL DEFAULT now(),
@@ -173,6 +173,10 @@ DO $do$ BEGIN
 -- denied for schema banco». El rol que este apartado exige
 -- usar no podría escribir ni una fila del Art. 12.
 GRANT USAGE ON SCHEMA banco TO banco_app;
-GRANT INSERT, SELECT ON registro_ia TO banco_app;
+-- Los cuatro verbos, porque el «sin error y cero filas» de arriba
+-- solo se puede observar con un rol que TENGA el UPDATE y el DELETE.
+-- Sin ellos lo que sale es «permission denied», otro mecanismo y otra
+-- lección. El test del 16.7 se conecta con este rol.
+GRANT INSERT, SELECT, UPDATE, DELETE ON registro_ia TO banco_app;
 GRANT USAGE, SELECT ON SEQUENCE registro_ia_id_seq
     TO banco_app;

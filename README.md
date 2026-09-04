@@ -32,6 +32,7 @@ El paquete de acompañamiento de **«Ingeniería de Sistemas Agénticos --- Manu
 └── tools/
     ├── isa_validate/        el validador stdlib: la negativa es un exit code y un campo señalado
     │   └── casos-negativos/ los dos artefactos que DEBEN fallar; el CI lo comprueba
+    ├── generar_env/         escribe banco/.env.example desde el bloque `.env` del 0.4
     └── extraer_banco/   reconstruye banco/ desde libro.md (el libro no está en el repo)
 ```
 
@@ -62,7 +63,7 @@ Cinco dimensiones independientes, pensadas para lanzarse en paralelo sobre un mi
 
 ## Lo que el CI comprueba
 
-El workflow (`.github/workflows/promesas.yml`) no decora: cada paso es una promesa de este README convertida en verdicto. Que todo `.py` compila --- fragmentos incluidos, porque incompleto no es inválido ---; que todo YAML y JSON parsea; que `isa_validate` valida en verde los cuatro artefactos del libro **y sale con código 1, señalando el campo, sobre los dos negativos de `tools/isa_validate/casos-negativos/`**; y que las anclas del extractor cuadran con el libro --- este último paso salta en CI con su motivo, porque la prosa del libro no se publica aquí, y se ejecuta en local donde vive `libro.md`.
+El workflow (`.github/workflows/promesas.yml`) no decora: cada paso es una promesa de este README convertida en verdicto. Que todo `.py` compila --- fragmentos incluidos, porque incompleto no es inválido ---; que todo YAML y JSON parsea; que `isa_validate` valida en verde los cuatro artefactos del libro **y sale con código 1, señalando el campo, sobre los dos negativos de `tools/isa_validate/casos-negativos/`**; y que las anclas del extractor cuadran con el libro, y que `banco/.env.example` sigue siendo el bloque `.env` del 0.4 sin una variable de menos --- estos dos últimos pasos saltan en CI con su motivo, porque la prosa del libro no se publica aquí, y se ejecutan en local donde vive `libro.md`.
 
 ## Cómo se cita `knowledge/`
 

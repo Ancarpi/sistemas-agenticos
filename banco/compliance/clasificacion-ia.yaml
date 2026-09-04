@@ -18,11 +18,11 @@ sistemas:
     obligaciones:
       art50_aviso:
         estado: implementado
-        evidencia: cumplimiento.py::AVISOS
+        evidencia: src/core/cumplimiento.py::AVISOS
         prueba: tests/test_art50.py::test_las_cuatro_superficies
       art12_registro:
         estado: implementado
-        evidencia: schema.sql::registro_ia
+        evidencia: db/schema.sql::registro_ia
         prueba: tests/test_registro.py::test_solo_anadir
         retencion: politica_financiera  # NO los 6 meses del 26(6)
   # Falta backoffice-nocturno, que es el Ejercicio 16.2: sin

@@ -44,8 +44,10 @@ Defaults assume the author's layout: `../../../fuente/libro.md` and
   `pendiente: si`, the marker says so, and the seam is listed in `COSTURAS.md`.
   Pasting a fragment into its right place is a decision, not a text operation.
 - **Generated, therefore never hand-edited:** the whole `banco/` tree
-  except `README.md`, `pyproject.toml`, `.env.example` and `docker-compose.yml`.
-  `MAPEO.md` and `COSTURAS.md` are rewritten on every run.
+  except `README.md`, `pyproject.toml`, `conftest.py` and
+  `docker-compose.yml`. `MAPEO.md` and `COSTURAS.md` are rewritten on every
+  run, and `.env.example` is generated too, by `tools/generar_env/` from the
+  `.env` block of §0.4 — not by this script.
 
 ## Boundaries
 
