@@ -89,10 +89,14 @@ def empaquetar(piezas: list[str], tope: int,
     """Agrupa frases hasta el tope arrastrando `solape` de ellas.
 
     El solape se mide en frases y no en caracteres: cortar a 150
-    caracteres parte una palabra y deja media en cada trozo. La
-    primera línea es la red de seguridad, porque una tabla de
+    caracteres parte una palabra y deja media en cada trozo. El
+    primer troceo es la red de seguridad, porque una tabla de
     doscientas filas llega aquí como UNA pieza.
     """
+    # `trocear` resta la cabecera del tope: si lo deja a cero o
+    # negativo, el range de abajo se vacía y la sección entera
+    # desaparece en silencio.
+    tope = max(tope, 1)
     piezas = [x[i:i + tope] for x in piezas
               for i in range(0, max(len(x), 1), tope)]
     salida: list[str] = []

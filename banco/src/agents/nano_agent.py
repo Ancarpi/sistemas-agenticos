@@ -1,7 +1,6 @@
 # nano_agent.py --- back-office del banco, sin framework de agentes.
 import json
 import time
-from datetime import datetime, timedelta
 
 from langchain_core.messages import (
     AIMessage, HumanMessage, SystemMessage, ToolMessage,
@@ -9,12 +8,13 @@ from langchain_core.messages import (
 
 from src.core.models import get_model      # la fábrica del 0.4
 
-# El corte que el 9.2 promete empieza aquí: de `IBAN_CLIENTE` a
-# `eur()` van treinta líneas que no son del agente, y son
+# El corte que el 9.2 promete empieza aquí: de este import a
+# `eur()` van las líneas que no son del agente, y son
 # `src/core/banco.py`, el fichero que allí se importa con
 # `from src.core.banco import TRANSFERENCIAS, eur`. Lo que sigue
 # a `eur()` es `nano_agent.py`, y arranca con
 # `from src.core.banco import CASOS, TRANSFERENCIAS, eur, hace`.
+from datetime import datetime, timedelta
 IBAN_CLIENTE = "ES9121000418450200051332"
 
 # El «core bancario» de este capítulo: un dict. En el M11 será

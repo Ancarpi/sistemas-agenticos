@@ -72,52 +72,62 @@ def _diff(propuesta: dict, args) -> dict:
 
 
 def encolar(*, hilo, run, agente, propone, propuesta, accion=None,
-            receipt=None) -> int:
+            receipt=None) -> dict:
     """Las dos mitades del ciclo en una firma, y el `decidir` del
     37.2 las usa las dos: sin `receipt` encima del `interrupt()`,
-    y con él al reanudar. Sin receipt abre la propuesta y la deja
-    `pendiente`, que es lo que lista `pendientes`. Con receipt no
-    abre nada: comprueba que quien reanuda trae la firma de esta
-    cola, y revienta si no."""
+    y con él al reanudar. Sin receipt abre la propuesta --- o
+    devuelve la que este run ya abrió --- y contesta con la fila
+    mínima, `id`, `estado` y `motivo`, porque la reejecución
+    necesita saber si aquello ya se decidió. Con receipt no abre
+    nada: comprueba que quien reanuda trae la firma de esta cola,
+    y revienta si no."""
     accion = accion or (receipt or {}).get("accion")
     huella = _huella(accion, propuesta)
     with _cx() as cx, cx.cursor() as cur:
         if receipt is not None:
             return _verificar(cur, hilo, huella, propone, receipt)
-        # Se pregunta ANTES de insertar, y solo entre filas VIVAS.
-        # El `decidir` del 37.2 reejecuta su primera línea al
-        # reanudar, y para entonces esta fila ya está `aprobada`:
-        # contra una aprobada el índice parcial no tiene conflicto
-        # que ver, así que sin este SELECT el INSERT entraría y
-        # abriría una segunda pendiente por cada aprobación. Una
-        # rechazada o caducada no cuenta: repetir esa propuesta es
-        # proponerla de nuevo, y toca insertar.
-        cur.execute("SELECT id FROM banco.aprobaciones WHERE hilo=%s"
-                    " AND huella=%s AND estado IN ('pendiente',"
-                    " 'aprobada', 'editada') ORDER BY id DESC LIMIT 1",
-                    (hilo, huella))
+        # Se pregunta ANTES de insertar, y el discriminador es el
+        # run. La matriz entera, celda a celda:
+        # · mismo run + pendiente: reejecución con la decisión aún
+        #   abierta; se devuelve la misma fila.
+        # · mismo run + decidida: la reanudación --- el `decidir`
+        #   del 37.2 reejecuta su primera línea --- y quien enruta
+        #   lo decidido es él. Sin esta celda, reanudar un rechazo
+        #   insertaría una pendiente fantasma que otro aprobador
+        #   firmaría después por el flujo normal.
+        # · otro run + pendiente: la propuesta ya espera pantalla;
+        #   la misma fila, o habría dos decisiones que tomar.
+        # · otro run + decidida: aquello ya se contestó o ya se
+        #   consumió; propuesta NUEVA y toca insertar. Devolver la
+        #   fila vieja pausa el hilo nuevo contra una decisión que
+        #   `pendientes` no lista ni `caducar` ve.
+        cur.execute("SELECT id, estado, motivo FROM"
+                    " banco.aprobaciones WHERE hilo=%s AND huella=%s"
+                    " AND (estado='pendiente' OR run_id=%s)"
+                    " ORDER BY id DESC LIMIT 1", (hilo, huella, run))
         vieja = cur.fetchone()
         if vieja is not None:
-            return vieja["id"]
+            return vieja
         cur.execute(
             "INSERT INTO banco.aprobaciones (hilo, huella, run_id,"
             " agente, version, accion, propuesta, propone) VALUES"
             " (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (hilo, huella)"
-            " WHERE estado='pendiente' DO NOTHING RETURNING id",
+            " WHERE estado='pendiente' DO NOTHING"
+            " RETURNING id, estado, motivo",
             (hilo, huella, run, agente["id"], agente["version"],
              accion, json.dumps(propuesta), propone))
         fila = cur.fetchone()
         if fila is not None:
-            return fila["id"]
+            return fila
         # Aquí solo se llega en la carrera: dos workers reclamando la
         # misma propuesta a la vez. Eso sí lo cubre el índice parcial.
-        cur.execute("SELECT id FROM banco.aprobaciones WHERE hilo=%s"
-                    " AND huella=%s AND estado='pendiente'",
-                    (hilo, huella))
-        return cur.fetchone()["id"]
+        cur.execute("SELECT id, estado, motivo FROM"
+                    " banco.aprobaciones WHERE hilo=%s AND huella=%s"
+                    " AND estado='pendiente'", (hilo, huella))
+        return cur.fetchone()
 
 
-def _verificar(cur, hilo, huella, propone, receipt) -> int:
+def _verificar(cur, hilo, huella, propone, receipt) -> dict:
     """La comprobación que hace que la firma sirva de algo.
     `Command(resume=...)` no lo autentica nadie: quien alcance el
     checkpointer reanuda el hilo que quiera con un `{"decision":
@@ -139,7 +149,8 @@ def _verificar(cur, hilo, huella, propone, receipt) -> int:
     if (receipt.get("decision") in ("approve", "edit")
             and receipt.get("aprobador") == propone):
         raise AutoAprobacion(f"{propone} firmó su propia propuesta")
-    return fila["id"]
+    return {"id": fila["id"], "estado": fila["estado"],
+            "motivo": fila["motivo"]}
 
 
 def pendientes(agente=None, limite=50) -> list[dict]:
@@ -245,8 +256,17 @@ def caducar(sla=SLA, reanudar=None) -> list[int]:
         for fila in cur.fetchall():
             recibo = _receipt(cur, fila, "reject", "sistema:sla",
                               None, f"sin contestar en {sla} h")
-            if _cerrar(cur, fila, "caducada", recibo):
+            if not _cerrar(cur, fila, "caducada", recibo):
+                continue
+            caducadas.append(fila["id"])
+            try:
                 (reanudar or REANUDAR)(
                     fila["hilo"], Command(resume=recibo), fila)
-                caducadas.append(fila["id"])
+            except Exception:
+                # La fila ya está firmada y el lote sigue: una
+                # reanudación rota no puede robarle la noche al
+                # resto. El hilo sale igual, porque el `decidir`
+                # del 37.2 enruta la caducidad desde la fila.
+                log.exception("hitl: %s caducada sin reanudar",
+                              fila["hilo"])
     return caducadas

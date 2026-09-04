@@ -29,7 +29,8 @@ def cargar(agente_id: str) -> tuple[dict, object | None]:
         pk = yaml.safe_load(ruta.read_bytes())
         aprobadas = (ruta.parent / "aprobado").read_text().split()
         if f"{pk['version']}@{estado.ENTORNO}" not in aprobadas:
-            raise PermissionError(f"{agente_id}: sin aprobar aquí")
+            raise PermissionError(
+                f"{agente_id}: sin aprobar en {estado.ENTORNO}")
         # La puerta del 30.5, y DENTRO del `if`: un YAML leído
         # por versión y no en cada turno de cada usuario.
         # `SinDueno` hereda de PermissionError, así que la

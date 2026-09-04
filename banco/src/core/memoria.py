@@ -30,6 +30,7 @@ import os
 from datetime import datetime
 from typing import Literal
 
+from langchain_core.tools import tool
 import psycopg
 from psycopg.rows import dict_row
 from pydantic import BaseModel
@@ -188,6 +189,7 @@ def _escrito(f: dict) -> MemoryWriteReceipt:
                  f" 'user_request')")
 
 
+@tool
 def recordar_preferencia_cliente(
         cliente_id: str,
         clave: Literal["idioma", "canal_preferido",
@@ -209,6 +211,7 @@ def recordar_preferencia_cliente(
         return _escrito(cur.fetchone())
 
 
+@tool
 def proponer_memoria_colectiva(
         dominio: str,
         tipo: Literal["faq", "eval_case", "playbook",
@@ -246,13 +249,16 @@ def proponer_memoria_colectiva(
             raise MemoriaRechazada(f"sin traza: {faltan} (34.3)")
         cur.execute(CUENTA, (ns,))
         antes = cur.fetchone()["n"]
+    # `encolar` contesta con la fila mínima del 35.6: aquí basta
+    # el id, que es lo que el receipt del steward lleva dentro.
     pid = hitl.encolar(
         hilo=f"memoria|{ref}", run=ctx["run"], agente=ctx["agente"],
         accion="memoria.publicar",
         propone=propone,
         propuesta={"referencia": ref, "dominio": dominio,
                    "tipo": tipo, "resumen": resumen,
-                   "evidencias_run_ids": list(evidencias_run_ids)})
+                   "evidencias_run_ids": list(evidencias_run_ids)},
+    )["id"]
     with conectar() as cx, cx.cursor() as cur:
         cur.execute(CUENTA, (ns,))
         despues = cur.fetchone()["n"]
@@ -304,6 +310,7 @@ def reanudar(hilo: str, cmd, fila) -> None:
         publicar(cmd.resume)
 
 
+@tool
 def olvidar_memoria(
         namespace: tuple[str, ...], key: str,
         motivo: Literal["user_request", "expired", "incorrect",
@@ -348,6 +355,7 @@ def purgar_caducadas() -> dict[str, int]:
                     " array_to_string(namespace, '.') AS pre")
         for f in cur.fetchall():
             cuenta[f["tipo"]] = cuenta.get(f["tipo"], 0) + 1
-            cur.execute("DELETE FROM store WHERE prefix = %s AND"
-                        " key = %s", (f["pre"], f["clave"]))
+            if existe(cur, "store"):
+                cur.execute("DELETE FROM store WHERE prefix = %s AND"
+                            " key = %s", (f["pre"], f["clave"]))
     return cuenta

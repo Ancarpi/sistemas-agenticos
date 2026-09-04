@@ -23,7 +23,8 @@ async def canal_chat(pregunta: str, referencia: str, hilo: str):
     # superpaso con NotImplementedError.
     app = await obtener_app()
     # La referencia va SIEMPRE: EstadoBackoffice la declara y el
-    # nodo `triage` la lee. Sin ella, KeyError en el primer nodo.
+    # nodo `investigar` la lee. Sin ella, KeyError a mitad de
+    # grafo, con el triaje ya pagado.
     entrada = {"referencia": referencia,
                "messages": [("human", pregunta)]}
     async for modo, dato in app.astream(

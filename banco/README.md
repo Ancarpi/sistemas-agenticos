@@ -24,7 +24,7 @@ Consecuencia práctica: **no edites estos ficheros.** Se edita `mapeo.yaml`, o s
 - **`MAPEO.md`** --- generado. Qué módulo del libro entrega cada fichero, con las líneas exactas. Es la tabla que buscas si te preguntas de dónde salió algo.
 - **`COSTURAS.md`** --- generado. Los fragmentos que el libro deja para pegar a mano, y dónde van.
 
-Cinco ficheros de este directorio no los escribe el extractor. Cuatro son el empaquetado y se editan a mano: `README.md`, `pyproject.toml`, `docker-compose.yml` y `conftest.py`. El quinto, `.env.example`, también sale del libro, solo que por otro script: lo genera `../tools/generar_env/generar_env.py` desde el bloque `.env` del 0.4, y ese script sale con código 1 y nombra la variable cuando algo de este árbol lee con `os.environ` una que el libro no declara.
+Siete ficheros de este directorio no los escribe el extractor. Cuatro son el empaquetado y se editan a mano: `README.md`, `pyproject.toml`, `docker-compose.yml` y `conftest.py`. Dos son artefactos del libro traducidos a datos, también a mano: `contratos/triage_sepa.contract.yaml` (el `TRIAGE_CONTRACT` del 19.1, de dataclass a YAML) y `evals/capstone_gate.eval.yaml` (la tabla del 18.4, con el 246 que el 15.7 justifica en vez del 120 impreso). El séptimo, `.env.example`, también sale del libro, solo que por otro script: lo genera `../tools/generar_env/generar_env.py` desde el bloque `.env` del 0.4, y ese script sale con código 1 y nombra la variable cuando algo de este árbol lee con `os.environ` una que el libro no declara.
 
 ## Qué corre y qué no
 

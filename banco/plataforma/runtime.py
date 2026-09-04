@@ -205,17 +205,24 @@ def decidir(ctx, llamada) -> str | None:
         # encima del `interrupt()` es el efecto externo, y esto
         # escribe en la cola de aprobaciones. Al reanudar, esta
         # función se reejecuta desde su primera línea y vuelve a
-        # pasar por aquí con la fila original ya `aprobada`, así
-        # que quien impide la segunda es el `SELECT` por `(hilo,
-        # huella)` de `encolar` del 35.6, que pregunta entre las
-        # filas vivas antes de insertar; contra una aprobada, el
-        # `ON CONFLICT` del índice parcial no tiene conflicto que
-        # ver. La carga del `interrupt()` lleva la
-        # propuesta porque es lo que `get_state` enseña de un hilo
-        # pausado.
-        encolar(hilo=ctx["hilo"], run=ctx["run"], accion=llamada["name"],
-                agente=ctx["agente"], propuesta=llamada["args"],
-                propone=f"{quien['kind']}:{quien['user_id']}")
+        # pasar por aquí con la fila original ya decidida, así que
+        # quien impide una segunda pendiente es el `SELECT` de
+        # `encolar` del 35.6, que discrimina por run y devuelve la
+        # fila de ESTE run en el estado en que esté.
+        fila = encolar(hilo=ctx["hilo"], run=ctx["run"],
+                       accion=llamada["name"], agente=ctx["agente"],
+                       propuesta=llamada["args"],
+                       propone=f"{quien['kind']}:{quien['user_id']}")
+        if fila["estado"] in ("rechazada", "caducada"):
+            # La reejecución tras un rechazo o una caducidad: la
+            # decisión ya está firmada en la fila, y volver a
+            # pausar dejaría el hilo parado sin pantalla que lo
+            # liste ni SLA que lo vea. Se enruta con el motivo de
+            # la fila, no con el del resume, y así el hilo sale
+            # también cuando aquella reanudación se perdió.
+            return f"RECHAZADO: {fila['motivo']}"
+        # La carga del `interrupt()` lleva la propuesta porque es
+        # lo que `get_state` enseña de un hilo pausado.
         d = interrupt({"run": ctx["run"], "agente": ctx["agente"],
                        "accion": llamada["name"],
                        "propuesta": llamada["args"]})

@@ -16,8 +16,8 @@ CADUCA = timedelta(days=180)   # vigencia de la firma de riesgo
 
 class SinDueno(PermissionError):
     """Hereda de PermissionError para que el `except` del
-    publicador sea el que ya recoge el «sin aprobar aquí» del
-    32.3."""
+    publicador sea el que ya recoge el «sin aprobar en
+    {entorno}» del 32.3."""
 
 
 def leer() -> dict:

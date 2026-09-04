@@ -1,4 +1,5 @@
-# supervisor.py --- el multi-agente del banco. El contrato de
+# src/agents/supervisor/supervisor.py --- el multi-agente del
+# banco. El contrato de
 # traspaso es el TypedDict de abajo: lo que no esté ahí, no cruza.
 import json
 from datetime import datetime, timedelta
@@ -270,10 +271,15 @@ if __name__ == "__main__":
 # --- anadido del M23.5 (extraer_banco) ---
 # Anadido del M23.5.
 # supervisor.py (9.2) --- el reparto, con la frontera puesta.
-from src.agents.handoff import (
-    EstadoTraspasado, Presupuesto, TraspasoMuerto, emitir, huella,
-    briefing as briefing_traspaso)
+# handoff importa de aquí el EstadoBanco del 9.2: traer arriba sus
+# nombres cerraría el ciclo, así que se piden donde se usan, y el
+# tipo, que solo anota, bajo TYPE_CHECKING.
+from typing import TYPE_CHECKING
+
 from src.core.context_contracts import ContextContract
+
+if TYPE_CHECKING:                # solo para la anotación
+    from src.agents.handoff import EstadoTraspasado
 
 
 def contrato(nodo: str, kit: list[str], eur: float) -> ContextContract:
@@ -299,8 +305,9 @@ DESTINOS = {
 }
 
 
-def repartir(estado: EstadoTraspasado, ruta: Ruta) -> Command:
+def repartir(estado: "EstadoTraspasado", ruta: Ruta) -> Command:
     """Sustituye al `return Command(...)` del supervisor del 9.2."""
+    from src.agents.handoff import TraspasoMuerto, emitir
     autoridad, kit, eur = DESTINOS[ruta.destino]
     try:
         t = emitir(estado, "supervisor", ruta.destino, ruta.encargo,
@@ -318,6 +325,9 @@ def repartir(estado: EstadoTraspasado, ruta: Ruta) -> Command:
 
 
 if __name__ == "__main__":       # el contrato, probado sin modelo
+    from src.agents.handoff import (Presupuesto, TraspasoMuerto,
+                                    emitir, huella,
+                                    briefing as briefing_traspaso)
     kit = ["abrir_disputa"]
     c = contrato("fraude", kit, 0.02)
     e = dict(hechos=[{"autor": "facturacion", "dato": "el cargo "

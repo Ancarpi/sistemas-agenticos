@@ -26,9 +26,10 @@ def _filas(sql: str, args: tuple) -> list[dict]:
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
 def historial_cuenta(iban: str, dias: int = 7) -> dict:
     """Movimientos recientes de un IBAN. Úsala para confirmar un
-    duplicado: mismo importe y beneficiario, minutos. dias <= 90."""
-    if dias > 90:
-        return {"error": "INVALID_ARGUMENT", "mensaje": "dias <= 90"}
+    duplicado: mismo importe y beneficiario, minutos. dias 1-90."""
+    if not 1 <= dias <= 90:
+        return {"error": "INVALID_ARGUMENT",
+                "mensaje": "dias entre 1 y 90"}
     if not _filas("SELECT 1 FROM cuentas WHERE iban = %s", (iban,)):
         return {"error": "NOT_FOUND", "mensaje": f"sin cuenta {iban}"}
     movs = _filas("SELECT referencia, importe_cent, beneficiario FROM"

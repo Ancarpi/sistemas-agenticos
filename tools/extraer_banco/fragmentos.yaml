@@ -24,12 +24,6 @@
     7.4. El indexado imprime ya sus imports, pero `texto` y `meta` siguen
     siendo las variables del bucle del lector sobre su corpus: el fichero no
     corre solo.
-- fichero: src/core/banco.py
-  localizador: >-
-    3.3, y declarado alli: «en el 9.2 los sacaras a src/core/banco.py». Es el
-    corte de constantes y ayudantes del bloque de `nano_agent.py`, marcado
-    `parcial: true` en el mapeo; `datetime` y `timedelta` los importa el fichero
-    del que sale.
 - fichero: plataforma/catalogo.py
   localizador: >-
     33.6, y el propio bloque lo dice: «Pega aqui el CATALOGO del 37.2 tal cual».

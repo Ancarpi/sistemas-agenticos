@@ -268,10 +268,11 @@ CREATE TABLE IF NOT EXISTS banco.aprobaciones (
 
 -- El índice parcial del 21.5, aquí. Cubre la carrera: dos workers
 -- que reclamen la misma propuesta a la vez. Lo que NO cubre es la
--- reanudación, porque para entonces la fila está `aprobada` y un
+-- reanudación, porque para entonces la fila ya está decidida y un
 -- índice parcial sobre `pendiente` no la ve: de eso se encarga el
--- SELECT de `encolar`, que mira las vivas: pendiente, aprobada y
--- editada. Una rechazada o caducada no bloquea la siguiente.
+-- SELECT de `encolar`, que mira las pendientes y las filas del
+-- run que pregunta. Una decidida solo cuenta para su propio run:
+-- desde otro run, la misma huella es una propuesta nueva.
 CREATE UNIQUE INDEX IF NOT EXISTS aprobaciones_una_viva
     ON banco.aprobaciones (hilo, huella)
  WHERE estado = 'pendiente';

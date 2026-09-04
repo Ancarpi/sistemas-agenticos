@@ -24,13 +24,21 @@ piden nada mas: el fichero ya queda como tiene que quedar.
 # src/core/memoria.py --- las tres APIs tipadas del 34.5. El fichero
 # entero, con su esquema y su supresion, esta en el 34.7: esto es su
 # cara publica, la que el agente ve.
-# Los tres receipts se anotan sin importarlos porque se definen más
-# abajo, en el bloque del 34.7 de este mismo fichero.
-from __future__ import annotations
-
 from typing import Literal
 
 from langchain_core.tools import tool
+from pydantic import BaseModel
+
+
+# Los tres receipts van aquí, antes de las tools, reducidos a su
+# nombre: los campos los pone el bloque del 34.7 de este mismo
+# fichero. El orden no es cosmético: `@tool` resuelve las
+# anotaciones al decorar, no al llamar, así que un receipt
+# definido más abajo sería un NameError en el import, y el
+# `from __future__ import annotations` no lo aplaza.
+class MemoryWriteReceipt(BaseModel): ...
+class MemoryProposalReceipt(BaseModel): ...
+class MemoryDeletionReceipt(BaseModel): ...
 
 
 @tool

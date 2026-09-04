@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 from src.core.context_contracts import ContextContract  # el 19.1
-from supervisor import EstadoBanco, Hecho               # el 9.2
+from src.agents.supervisor.supervisor import EstadoBanco, Hecho  # el 9.2
 
 Autoridad = Literal["recomendar", "preparar", "ejecutar", "aprobar"]
 ESCALA = ("recomendar", "preparar", "ejecutar", "aprobar")

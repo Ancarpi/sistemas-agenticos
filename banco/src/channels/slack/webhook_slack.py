@@ -96,6 +96,11 @@ async def eventos(req: Request, tareas: BackgroundTasks,
     if x_slack_retry_num:
         return Response(status_code=200)
     ev = cuerpo["event"]
+    # Lo que publica el propio bot vuelve por aquí como evento:
+    # sin este filtro, el agente se contesta a sí mismo en bucle
+    # y paga cada vuelta.
+    if ev.get("bot_id") or ev.get("subtype"):
+        return Response(status_code=200)
     # El hilo del canal ES el thread_id: mismo checkpoint, otra piel.
     hilo = f"slack:{ev['channel']}:{ev.get('thread_ts', ev['ts'])}"
     tareas.add_task(entregar_en_slack, hilo, ev)
