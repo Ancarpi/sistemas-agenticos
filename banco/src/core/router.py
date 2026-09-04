@@ -115,19 +115,27 @@ def recortar(mensajes: list, contrato, tope: int, contar=None):
             bloq[-1].append(m)        # el par NUNCA se parte
         else:
             bloq.append([m])
-    gasto, quedan, lleno = 0, [], False
-    for i, b in reversed(list(enumerate(bloq))):
-        fijo = (b[0].type == "system" or b[0].additional_kwargs
+    def fijo(b):
+        return (b[0].type == "system" or b[0].additional_kwargs
                 .get("clave") in contrato.allowed_state_keys)
+    # Dos pasadas: lo fijo gasta primero y el resto compite por lo
+    # que quede. En una sola, el system (índice 0) llegaba el
+    # último, con el presupuesto ya repartido en lo recortable.
+    quedan = [i for i, b in enumerate(bloq) if fijo(b)]
+    gasto = sum(contar(m) for i in quedan for m in bloq[i])
+    if gasto > tope:        # ni lo imprescindible cabe; no se
+        raise RutaImposible(   # recorta, se rediseña el contrato
+            f"{contrato.node}: lo fijo pide {gasto} de {tope}")
+    lleno = False
+    for i, b in reversed(list(enumerate(bloq))):
+        if fijo(b):
+            continue
         coste = sum(contar(m) for m in b)
-        if not fijo and (lleno or gasto + coste > tope):
+        if lleno or gasto + coste > tope:
             lleno = True    # se corta por lo VIEJO, no por lo caro
             continue
         gasto += coste
         quedan.append(i)
-    if gasto > tope:        # ni lo imprescindible cabe; no se
-        raise RutaImposible(   # recorta, se rediseña el contrato
-            f"{contrato.node}: lo fijo pide {gasto} de {tope}")
     parte = {"nodo": contrato.node, "tokens": gasto, "tope": tope,
              "fuera": len(bloq) - len(quedan)}
     return [m for i in sorted(quedan) for m in bloq[i]], parte

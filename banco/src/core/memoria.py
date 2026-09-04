@@ -27,6 +27,8 @@ class MemoryRecord(BaseModel):
 import hashlib
 import json
 import os
+from datetime import datetime
+from typing import Literal
 
 import psycopg
 from psycopg.rows import dict_row

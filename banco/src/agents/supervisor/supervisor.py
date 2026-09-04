@@ -271,7 +271,8 @@ if __name__ == "__main__":
 # Anadido del M23.5.
 # supervisor.py (9.2) --- el reparto, con la frontera puesta.
 from src.agents.handoff import (
-    EstadoTraspasado, Presupuesto, TraspasoMuerto, emitir, huella)
+    EstadoTraspasado, Presupuesto, TraspasoMuerto, emitir, huella,
+    briefing as briefing_traspaso)
 from src.core.context_contracts import ContextContract
 
 
@@ -319,8 +320,10 @@ def repartir(estado: EstadoTraspasado, ruta: Ruta) -> Command:
 if __name__ == "__main__":       # el contrato, probado sin modelo
     kit = ["abrir_disputa"]
     c = contrato("fraude", kit, 0.02)
-    e = dict(hechos=[{"autor": "fraude", "dato": "el cargo salió "
-                      "del IBAN ES9121000418450200051332"}],
+    e = dict(hechos=[{"autor": "facturacion", "dato": "el cargo "
+                      "salió del IBAN ES9121000418450200051332"},
+                     {"autor": "facturacion", "dato": "dos envíos "
+                      "con 19 s de diferencia"}],
              devuelto_por="fraude: falta confirmación escrita",
              autoridad="preparar", traspaso=None, saltos=2,
              presupuesto=Presupuesto(tokens=9000, eur=0.4, saltos=3),
@@ -328,7 +331,7 @@ if __name__ == "__main__":       # el contrato, probado sin modelo
              procedencia=dict(origen="cliente", pedido_por="C-99",
                               motivo="dos cargos", caso="REF-4471"))
     vivo = emitir(e, "supervisor", "fraude", "Pide la confirmación",
-                  "recomendar", kit, c)
+                  "recomendar", kit + ["buscar_duplicados"], c)
     assert "[retenido" in vivo.hechos[0]      # el IBAN no cruzó
     for a, encargo, aut in (("fraude", "Abre la  DISPUTA", "preparar"),
                             ("fraude", "Vuelve a mirarlo", "aprobar"),
@@ -336,5 +339,6 @@ if __name__ == "__main__":       # el contrato, probado sin modelo
         try:
             emitir(e, "supervisor", a, encargo, aut, kit, c)
             raise SystemExit(f"debió morir: {a} / {encargo}")
-        except TraspasoMuerto as m:
-            print("muerto:", m)
+        except TraspasoMuerto:
+            pass
+    print(briefing_traspaso(vivo))

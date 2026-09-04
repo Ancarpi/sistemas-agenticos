@@ -21,9 +21,9 @@
     apartado dice que «quien es el hilo» depende de su propio core.
 - fichero: src/rag/indexar.py
   localizador: >-
-    7.4. El indexado se imprime como el uso de `trocear` y `get_embeddings`, no
-    como fichero autonomo: `texto` y `meta` son las variables del bucle del
-    lector sobre su corpus.
+    7.4. El indexado imprime ya sus imports, pero `texto` y `meta` siguen
+    siendo las variables del bucle del lector sobre su corpus: el fichero no
+    corre solo.
 - fichero: src/core/banco.py
   localizador: >-
     3.3, y declarado alli: «en el 9.2 los sacaras a src/core/banco.py». Es el

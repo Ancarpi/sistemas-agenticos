@@ -133,6 +133,19 @@ def main():
                     if al.name not in define and al.name.split(".")[-1] not in por_nombre:
                         roto.append((rel, f"import {al.name}", "no hay ese modulo en el arbol"))
 
+    # La misma pregunta sobre los .md del paquete: una referencia que no
+    # resuelve. La novena medicion encontro `[El libro, en Amazon]
+    # (https://www.amazon.es/dp/)` --- un dp/ sin ASIN es un 404 publicado.
+    # El enlace se pone cuando el ASIN exista; hasta entonces, texto sin enlace.
+    for md in sorted(arbol.parent.rglob("*.md")):
+        if not del_arbol(md):
+            continue
+        for num, linea in enumerate(md.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            if "amazon.es/dp/)" in linea:
+                roto.append((md.relative_to(arbol.parent),
+                             f"linea {num}: enlace amazon.es/dp/ sin ASIN",
+                             "un dp/ vacio es un 404: quita el enlace hasta tener el ASIN"))
+
     print(f"  {len(ficheros)} ficheros · {revisados} imports internos resueltos")
     if declaradas:
         print(f"  {len(declaradas)} imports apuntan a DEUDAS DECLARADAS del libro:")

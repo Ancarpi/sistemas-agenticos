@@ -1,4 +1,4 @@
-# trazas.py --- la tabla del 36.1 como código. Es la función que
+# plataforma/trazas.py --- la tabla del 36.1 como código. Es la función que
 # el `runtime.py` del 37.2 llevaba en línea, y su casa es esta.
 import hashlib
 import re

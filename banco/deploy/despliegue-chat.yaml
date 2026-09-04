@@ -49,10 +49,10 @@ spec:
       containers:
         - name: api
           volumeMounts:
-            # Sin `subPath`: montado así, el fichero NO se
-            # refresca jamás. Y el volumen tapa el directorio
-            # entero, así que en /app/config no puede quedar
-            # nada más que venga de la imagen.
+            # Sin `subPath`: montado así, el fichero SÍ se
+            # refresca (con `subPath`, jamás). Y el volumen tapa
+            # el directorio entero, así que en /app/config no
+            # puede quedar nada más que venga de la imagen.
             - name: routing
               mountPath: /app/config
               readOnly: true

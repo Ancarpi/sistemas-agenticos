@@ -1,5 +1,8 @@
+import os
+
 from langchain_postgres import PGEngine, PGVectorStore
 
+from src.core.models import get_embeddings   # la fábrica del 0.4
 from src.rag.trocear import documentos, trocear   # el 7.3
 
 # la URL debe llevar driver explícito: postgresql+psycopg://...

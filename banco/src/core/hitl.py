@@ -84,14 +84,17 @@ def encolar(*, hilo, run, agente, propone, propuesta, accion=None,
     with _cx() as cx, cx.cursor() as cur:
         if receipt is not None:
             return _verificar(cur, hilo, huella, propone, receipt)
-        # Se pregunta ANTES de insertar, y en CUALQUIER estado. El
-        # `decidir` del 37.2 reejecuta su primera línea al reanudar,
-        # y para entonces esta fila ya está `aprobada`: contra una
-        # aprobada el índice parcial no tiene conflicto que ver, así
-        # que sin este SELECT el INSERT entraría y abriría una
-        # segunda pendiente por cada aprobación.
+        # Se pregunta ANTES de insertar, y solo entre filas VIVAS.
+        # El `decidir` del 37.2 reejecuta su primera línea al
+        # reanudar, y para entonces esta fila ya está `aprobada`:
+        # contra una aprobada el índice parcial no tiene conflicto
+        # que ver, así que sin este SELECT el INSERT entraría y
+        # abriría una segunda pendiente por cada aprobación. Una
+        # rechazada o caducada no cuenta: repetir esa propuesta es
+        # proponerla de nuevo, y toca insertar.
         cur.execute("SELECT id FROM banco.aprobaciones WHERE hilo=%s"
-                    " AND huella=%s ORDER BY id DESC LIMIT 1",
+                    " AND huella=%s AND estado IN ('pendiente',"
+                    " 'aprobada', 'editada') ORDER BY id DESC LIMIT 1",
                     (hilo, huella))
         vieja = cur.fetchone()
         if vieja is not None:

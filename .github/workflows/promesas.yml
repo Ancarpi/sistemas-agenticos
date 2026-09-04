@@ -69,7 +69,7 @@ jobs:
       # en CI este paso salta con su motivo; se ejecuta en local, donde
       # vive fuente/libro.md. LIBRO_MD permite apuntarlo desde un runner
       # privado que si lo tenga.
-      - name: extractor --verificar contra el libro
+      - name: "extractor --verificar contra el libro (SALTADO en CI: requiere libro.md)"
         env:
           LIBRO_MD: ${{ vars.LIBRO_MD || '../fuente/libro.md' }}
         run: |
@@ -94,9 +94,22 @@ jobs:
             python3 tools/generar_env/generar_env.py --verificar \
                 --libro "$LIBRO_MD"
           else
+            echo "::warning::SALTADO: extractor, cobertura, integridad y generar_env --verificar requieren libro.md, que no se publica en este repo. El badge verde NO acredita estas cuatro."
             echo "SALTADO: libro.md no esta disponible en CI (la prosa del libro no se publica aqui)."
             echo "En local, las cuatro: extraer_banco.py --verificar, cobertura.py, integridad.py y generar_env.py --verificar."
           fi
+
+      # La parte de generar_env que SI se puede comprobar sin el libro:
+      # generar_env.py committea el sha256 del .env.example esperado (lo
+      # escribe al generar, en local, donde vive libro.md), y aqui se compara
+      # contra el fichero del arbol. Con esto, un .env.example desincronizado
+      # o editado a mano pone el CI en rojo aunque el paso de arriba salte
+      # --- que es exactamente como generar_env estuvo en rojo un commit
+      # entero sin que el badge lo contara.
+      - name: banco/.env.example cuadra con su sha256 committeado
+        run: |
+          echo "$(cat tools/generar_env/env.example.sha256)  banco/.env.example" | sha256sum -c -
+
       # Esta no necesita el libro: se contesta sobre el arbol extraido.
       - name: los imports internos del arbol resuelven
         run: |
@@ -110,4 +123,12 @@ jobs:
         run: |
           pip install --quiet pyflakes
           python3 tools/extraer_banco/nombres.py
+
+      # La septima, y tampoco necesita el libro: los nombres que el SQL usa.
+      # imports.py audita modulos y nombres.py nombres de Python; nadie
+      # preguntaba por las tablas. La novena medicion: 29 sentencias sobre
+      # cuatro tablas banco.* sin un solo CREATE TABLE en el arbol.
+      - name: toda tabla banco.* que el arbol usa tiene su CREATE TABLE
+        run: |
+          python3 tools/extraer_banco/tablas.py
 

@@ -20,6 +20,7 @@ fichero generado no coincide con el libro.
 """
 
 import argparse
+import hashlib
 import pathlib
 import re
 import sys
@@ -27,6 +28,10 @@ import sys
 AQUI = pathlib.Path(__file__).resolve().parent
 LIBRO = AQUI / ".." / ".." / ".." / "fuente" / "libro.md"
 BANCO = AQUI / ".." / ".." / "banco"
+# El sha256 del .env.example esperado, committeado para que el CI --- que no
+# tiene el libro --- pueda comprobar que banco/.env.example es el generado y
+# no una edicion a mano. Lo escribe este script al generar; el CI solo compara.
+HASH = AQUI / "env.example.sha256"
 PRIMERA = "OPENAI_API_BASE="        # la primera linea del bloque del 0.4
 MARCADORES = ("...", "<")           # un valor con esto no es un valor
 COLUMNA = 41                        # donde se alinea el comentario
@@ -147,20 +152,28 @@ def main() -> int:
         salir(f"{len(largas)} lineas del bloque pasan de 78 columnas: "
               f"{largas[0]!r}")
 
+    huella = hashlib.sha256(texto.encode("utf-8")).hexdigest()
+
     if args.verificar:
         actual = destino.read_text("utf-8") if destino.is_file() else ""
         if actual != texto:
             salir(f"{destino.name} no coincide con el libro: vuelve a "
                   f"ejecutar generar_env.py sin --verificar")
+        committeada = HASH.read_text("utf-8").strip() if HASH.is_file() else ""
+        if committeada != huella:
+            salir(f"{HASH.name} no coincide con el libro: vuelve a "
+                  f"ejecutar generar_env.py sin --verificar (es lo que "
+                  f"compara el CI, que no tiene el libro)")
         if faltan:
             return 1
-        print(f"OK: {len(declaradas)} variables, {destino.name} al dia "
-              f"y ni una os.environ sin declarar")
+        print(f"OK: {len(declaradas)} variables, {destino.name} al dia, "
+              f"{HASH.name} al dia y ni una os.environ sin declarar")
         return 0
 
     destino.write_text(texto, encoding="utf-8")
+    HASH.write_text(huella + "\n", encoding="utf-8")
     print(f"escrito {destino} --- {len(declaradas)} variables "
-          f"desde el 0.4")
+          f"desde el 0.4; sha256 en {HASH.name}")
     if faltan:
         return 1
     return 0

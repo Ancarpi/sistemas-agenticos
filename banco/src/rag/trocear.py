@@ -211,13 +211,15 @@ def trocear_semantico(texto: str, meta: dict, tope: int = TOPE,
     marcas = cortes(bloques, percentil)
     salida: list[dict] = []
     for b, (titulos, fs) in enumerate(bloques):
+        # La cabeza sale del mismo presupuesto que en `trocear`.
+        hueco = tope - len(cabecera(titulos, meta))
         grupo: list[str] = []
         for j, frase in enumerate(fs):
             if (b, j) in marcas and grupo:
                 salida += [trozo(titulos, p, meta)
-                           for p in empaquetar(grupo, tope, 0)]
+                           for p in empaquetar(grupo, hueco, 0)]
                 grupo = []
             grupo.append(frase)
         salida += [trozo(titulos, p, meta)
-                   for p in empaquetar(grupo, tope, 0)]
+                   for p in empaquetar(grupo, hueco, 0)]
     return salida

@@ -207,10 +207,10 @@ def decidir(ctx, llamada) -> str | None:
         # función se reejecuta desde su primera línea y vuelve a
         # pasar por aquí con la fila original ya `aprobada`, así
         # que quien impide la segunda es el `SELECT` por `(hilo,
-        # huella)` de `encolar` del 35.6, que pregunta en
-        # cualquier estado antes de insertar; contra una fila
-        # decidida, el `ON CONFLICT` del índice parcial no tiene
-        # conflicto que ver. La carga del `interrupt()` lleva la
+        # huella)` de `encolar` del 35.6, que pregunta entre las
+        # filas vivas antes de insertar; contra una aprobada, el
+        # `ON CONFLICT` del índice parcial no tiene conflicto que
+        # ver. La carga del `interrupt()` lleva la
         # propuesta porque es lo que `get_state` enseña de un hilo
         # pausado.
         encolar(hilo=ctx["hilo"], run=ctx["run"], accion=llamada["name"],

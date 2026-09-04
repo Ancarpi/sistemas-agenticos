@@ -96,4 +96,4 @@ MIT --- `Copyright (c) 2026 Antonio Carbonell`. El texto está en el `LICENSE` d
 
 La licencia cubre el **código**. La **prosa** del libro sigue siendo del autor y con todos sus derechos: por eso aquí solo hay código y comentarios de código, y por eso el resto del paquete destila el criterio en vez de citarlo.
 
-[El libro, en Amazon](https://www.amazon.es/dp/) --- *Ingeniería de Sistemas Agénticos*, Antonio Carbonell, primera edición, septiembre de 2026.
+El libro, en Amazon --- *Ingeniería de Sistemas Agénticos*, Antonio Carbonell, primera edición, septiembre de 2026. (El enlace se añadirá cuando el ASIN exista: un `amazon.es/dp/` sin ASIN es un 404, y `tools/extraer_banco/imports.py` falla si reaparece.)

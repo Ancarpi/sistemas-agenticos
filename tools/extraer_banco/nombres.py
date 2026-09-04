@@ -56,9 +56,28 @@ def main():
         print("  SALTADO: pyflakes no esta instalado (pip install pyflakes)")
         return 0
 
+    def import_repetido(linea):
+        """Dos bloques impresos del mismo fichero pueden traer el MISMO
+        import (cada bloque se teclea autocontenido); ensamblados, pyflakes
+        lo llama «redefinition of unused». Solo se excusa si las dos lineas
+        son el mismo import, caracter a caracter: un def pisado por un
+        import, o un import distinto, siguen siendo defecto."""
+        m = re.match(r"(.+?):(\d+):\d+:? redefinition of unused '\S+' "
+                     r"from line (\d+)", linea)
+        if not m:
+            return False
+        try:
+            lineas = pathlib.Path(m.group(1)).read_text(
+                encoding="utf-8").splitlines()
+            l_nueva = lineas[int(m.group(2)) - 1].strip()
+            l_vieja = lineas[int(m.group(3)) - 1].strip()
+        except (OSError, IndexError):
+            return False
+        return l_nueva == l_vieja and l_nueva.startswith(("import ", "from "))
+
     roto, excusados = [], []
     for linea in salida.splitlines():
-        if not linea.strip() or RUIDO.search(linea):
+        if not linea.strip() or RUIDO.search(linea) or import_repetido(linea):
             continue
         fich = linea.split(":", 1)[0]
         rel = str(pathlib.Path(fich).relative_to(a.arbol)) if fich.startswith(a.arbol) else fich

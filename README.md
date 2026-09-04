@@ -20,7 +20,7 @@ El paquete de acompañamiento de **«Ingeniería de Sistemas Agénticos --- Manu
 ├── ERRATA.md                correcciones fechadas del libro: qué versión de qué librería rompió qué
 ├── CONTRIBUTING.md          los dos carriles: errata del libro (issue) o problema del paquete (PR)
 ├── banco/         el código del libro en el árbol del Ejercicio 0.1 — NO editar: se regenera
-│   ├── README.md            qué corre, qué corre con PYTHONPATH y qué es fragmento, fichero a fichero
+│   ├── README.md            el arranque de los procesos que corren; la procedencia de todos, en MAPEO.md
 │   ├── MAPEO.md             generado: qué módulo del libro entrega cada fichero, con líneas exactas
 │   └── COSTURAS.md          generado: los fragmentos que el libro deja para pegar a mano
 ├── knowledge/               el criterio: INDEX.md + doce reglas, una por fichero, con su localizador
@@ -63,7 +63,9 @@ Cinco dimensiones independientes, pensadas para lanzarse en paralelo sobre un mi
 
 ## Lo que el CI comprueba
 
-El workflow (`.github/workflows/promesas.yml`) no decora: cada paso es una promesa de este README convertida en verdicto. Que todo `.py` compila --- fragmentos incluidos, porque incompleto no es inválido ---; que todo YAML y JSON parsea; que `isa_validate` valida en verde los cuatro artefactos del libro **y sale con código 1, señalando el campo, sobre los dos negativos de `tools/isa_validate/casos-negativos/`**; y que las anclas del extractor cuadran con el libro, y que `banco/.env.example` sigue siendo el bloque `.env` del 0.4 sin una variable de menos --- estos dos últimos pasos saltan en CI con su motivo, porque la prosa del libro no se publica aquí, y se ejecutan en local donde vive `libro.md`.
+El workflow (`.github/workflows/promesas.yml`) no decora: cada paso es una promesa de este README convertida en verdicto. Que todo `.py` compila --- fragmentos incluidos, porque incompleto no es inválido ---; que todo YAML y JSON parsea; que `isa_validate` valida en verde los cuatro artefactos del libro **y sale con código 1, señalando el campo, sobre los dos negativos de `tools/isa_validate/casos-negativos/`**; que `banco/.env.example` cuadra con el sha256 que `generar_env.py` committea al generarlo; que los imports internos del árbol resuelven, que los nombres que el árbol usa están definidos y que toda tabla `banco.*` que el SQL usa tiene su `CREATE TABLE` (`tools/extraer_banco/tablas.py`).
+
+Y la letra pequeña del badge, dicha de frente: **el verde del CI no acredita las cuatro comprobaciones que necesitan `libro.md`** --- las anclas del extractor (`--verificar`), la cobertura, la integridad y `generar_env.py --verificar` ---, porque la prosa del libro no se publica aquí. Ese paso salta en CI diciéndolo a gritos y las cuatro se ejecutan en local, donde vive `libro.md`; el sha256 committeado es lo que deja al CI vigilar `.env.example` aun sin el libro.
 
 ## Cómo se cita `knowledge/`
 
