@@ -21,7 +21,7 @@ import identidad                            # el fichero del 18.3
 from herramientas import (buscar_transferencia, escalar_a_humano,
                           historial_cuenta, marcar_resuelta)  # 4.1
 from hitl import encolar                    # Ejercicio 35.2
-from politica import autorizar              # 26.2 + Ejercicio 35.1
+from src.core.politica import autorizar     # el motor del 26.5
 from src.core.models import get_embeddings, get_model    # el 0.4
 from trazas import atributos                # el fichero del 36.6
 

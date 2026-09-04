@@ -1,0 +1,35 @@
+# config/politica.yaml --- las reglas del banco, como datos. Se
+# revisan en un pull request, se despliegan con el ConfigMap del
+# 27.2 y se revierten con el commit anterior. La `version` viaja al
+# log: una decisión sin la versión de la regla no se reconstruye.
+version: "2026-09-01.3"
+por_defecto: deny          # lo que no case con una regla, no pasa
+limites:
+  importe_autonomo_eur: 50              # el umbral del 4.3, fuera
+  step_up_desde: L3                     # el peldaño del Anexo H
+  mueve_dinero: [core.sepa.devolver]    # la 5.ª tool del Ej. 3.1
+reglas:
+  - id: lectura-de-cuenta
+    cuando:
+      agent.id: [banco.chat.support, banco.cards.disputes.v1]
+      tool.id: [core.sepa.buscar, core.sepa.historial]
+      risk.autonomy_level: L0
+      resource.data_class: [internal, confidential]
+      context.purpose: [customer_support, fraud_review]
+      context.env: [prod, eu-prod]
+    entonces: allow
+  - id: cierre-reversible
+    cuando:
+      tool.id: [core.sepa.resolver, core.sepa.escalar]
+      risk.autonomy_level: L3
+      context.env: [prod, eu-prod]
+    entonces: allow
+  - id: devolucion-de-transferencia
+    cuando:
+      tool.id: [core.sepa.devolver]
+      context.env: [prod, eu-prod]
+    entonces: require_step_up_auth      # y el límite la sube sola
+  - id: ensayo-fuera-de-produccion
+    cuando: {context.env: [dev, staging],
+             risk.autonomy_level: [L2, L3, L4]}
+    entonces: require_dry_run

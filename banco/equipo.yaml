@@ -1,0 +1,56 @@
+# equipo.yaml --- quién responde por cada agente publicado. Va en
+# plano junto al `registro.py` del 32.3, que es quien lo hace
+# cumplir; el `equipo.py` de al lado es quien lo comprueba.
+version: 7          # sube en el mismo PR que mueve a una persona
+
+turnos:
+  # Una rotación semanal para toda la plataforma, contada desde
+  # este instante. Entre comillas a propósito: sin ellas PyYAML
+  # devuelve un `datetime` naive en UTC, y restárselo a un
+  # `now(timezone.utc)` es un TypeError en la primera alerta.
+  arranque: "2026-01-05T08:00:00+00:00"
+  turno_horas: 168
+  rotacion: [ana.ruiz, marc.oller, laura.pena, dani.souto]
+  ack_minutos: 15               # sin acuse, salta al jefe
+  jefe: nuria.vela              # segundo nivel, no rota
+
+personas:
+  # `busca` es la clave de enrutado del paginador. Este fichero
+  # vive en git, y un teléfono en git es un dato personal del
+  # inventario del 34.6 sin plazo de borrado ni base jurídica.
+  ana.ruiz:    {equipo: plataforma, busca: pg-ana}
+  marc.oller:  {equipo: plataforma, busca: pg-marc}
+  laura.pena:  {equipo: pagos,      busca: pg-laura}
+  dani.souto:  {equipo: tarjetas,   busca: pg-dani}
+  nuria.vela:  {equipo: plataforma, busca: pg-nuria}
+  # Riesgo y comité no entran en la rotación y no llevan `busca`:
+  # se les llama por el escalado, no a las tres de la mañana.
+  sergio.lam:  {equipo: riesgo_operacional}
+  elena.buj:   {equipo: riesgo_tecnologico}
+  comite_ia:   {equipo: gobierno}   # buzón, no persona
+
+agentes:
+  # Tres firmas por agente. `owner_tecnico` despliega y revierte;
+  # `owner_riesgo` firma el peldaño y responde ante el comité, y
+  # nunca es el mismo; `sube_autonomia` es quien puede subirlo.
+  # `firmado_hasta` es el peldaño del Anexo H que riesgo tiene
+  # firmado hoy; cuando el `agent.yaml` sube su `risk_tier` y
+  # esta línea se queda donde estaba, no hay publicación.
+  banco.chat.support.v4:
+    owner_tecnico: marc.oller
+    owner_riesgo: elena.buj
+    sube_autonomia: comite_ia
+    firmado_hasta: L2
+    firmado_el: 2026-02-11
+  banco.sepa.conciliacion.v1:
+    owner_tecnico: laura.pena
+    owner_riesgo: sergio.lam
+    sube_autonomia: comite_ia
+    firmado_hasta: L3
+    firmado_el: 2026-06-15
+  banco.cards.disputes.v1:
+    owner_tecnico: dani.souto
+    owner_riesgo: sergio.lam
+    sube_autonomia: comite_ia
+    firmado_hasta: L4      # L4: el 21.4 exige HITL y maker-checker
+    firmado_el: 2026-07-30

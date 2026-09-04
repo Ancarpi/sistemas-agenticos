@@ -15,6 +15,7 @@ Codigos de salida: 0 todo bien; 1 anclas desplazadas o mapeo invalido.
 """
 
 import argparse
+import json
 import pathlib
 import re
 import unicodedata
@@ -46,21 +47,35 @@ def _escalar(txt):
         return _lista(cuerpo) if cuerpo else []
     if txt.startswith("'"):
         return txt[1:txt.rindex("'")].replace("''", "'")
+    # Comilla doble: un ancla que lleva comillas simples dentro --- las hay,
+    # cualquier f-string del libro --- no se puede escribir entre comillas
+    # simples sin doblarlas a mano, y a mano se hace mal. En YAML el escalar
+    # entre comillas dobles usa escapes de barra, que son los de JSON, y json
+    # es stdlib: se delega ahi en vez de reimplementarlos.
+    if txt.startswith('"'):
+        return json.loads(txt[:txt.rindex('"') + 1])
     return txt
 
 
 def _lista(cuerpo):
-    piezas, actual, entre_comillas = [], "", False
+    """Parte por comas de primer nivel, respetando ambos tipos de comilla."""
+    piezas, actual, comilla = [], "", None
     i = 0
     while i < len(cuerpo):
         c = cuerpo[i]
-        if c == "'":
-            if entre_comillas and i + 1 < len(cuerpo) and cuerpo[i + 1] == "'":
+        if comilla == '"' and c == "\\" and i + 1 < len(cuerpo):
+            actual += cuerpo[i:i + 2]   # \" dentro de dobles no cierra nada
+            i += 2
+            continue
+        if c == "'" and comilla in (None, "'"):
+            if comilla and i + 1 < len(cuerpo) and cuerpo[i + 1] == "'":
                 actual += "''"
                 i += 2
                 continue
-            entre_comillas = not entre_comillas
-        if c == "," and not entre_comillas:
+            comilla = None if comilla else "'"
+        elif c == '"' and comilla in (None, '"'):
+            comilla = None if comilla else '"'
+        if c == "," and comilla is None:
             piezas.append(actual)
             actual = ""
         else:
