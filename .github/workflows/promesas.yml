@@ -80,7 +80,18 @@ jobs:
             # un fichero del libro puede no estar nunca en el arbol y el
             # verificador seguir diciendo OK --- paso con cuatro de la Parte III.
             python3 tools/extraer_banco/cobertura.py --libro "$LIBRO_MD"
+            # Y la integridad, que es una tercera pregunta distinta: --verificar
+            # dice si las anclas siguen en su sitio, cobertura si todo bloque
+            # tiene destino, e integridad si el destino se lleva el bloque
+            # ENTERO. Sin esta, ocho ficheros salieron truncados con los otros
+            # dos en verde --- `agente_backoffice.py` con 6 lineas de 101.
+            python3 tools/extraer_banco/integridad.py --libro "$LIBRO_MD"
           else
-            echo "SALTADO: libro.md no esta disponible en CI (la prosa del libro no se publica en este repo)."
-            echo "En local: python3 tools/extraer_banco/extraer_banco.py --verificar && python3 tools/extraer_banco/cobertura.py --libro ../fuente/libro.md"
+            echo "SALTADO: libro.md no esta disponible en CI (la prosa del libro no se publica aqui)."
+            echo "En local, las tres: extraer_banco.py --verificar, cobertura.py e integridad.py."
           fi
+      # Esta no necesita el libro: se contesta sobre el arbol extraido.
+      - name: los imports internos del arbol resuelven
+        run: |
+          python3 tools/extraer_banco/imports.py
+

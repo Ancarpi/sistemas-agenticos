@@ -101,3 +101,99 @@ def empaquetar(piezas: list[str], tope: int,
     if actual:
         salida.append(" ".join(actual))
     return salida
+
+
+def trozo(titulos: str, texto: str, meta: dict) -> dict:
+    # El título va DENTRO del texto que se embebe, no solo en el
+    # metadato: «será del 0,50%» no lo recupera ninguna consulta,
+    # porque no contiene ninguna de sus palabras. Es la mitad
+    # barata del enriquecido, y no cuesta una llamada.
+    cabeza = f"[{meta['fuente']} · {titulos}]\n" if titulos else ""
+    t = {**meta, "content": cabeza + texto,
+         "seccion": titulos[:200] or None}
+    # uuid5 del contenido: reindexar SOBRESCRIBE, no duplica, que
+    # es el criterio del Ejercicio 7.1. Tiene precio: si tocas el
+    # partidor cambian todos los ids y el corpus viejo se queda
+    # al lado del nuevo. Reindexado entero, o DELETE por fuente.
+    t["langchain_id"] = str(
+        uuid.uuid5(NS, meta["fuente"] + "|" + t["content"]))
+    return t
+
+
+def trocear(texto: str, meta: dict, tope: int = TOPE,
+            solape: int = SOLAPE) -> list[dict]:
+    """Estructura-consciente: el de partida, y casi siempre el
+    definitivo. Cero llamadas al modelo para indexar."""
+    return [trozo(titulos, parte, meta)
+            for titulos, cuerpo in secciones(texto)
+            for parte in empaquetar(frases(cuerpo), tope, solape)]
+
+
+def documentos(trozos: list[dict]) -> list[Document]:
+    """El puente al `add_documents` del 7.4, que quiere `Document`
+    y no dicts. El `langchain_id` del uuid5 viaja como `id`, y por
+    ahí reindexar sobrescribe en vez de duplicar; el resto del
+    dict va a `metadata`, que son las columnas del 7.6."""
+    fuera = ("content", "langchain_id")
+    return [Document(id=t["langchain_id"], page_content=t["content"],
+                     metadata={k: v for k, v in t.items()
+                               if k not in fuera})
+            for t in trozos]
+
+
+def coseno(a: list[float], b: list[float]) -> float:
+    p = sum(x * y for x, y in zip(a, b))
+    na = sum(x * x for x in a) ** 0.5
+    nb = sum(y * y for y in b) ** 0.5
+    return p / (na * nb) if na and nb else 0.0
+
+
+def cortes(bloques: list[tuple[str, list[str]]],
+           percentil: int) -> set[tuple[int, int]]:
+    """Los cortes (bloque, frase) donde cambia el significado.
+
+    El umbral sale del documento ENTERO y las distancias se miden
+    solo dentro de cada sección. Sacar el percentil sección a
+    sección no funciona: una de diez frases deja nueve distancias
+    y el 95 de nueve no corta jamás. Y las parejas que cruzan un
+    encabezado no entran, porque ese corte ya lo puso el autor.
+    """
+    if sum(len(fs) - 1 for _, fs in bloques) < 20:
+        return set()          # sin muestra no hay percentil
+    v = get_embeddings().embed_documents(
+        [f for _, fs in bloques for f in fs])     # UNA llamada
+    dist: dict[tuple[int, int], float] = {}
+    base = 0
+    for b, (_, fs) in enumerate(bloques):
+        for j in range(len(fs) - 1):
+            dist[(b, j + 1)] = 1 - coseno(v[base + j],
+                                          v[base + j + 1])
+        base += len(fs)
+    umbral = quantiles(list(dist.values()), n=100)[percentil - 1]
+    return {k for k, d in dist.items() if d > umbral}
+
+
+def trocear_semantico(texto: str, meta: dict, tope: int = TOPE,
+                      percentil: int = PERCENTIL) -> list[dict]:
+    """Igual, pero cortando donde cambia el significado.
+
+    Corre DENTRO de cada sección, nunca por encima: un corte que
+    fusiona dos encabezados deja un trozo cuyo metadato `seccion`
+    miente, y con él la cita que el 7.5 promete al auditor. Y sin
+    solape, porque el solape devolvería al trozo justo la frase
+    que el corte acaba de declarar de otro tema.
+    """
+    bloques = [(t, frases(c)) for t, c in secciones(texto)]
+    marcas = cortes(bloques, percentil)
+    salida: list[dict] = []
+    for b, (titulos, fs) in enumerate(bloques):
+        grupo: list[str] = []
+        for j, frase in enumerate(fs):
+            if (b, j) in marcas and grupo:
+                salida += [trozo(titulos, p, meta)
+                           for p in empaquetar(grupo, tope, 0)]
+                grupo = []
+            grupo.append(frase)
+        salida += [trozo(titulos, p, meta)
+                   for p in empaquetar(grupo, tope, 0)]
+    return salida

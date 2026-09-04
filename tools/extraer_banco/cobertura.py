@@ -55,14 +55,28 @@ def main():
     m = yaml.safe_load(pathlib.Path(a.mapeo).read_text(encoding="utf-8"))
     destinos = {pathlib.Path(e["destino"]).name for e in m["entradas"]}
 
+    # La comparacion es BLOQUE A BLOQUE y no por nombre de fichero, y la
+    # diferencia costo caro: el mapeo tenia una entrada `plantilla` llamada
+    # `evals/medidas.py` y con eso esta comprobacion daba verde, mientras los dos
+    # bloques donde el 15.7 imprime el fichero de verdad --- 186 lineas con
+    # `medir`, `casos_para` y `Puerta` --- no estaban declarados en ninguna parte.
+    # Lo mismo con `grafo_conciliacion.py`: dos parches declarados y el bloque de
+    # 223 lineas del 5.3, el que trae `obtener_app`, sin declarar. Preguntar «¿este
+    # nombre tiene destino?» no es preguntar «¿este bloque se extrae?».
+    declarados = set()
+    for e in m["entradas"]:
+        for r in e.get("bloques", []):
+            ini = int(str(r).split("-")[0])
+            declarados.add(ini)
+
     faltan = []
     for nombre, linea in entregas(lineas):
-        if pathlib.Path(nombre).name not in destinos:
+        if linea not in declarados:
             faltan.append((nombre, linea))
 
     vistos = len(entregas(lineas))
     print(f"  {vistos} bloques del libro se presentan con nombre de fichero")
-    print(f"  {len(destinos)} destinos distintos en el mapeo")
+    print(f"  {len(declarados)} bloques declarados en el mapeo, {len(destinos)} destinos")
     if faltan:
         print(f"\n  {len(faltan)} SIN ENTRADA EN EL MAPEO --- estan en el libro y no en el arbol:")
         for nombre, linea in faltan:

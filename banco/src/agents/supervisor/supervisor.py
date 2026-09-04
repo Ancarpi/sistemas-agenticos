@@ -265,3 +265,76 @@ if __name__ == "__main__":
         "devuelto_por": None, "saltos": 0, "respuesta": "",
     })
     print(final["respuesta"])
+
+
+# --- anadido del M23.5 (extraer_banco) ---
+# Anadido del M23.5.
+# supervisor.py (9.2) --- el reparto, con la frontera puesta.
+from src.agents.handoff import (
+    EstadoTraspasado, Presupuesto, TraspasoMuerto, emitir, huella)
+from src.core.context_contracts import ContextContract
+
+
+def contrato(nodo: str, kit: list[str], eur: float) -> ContextContract:
+    """Un ContextContract del 19.1 por destino. Lo escribe el
+    dueño del nodo, no quien le traspasa trabajo."""
+    return ContextContract(
+        node=nodo, objective=f"cumplir el encargo de {nodo}",
+        allowed_state_keys=["hechos", "encargo", "abiertas"],
+        forbidden_patterns=[r"\bES\d{2}(?:[ -]?\d{4}){5}\b"],
+        visible_tools=kit, output_schema="Informe",
+        max_input_tokens=1500, max_output_tokens=400,
+        latency_budget_ms=8000, max_cost_eur=eur, fallback="escalate")
+
+
+# nodo: autoridad concedida, kit y tope por llamada. Fraude solo
+# recomienda (23.4), y por eso `abrir_disputa` sigue exigiendo la
+# confirmación del cliente: dos frenos distintos, a propósito.
+DESTINOS = {
+    "facturacion": ("preparar", ["buscar_transferencia",
+                                 "buscar_duplicados"], 0.01),
+    "fraude": ("recomendar", ["historial_cliente",
+                              "abrir_disputa"], 0.02),
+}
+
+
+def repartir(estado: EstadoTraspasado, ruta: Ruta) -> Command:
+    """Sustituye al `return Command(...)` del supervisor del 9.2."""
+    autoridad, kit, eur = DESTINOS[ruta.destino]
+    try:
+        t = emitir(estado, "supervisor", ruta.destino, ruta.encargo,
+                   autoridad, kit, contrato(ruta.destino, kit, eur))
+    except TraspasoMuerto as m:
+        # Ni se reintenta ni se pierde el caso: se responde con lo
+        # que hay y se dice en voz alta qué faltó.
+        return Command(goto="responder",
+                       update={"devuelto_por": f"contrato: {m}"})
+    # El trabajador del 9.2 cambia una línea: su `briefing(estado)`
+    # pasa a ser `briefing(Traspaso(**estado["traspaso"]))`.
+    return Command(goto=t.a, update={
+        "traspaso": t.model_dump(), "recorrido": [t.recorrido[-1]],
+        "saltos": estado["saltos"] + 1})
+
+
+if __name__ == "__main__":       # el contrato, probado sin modelo
+    kit = ["abrir_disputa"]
+    c = contrato("fraude", kit, 0.02)
+    e = dict(hechos=[{"autor": "fraude", "dato": "el cargo salió "
+                      "del IBAN ES9121000418450200051332"}],
+             devuelto_por="fraude: falta confirmación escrita",
+             autoridad="preparar", traspaso=None, saltos=2,
+             presupuesto=Presupuesto(tokens=9000, eur=0.4, saltos=3),
+             recorrido=["fraude:" + huella("Abre la disputa")],
+             procedencia=dict(origen="cliente", pedido_por="C-99",
+                              motivo="dos cargos", caso="REF-4471"))
+    vivo = emitir(e, "supervisor", "fraude", "Pide la confirmación",
+                  "recomendar", kit, c)
+    assert "[retenido" in vivo.hechos[0]      # el IBAN no cruzó
+    for a, encargo, aut in (("fraude", "Abre la  DISPUTA", "preparar"),
+                            ("fraude", "Vuelve a mirarlo", "aprobar"),
+                            ("supervisor", "Decide tú", "preparar")):
+        try:
+            emitir(e, "supervisor", a, encargo, aut, kit, c)
+            raise SystemExit(f"debió morir: {a} / {encargo}")
+        except TraspasoMuerto as m:
+            print("muerto:", m)

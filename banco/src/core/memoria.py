@@ -28,3 +28,22 @@ def recordar_preferencia_cliente(
 ) -> MemoryWriteReceipt:
     """Guarda una preferencia declarada del cliente, con su evidencia."""
     ...
+
+@tool
+def proponer_memoria_colectiva(
+    dominio: str,
+    tipo: Literal['faq', 'eval_case', 'playbook', 'policy_candidate'],
+    resumen: str,
+    evidencias_run_ids: list[str],
+) -> MemoryProposalReceipt:
+    """Propone un candidato de memoria colectiva; no publica nada."""
+    ...
+
+@tool
+def olvidar_memoria(
+    namespace: tuple[str, ...],
+    key: str,
+    motivo: Literal['user_request', 'expired', 'incorrect', 'policy'],
+) -> MemoryDeletionReceipt:
+    """Borra una entrada de memoria y deja constancia del motivo."""
+    ...

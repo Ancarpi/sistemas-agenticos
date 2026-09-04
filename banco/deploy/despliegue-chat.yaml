@@ -32,3 +32,27 @@ spec:
           resources:
             requests: {cpu: "300m", memory: "512Mi"}
             limits: {memory: "512Mi"}     # memoria sí, CPU no
+
+
+# --- anadido del M27.2 (extraer_banco) ---
+# Anadido del M27.2.
+# despliegue-chat.yaml --- lo que el 27.2 añade al 17.2. Todo lo
+# demás del pod (envFrom, sondas, preStop, resources) no se toca.
+spec:
+  template:
+    spec:
+      volumes:
+        # La clave del ConfigMap se llama `model_routing.yaml`:
+        # es la que da nombre al fichero dentro del montaje.
+        - name: routing
+          configMap: {name: agent-routing-config}
+      containers:
+        - name: api
+          volumeMounts:
+            # Sin `subPath`: montado así, el fichero NO se
+            # refresca jamás. Y el volumen tapa el directorio
+            # entero, así que en /app/config no puede quedar
+            # nada más que venga de la imagen.
+            - name: routing
+              mountPath: /app/config
+              readOnly: true

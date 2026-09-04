@@ -20,3 +20,24 @@ routes:
     reasoning_effort: low
     max_output_tokens: 1200
     eval_gate: faithfulness >= 0.90 and pii_leakage == 0
+
+
+# --- anadido del M19.6 (extraer_banco) ---
+# Anadido del M19.6.
+# config/model_routing.yaml --- lo que el 19.2 no declaraba: el
+# tope por llamada, el canary, la ruta que no admite degradar y
+# los precios (EUR por millón de tokens, entrada y salida). Los
+# del ejemplo caducan; los tuyos salen de tu factura.
+routes:
+  triage_low_risk:            # el resto de claves, las del 19.2
+    max_cost_eur: 0.002
+    canary: 10                # % de tráfico que va al fallback
+  supervisor_high_risk:
+    max_cost_eur: 0.12        # 5.000 de salida se comen 0,05
+    degradar: false           # antes que bajar de alias, falla
+precios:
+  agente-rapido:       [0.25, 1.00]
+  agente-rapido-2:     [0.25, 1.00]
+  agente-equilibrado:  [1.00, 4.00]
+  agente-listo:        [2.50, 10.00]
+  agente-listo-backup: [2.50, 10.00]

@@ -83,6 +83,47 @@ def _limite_economico(bundle: dict, peticion: dict, d: str) -> str:
     importe = _valor(peticion, "resource.amount_eur")
     if not isinstance(importe, (int, float)):
         return "deny"
+    if importe > limites["importe_autonomo_eur"]:
+        return max(d, "require_human", key=ORDEN.index)
+    return d
+
+
+def _paso_reforzado(bundle: dict, peticion: dict, d: str) -> str:
+    """Del peldaño que diga el bundle hacia arriba, un sujeto
+    HUMANO autenticado de forma débil sube a step-up (Anexo H). Al
+    sujeto de carga del 35.3 no hay a quién pedirle un segundo
+    factor, y lo que puede hacer se lo acota su regla del bundle,
+    que no llega a L4. La guarda sigue cerrada por defecto: un
+    `subject.kind` que no llegue cuenta como humano."""
+    if _valor(peticion, "subject.kind") == "workload":
+        return d
+    desde = PELDANOS.index(bundle["limites"]["step_up_desde"])
+    nivel = PELDANOS.index(_valor(peticion, "risk.autonomy_level"))
+    debil = _valor(peticion, "subject.auth_level") != "strong"
+    if nivel >= desde and debil:
+        return max(d, "require_step_up_auth", key=ORDEN.index)
+    return d
+
+
+def autorizar(peticion: dict) -> str:
+    """La única función que el resto del libro importa. El
+    `runtime.py` del 37.2 la llama una vez por herramienta y
+    escribe lo que devuelve en el `policy.decision` del 36.1."""
+    try:
+        bundle = _bundle()
+        if bundle is None or any(k not in peticion for k in CLAVES):
+            log.error("politica: sin bundle o petición incompleta")
+            return "deny"
+        decision = _regla(bundle, peticion)
+        decision = _limite_economico(bundle, peticion, decision)
+        return _paso_reforzado(bundle, peticion, decision)
+    except Exception:
+        # Un peldaño inventado, un tipo raro en el YAML o una
+        # clave que falta acaban aquí, y acabar aquí es denegar. El
+        # `exception` separa el deny que decidió la política del
+        # que decidió un fallo.
+        log.exception("politica: evaluación fallida")
+        return "deny"
 
 
 # --- costura PENDIENTE del M35.2 (extraer_banco) ---

@@ -71,3 +71,81 @@ def trayectorias(n: int, corpus: str, semilla: int) -> float:
     """Firma de medida del 15.7, para entrar en su `PUERTAS`."""
     return asyncio.run(_correr(
         cargar("trayectorias", "v1", n, semilla), _un_caso))
+
+
+# --- anadido del M25.7 (extraer_banco) ---
+# Anadido del M25.7.
+# src/evals/trayectoria.py (sigue) --- el usuario simulado del
+# 25.6. La conversación entera la juzga el `fallos` de arriba.
+USUARIO = "agente-rapido-backup"   # el otro lado, de otro proveedor
+
+
+@dataclass(frozen=True)
+class Usuario:
+    perfil: str      # cómo escribe, de qué humor y qué no hace
+    objetivo: str    # qué considera ÉL haber terminado
+    oculto: dict     # lo que solo suelta si se lo preguntan
+    paciencia: int = 6      # mensajes suyos antes de irse
+
+
+class Replica(BaseModel):
+    """texto: lo que escribe, una o dos frases. entregado: claves
+    de `oculto` que acaba de dar. conseguido: si ya tiene lo suyo."""
+    texto: str
+    entregado: list[str] = []
+    conseguido: bool
+
+
+GUION = """Eres un cliente del banco escribiendo por el chat. No
+eres un asistente y no ayudas a nadie: tienes un problema tuyo.
+Perfil: {perfil}. Objetivo: {objetivo}.
+Solo sabes esto, y cada dato lo sueltas ÚNICAMENTE si te lo piden
+en el último mensaje: {oculto}
+Te quedan {quedan} mensajes de paciencia; al acabarse, te vas. No
+resumas la conversación ni des las gracias por el trabajo.
+Conversación:
+{historia}"""
+
+
+async def conversar(app, u: Usuario, ref: str, cfg: dict) -> dict:
+    """Termina cuando él consigue lo suyo o cuando se le acaba la
+    paciencia, y ninguna de las dos la decide el agente."""
+    modelo = get_model(USUARIO).with_structured_output(Replica)
+    historia, dados, repetidos, t = [], [], [], []
+    for turno in range(1, u.paciencia + 1):
+        # El perfil viaja en TODOS los turnos, no solo en el primero.
+        r = modelo.invoke(GUION.format(
+            perfil=u.perfil, objetivo=u.objetivo,
+            quedan=u.paciencia - turno + 1,
+            oculto=json.dumps(u.oculto, ensure_ascii=False),
+            historia="\n".join(historia) or "(nada aún)"))
+        if r.conseguido:
+            break        # se va contento, y este mensaje no cuenta
+        # Si entrega dos veces la misma clave, se la han pedido dos.
+        repetidos += [k for k in r.entregado if k in dados]
+        dados += r.entregado
+        historia.append(f"Cliente: {r.texto}")
+        # La traza se CONCATENA: cada `astream` emite solo lo suyo.
+        entrada = {"referencia": ref, "messages": [("user", r.texto)]}
+        t += await recorrer(app, entrada, cfg)
+        m = (await app.aget_state(cfg)).values["messages"][-1]
+        historia.append(f"Asistente: {m.content}")
+    return {"turnos": turno, "conseguido": r.conseguido, "traza": t,
+            "repetidos": repetidos,
+            "escalado": "escalar_a_humano" in t}
+
+
+async def _una_charla(app, c: dict, cfg: dict) -> list[str]:
+    r = await conversar(app, Usuario(**c["usuario"]), c["referencia"],
+                        cfg)
+    # El `conseguido` esperado es FALSO en el perfil que insiste.
+    m = fallos(r["traza"], c["invariantes"])
+    m += [f"repetido {k}" for k in r["repetidos"]]
+    m += [k for k in ("conseguido", "escalado") if r[k] != c[k]]
+    return m + (["turnos"] if r["turnos"] > c["turnos"] else [])
+
+
+def conversaciones(n: int, corpus: str, semilla: int) -> float:
+    """Dos modelos por caso: puerta antes del canary (25.6)."""
+    return asyncio.run(_correr(
+        cargar("conversaciones", "v1", n, semilla), _una_charla))

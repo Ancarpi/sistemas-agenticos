@@ -239,3 +239,17 @@ async def guardia(peticion, siguiente):
         return ToolMessage(motivo,
                            tool_call_id=peticion.tool_call["id"])
     return await siguiente(peticion)
+
+
+def despachar(llamada, herramienta):
+    """Y la forma que recibe el grafo propio: el bucle del 9.2
+    llama aquí donde llamaba a `herramienta.invoke`, y con eso las
+    dos fronteras alcanzan al que no es agente de turno. El ctx
+    sale del `get_runtime()`, que aquí no llega colgado de una
+    petición. Y el precio de parar dentro de un bucle escrito a
+    mano: al reanudar se reejecuta el nodo entero, así que las
+    tools que ese trabajador ya despachó en la misma vuelta se
+    llaman otra vez --- idempotencia en el WHERE (11.5)."""
+    motivo = decidir(get_runtime().context, llamada)
+    return ({"error": "POLICY", "mensaje": motivo} if motivo
+            else herramienta.invoke(llamada["args"]))

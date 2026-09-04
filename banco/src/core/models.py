@@ -11,3 +11,14 @@ def get_model(alias: str = "agente-rapido", **kwargs):
         api_key=os.environ["OPENAI_API_KEY"],
         **kwargs,
     )
+
+def get_embeddings(alias: str = "emb-multilingue"):
+    """Mismo principio para embeddings: el código solo conoce el gateway."""
+    from langchain_openai import OpenAIEmbeddings
+
+    return OpenAIEmbeddings(
+        model=alias,
+        base_url=os.environ["OPENAI_API_BASE"],
+        api_key=os.environ["OPENAI_API_KEY"],
+        check_embedding_ctx_length=False,  # el proxy no es OpenAI
+    )
