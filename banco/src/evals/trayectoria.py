@@ -77,7 +77,9 @@ def trayectorias(n: int, corpus: str, semilla: int) -> float:
 # Anadido del M25.7.
 # src/evals/trayectoria.py (sigue) --- el usuario simulado del
 # 25.6. La conversación entera la juzga el `fallos` de arriba.
-USUARIO = "agente-rapido-backup"   # el otro lado, de otro proveedor
+# El otro lado sale de otro proveedor, y ése es el alias que
+# el 0.5 declara con uno distinto del de `agente-rapido`.
+USUARIO = "agente-rapido-2"
 
 
 @dataclass(frozen=True)

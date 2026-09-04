@@ -152,15 +152,31 @@ VERSION_JUEZ = "2026-09-a"
 # la medida corre contra otro.
 
 
+def recall_at_k(orden: list[str],
+                correctas: set[str], k: int = 5) -> float:
+    """Cuántos de los documentos correctos caen en el top k. La
+    definición vive aquí y en ningún otro sitio: el
+    `run_rag_eval.py` del 8.3 tenía la suya, con otra aritmética
+    y otro conjunto, y dos definiciones de una métrica son una
+    métrica y un error esperando su turno."""
+    return len(correctas & set(orden[:k])) / len(correctas)
+
+
 def recall5(n: int, corpus: str, semilla: int) -> float:
     """Determinista sobre índice congelado: de ahí el pase único
     del 18.4. Y de ahí también que su fila sea la que obliga a que
-    el suelo de `medir` no sea solo la dispersión."""
+    el suelo de `medir` no sea solo la dispersión. Recupera con
+    el `nivel` de cada caso y no como dueño de la tabla: la RLS
+    del 7.6 cambia el corpus, y un recall medido sin ella mide un
+    sistema que nadie despliega. Y la serie no se mueve al pasar
+    a `recall_at_k`: con un documento correcto por caso, contar
+    aciertos y promediar recalls dan el mismo número."""
     casos = cargar("rag_dataset", "v3", n, semilla)
-    aciertos = sum(
-        any(t["meta"]["fuente"] in c["fuentes"]
-            for t in recuperar(c["pregunta"])[:5]) for c in casos)
-    return aciertos / n
+    logrado = sum(
+        recall_at_k([t["meta"]["fuente"] for t in
+                     recuperar(c["pregunta"], niveles=c["nivel"])],
+                    set(c["fuentes"])) for c in casos)
+    return logrado / n
 
 
 class Fundamento(BaseModel):

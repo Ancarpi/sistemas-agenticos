@@ -92,6 +92,14 @@ def main():
                 mod = n.module or ""
                 if raiz(mod) in EXTERNO or n.level:
                     continue
+                # `from src.core import hitl` importa el MODULO src/core/hitl.py,
+                # no un simbolo de un src/core.py que nadie escribe. Si todos los
+                # nombres pedidos son modulos del arbol, el import resuelve.
+                submods = [al.name for al in n.names
+                           if f"{mod}.{al.name}" in define]
+                if submods and len(submods) == len(n.names):
+                    revisados += 1
+                    continue
                 if mod not in define and mod.split(".")[-1] not in por_nombre:
                     roto.append((rel, f"from {mod} import ...", "no hay ese modulo en el arbol"))
                     continue

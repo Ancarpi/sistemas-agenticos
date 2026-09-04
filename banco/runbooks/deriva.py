@@ -22,9 +22,11 @@ HORAS = 168       # una semana, como el SLO que vigila
 # runs juzgados, y al 10% de muestreo del 36.3 son 7.070 de
 # tráfico. Ojo con lo que compra la cifra: es el SUELO para
 # comparar dos ventanas, y con ella una caída de exactamente
-# dos puntos dispara el 55% de las semanas. Nueve de cada
-# diez piden unas 2.000 juzgadas, y `casos_para_detectar`
-# hace esa cuenta para la regla del 15.7. Las palancas
+# dos puntos dispara el 55% de las semanas con la regla de
+# aquí abajo, la de las dos ventanas: nueve de cada diez
+# piden unas 2.000 juzgadas. Los 2.365 de
+# `casos_para_detectar` son de la otra regla, la de `medir`
+# contra un umbral, y no se suman a esta. Las palancas
 # siguen siendo alargar la ventana o declarar una caída
 # mayor, y la segunda es cuadrática: cinco puntos bajan a
 # 114 juzgados.

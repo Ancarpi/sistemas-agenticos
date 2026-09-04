@@ -28,9 +28,27 @@ PERCENTIL = 95    # el umbral del semántico; se mueve con el 8.3
 TITULO = re.compile(r"^(#{1,6})\s+(.+)$")
 VALLA = re.compile(r"^\s*(```|~~~)")
 # Corta tras punto, cierre o dos puntos, y solo si lo que sigue
-# abre frase. Sin el lookahead, «art. 66.1.b)» son tres frases.
-FRASE = re.compile(r"(?<=[.!?:])\s+(?=[«\"(¿¡A-ZÁÉÍÓÚÑ0-9])")
+# abre frase. El `0-9` que llevaba el lookahead está fuera, y por
+# lo que rompía: con él «el Art. 50(2)» se parte en dos y «las
+# filas del Art. 26(11) y del Art. 14.» en tres, sobre un corpus
+# que es el manual normativo de un banco. Se paga con lo
+# contrario: la frase que de verdad empieza por una cifra, o el
+# número de una lista, ya no separa. Si tu corpus vive de esas
+# listas, la alternativa es un lookbehind de abreviaturas
+# (`art`, `núm`, `pág`) en vez de la clase de la derecha.
+FRASE = re.compile(r"(?<=[.!?:])\s+(?=[«\"(¿¡A-ZÁÉÍÓÚÑ])")
 NS = uuid.uuid5(uuid.NAMESPACE_DNS, "banco.manuales")
+
+
+def cabecera(titulos: str, meta: dict) -> str:
+    """El «[fuente · títulos]» que `trozo` mete DENTRO del texto.
+
+    Vive aparte porque la miran dos: `trozo` para escribirla y
+    `trocear` para descontar su longitud del tope antes de
+    empaquetar. Y recorta a 200 igual que `seccion`, así que el
+    metadato describe lo que de verdad se embebió."""
+    t = titulos[:200]
+    return f"[{meta['fuente']} · {t}]\n" if t else ""
 
 
 def secciones(texto: str) -> list[tuple[str, str]]:
@@ -108,7 +126,7 @@ def trozo(titulos: str, texto: str, meta: dict) -> dict:
     # metadato: «será del 0,50%» no lo recupera ninguna consulta,
     # porque no contiene ninguna de sus palabras. Es la mitad
     # barata del enriquecido, y no cuesta una llamada.
-    cabeza = f"[{meta['fuente']} · {titulos}]\n" if titulos else ""
+    cabeza = cabecera(titulos, meta)
     t = {**meta, "content": cabeza + texto,
          "seccion": titulos[:200] or None}
     # uuid5 del contenido: reindexar SOBRESCRIBE, no duplica, que
@@ -126,7 +144,13 @@ def trocear(texto: str, meta: dict, tope: int = TOPE,
     definitivo. Cero llamadas al modelo para indexar."""
     return [trozo(titulos, parte, meta)
             for titulos, cuerpo in secciones(texto)
-            for parte in empaquetar(frases(cuerpo), tope, solape)]
+            # La cabeza se embebe con el texto, así que sale
+            # del mismo presupuesto: sin descontarla, una
+            # sección de títulos largos entrega trozos por
+            # encima del tope y el modelo los trunca en silencio.
+            for parte in empaquetar(
+                frases(cuerpo),
+                tope - len(cabecera(titulos, meta)), solape)]
 
 
 def documentos(trozos: list[dict]) -> list[Document]:

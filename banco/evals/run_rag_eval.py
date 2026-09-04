@@ -4,7 +4,8 @@
 import sys
 from math import log2
 
-from evals.medidas import Puerta, cargar, casos_para, juzga, medir
+from evals.medidas import (Puerta, cargar, casos_para, juzga,
+                           medir, recall_at_k)
 from src.rag.rerank import recuperar
 from src.rag.responder import responder
 
@@ -38,17 +39,20 @@ PASES_JUEZ = 3           # el juez no es determinista; el recall sí
 #               filas de las dos últimas no sabes si esa capa va
 
 
-def recall_at_k(orden: list[str], correctas: set[str],
-                k: int = K) -> float:
-    """Cuántos de los documentos correctos caen en el top k. Con
-    un solo documento correcto vale 1,0 o 0,0."""
-    return len(set(orden[:k]) & correctas) / len(correctas)
+# `recall_at_k` ya no se define aquí: vive una sola vez, en el
+# `medidas.py` del 15.7, porque el `recall5` de allí medía lo
+# mismo con otra aritmética y sobre otro conjunto. Es la misma
+# razón por la que este fichero toma de RAGAS la idea y no la
+# dependencia, que es lo que dice el párrafo de encima.
 
 
 def ndcg_at_k(orden: list[str], correctas: set[str],
               k: int = K) -> float:
     """El mismo acierto, descontado por el puesto en que sale y
-    dividido por el del mejor orden posible: de 0 a 1."""
+    dividido por el del mejor orden posible: de 0 a 1. La fuente
+    repetida cobraría dos veces el mismo acierto, así que el orden
+    se deduplica antes de puntuar."""
+    orden = list(dict.fromkeys(orden))
     dcg = sum(1 / log2(i + 1)
               for i, d in enumerate(orden[:k], start=1)
               if d in correctas)
@@ -77,7 +81,7 @@ def recuperacion(metrica):
     semilla) -> float, con la media sobre los n casos."""
     def medida(n: int, corpus: str, semilla: int) -> float:
         casos = cargar("rag_dataset", "v1", n, semilla)
-        return sum(metrica(orden(c), set(c["fuentes"]))
+        return sum(metrica(orden(c), set(c["fuentes"]), K)
                    for c in casos) / n
     return medida
 

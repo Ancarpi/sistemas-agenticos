@@ -25,6 +25,13 @@ CLASES = ("public", "internal", "confidential", "restricted")
 # tapa en L1, que un dígito mal oído por el ASR no bloquee nada.
 TECHO = {"voz": "L1", "email": "L2", "chat": "L3",
          "backoffice": "L4"}
+# Los scopes y el nivel de identidad de las cuatro, que el
+# Ejercicio 20.1 manda escribir en sus manifiestos y ningún
+# apartado dice: `accounts:read` con nivel 1 en
+# `buscar_transferencia` y `historial_cuenta`, que solo leen;
+# `cases:write` con nivel 2 en `marcar_resuelta` y
+# `cases:escalate` con nivel 2 en `escalar_a_humano`, que
+# escriben. El quinto es el `cards:block` con nivel 2 del 20.1.
 IMPL = {t.name: t for t in (buscar_transferencia, historial_cuenta,
                             marcar_resuelta, escalar_a_humano)}
 log = logging.getLogger("catalogo")
@@ -47,8 +54,23 @@ def _fallos(m: dict) -> list:
     # dato va escrita, porque suponerla `internal` es degradarla.
     if not isinstance(m.get("auth", {}).get("identity_level"), int):
         malos.append("auth.identity_level")
+    # Y `scopes`, que `_cabe` indexa sin `get`: exigir `auth`
+    # deja libre lo que lleva dentro, así que un manifiesto sin
+    # scopes arrancaba en verde y reventaba con `KeyError` en la
+    # primera llamada, ya dentro del camino de la petición.
+    if not isinstance(m.get("auth", {}).get("scopes"), list):
+        malos.append("auth.scopes")
     if m.get("audit", {}).get("data_class") not in CLASES:
         malos.append("audit.data_class")
+    # Los dos ejes del 20.4 que `_cabe` leía con `.get` y que
+    # nadie exigía: sin ellos, `disponibilidad` salía `{}` y
+    # `coste_eur` 0.0, y jurisdicción, estado del caso,
+    # propósito y presupuesto eran cuatro ramas muertas. Se
+    # exige aquí la CLAVE y no en `EXIGIDAS`, que pide un valor
+    # verdadero: `{}` y 0.0 son respuestas legítimas.
+    for eje in ("disponibilidad", "coste_eur"):
+        if eje not in m:
+            malos.append(eje)
     return malos
 
 
@@ -79,7 +101,11 @@ CATALOGO = cargar()
 
 
 def _cabe(m: dict, sujeto: dict, ctx: dict) -> bool:
-    """Los seis ejes que el 20.4 enumera, en un solo sitio."""
+    """Los seis ejes que el 20.4 enumera, en un solo sitio:
+    autenticación (scopes y nivel), canal, riesgo, jurisdicción,
+    estado del caso y presupuesto. El `proposito` viaja con los
+    dos de en medio porque se declara igual, en `disponibilidad`,
+    y quien lo cobra de verdad es el `autorizar` del 26.5."""
     if PELDANOS.index(m["risk_tier"]) > PELDANOS.index(
             TECHO[ctx["canal"]]):
         return False
@@ -88,10 +114,10 @@ def _cabe(m: dict, sujeto: dict, ctx: dict) -> bool:
     if sujeto["nivel_identidad"] < m["auth"]["identity_level"]:
         return False
     for eje in ("jurisdiccion", "estado_caso", "proposito"):
-        permitidos = m.get("disponibilidad", {}).get(eje)
+        permitidos = m["disponibilidad"].get(eje)
         if permitidos and ctx.get(eje) not in permitidos:
             return False
-    return m.get("coste_eur", 0.0) <= ctx["presupuesto_eur"]
+    return m["coste_eur"] <= ctx["presupuesto_eur"]
 
 
 def puede_ver(nombre: str, sujeto: dict, ctx: dict) -> bool:

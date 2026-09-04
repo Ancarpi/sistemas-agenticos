@@ -9,6 +9,12 @@ from langchain_core.messages import (
 
 from src.core.models import get_model      # la fábrica del 0.4
 
+# El corte que el 9.2 promete empieza aquí: de `IBAN_CLIENTE` a
+# `eur()` van treinta líneas que no son del agente, y son
+# `src/core/banco.py`, el fichero que allí se importa con
+# `from src.core.banco import TRANSFERENCIAS, eur`. Lo que sigue
+# a `eur()` es `nano_agent.py`, y arranca con
+# `from src.core.banco import CASOS, TRANSFERENCIAS, eur, hace`.
 IBAN_CLIENTE = "ES9121000418450200051332"
 
 # El «core bancario» de este capítulo: un dict. En el M11 será
@@ -61,9 +67,14 @@ def historial_cuenta(iban: str, dias: int = 7) -> dict:
     if dias > 90:
         return {"error": "INVALID_ARGUMENT",
                 "mensaje": "dias <= 90; más allá no hay retención"}
+    # El filtro que hacía falta para que `dias` signifique algo
+    # y para que el docstring de `hace()` sea verdad: las cadenas
+    # ISO con el mismo `timespec` se ordenan como fechas.
+    desde = hace(days=dias)
     movs = [{"referencia": r, "importe": eur(t["importe_cent"]),
              "fecha": t["fecha"], "beneficiario": t["beneficiario"]}
-            for r, t in TRANSFERENCIAS.items() if t["iban"] == iban]
+            for r, t in TRANSFERENCIAS.items()
+            if t["iban"] == iban and t["fecha"] >= desde]
     return {"iban": iban, "dias": dias, "movimientos": movs}
 
 

@@ -146,7 +146,11 @@ def metrica(llamadas, casos: dict, t: dict) -> dict:
             "modelo": total - humano, "casos": len(casos),
             "correctas": len(correctas),
             "escalados": len(escalados),
-            "por_caso": total / max(len(casos), 1),
+            # El numerador de `por_caso` es `modelo`. El tiempo
+            # humano de los escalados lo paga la organización y
+            # no el agente, y metido en esta división movía la
+            # cifra sin que nadie hubiera tocado el sistema.
+            "por_caso": (total - humano) / max(len(casos), 1),
             "por_correcta": total / max(len(correctas), 1),
             "por_escalado": sum(escalados) / max(len(escalados), 1)}
 

@@ -11,6 +11,17 @@ auth:
   # revisor: este es el eje que el catálogo del 20.4 compara con
   # el sujeto en cada llamada.
   identity_level: 2
+# Los dos ejes que el catálogo del 20.4 compara con el CONTEXTO
+# y no con el sujeto. Sin ellos escritos, `_cabe` los leía con
+# `.get` y cuatro de sus seis ramas no recortaban nada. Un
+# `disponibilidad` vacío quiere decir «en todas partes» y un
+# `coste_eur` a cero, «gratis»: las dos son respuestas, y por eso
+# el catálogo exige la clave y deja libre el valor.
+disponibilidad:
+  jurisdiccion: [ES]
+  estado_caso: [abierta, en_revision]
+  proposito: [fraude, atencion_cliente]
+coste_eur: 0.02        # lo que factura la llamada al core (29.4)
 preconditions:
   - card_status in [active, suspected_fraud]
   - fraud_signal or explicit_customer_request

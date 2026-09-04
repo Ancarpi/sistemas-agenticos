@@ -73,9 +73,9 @@ def _diff(propuesta: dict, args) -> dict:
 
 def encolar(*, hilo, run, agente, propone, propuesta, accion=None,
             receipt=None) -> int:
-    """Las dos mitades del ciclo en una firma, porque el `decidir`
-    del 37.2 la llama con `receipt` y quien publica la pausa la
-    llama sin él. Sin receipt abre la propuesta y la deja
+    """Las dos mitades del ciclo en una firma, y el `decidir` del
+    37.2 las usa las dos: sin `receipt` encima del `interrupt()`,
+    y con él al reanudar. Sin receipt abre la propuesta y la deja
     `pendiente`, que es lo que lista `pendientes`. Con receipt no
     abre nada: comprueba que quien reanuda trae la firma de esta
     cola, y revienta si no."""
@@ -122,7 +122,8 @@ def _verificar(cur, hilo, huella, propone, receipt) -> int:
         raise ReciboInvalido(f"{hilo}: firma ajena a la fila")
     if _firmar(receipt) != receipt["firma"]:
         raise ReciboInvalido(f"{hilo}: receipt manipulado")
-    if receipt.get("aprobador") == propone:
+    if (receipt.get("decision") in ("approve", "edit")
+            and receipt.get("aprobador") == propone):
         raise AutoAprobacion(f"{propone} firmó su propia propuesta")
     return fila["id"]
 

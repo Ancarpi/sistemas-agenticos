@@ -1,4 +1,7 @@
-# fábrica de modelos: el ÚNICO sitio del proyecto donde se instancia un LLM
+# src/core/models.py --- la fábrica de modelos: el ÚNICO sitio
+# del proyecto donde se instancia un LLM. La ruta es la que fija
+# el Ejercicio 0.1 y la que importan por su nombre completo los
+# ficheros que vienen detrás: sale ya escrita aquí.
 import os
 from langchain.chat_models import init_chat_model
 
