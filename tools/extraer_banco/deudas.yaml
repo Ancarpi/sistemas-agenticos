@@ -1,0 +1,22 @@
+# deudas.yaml --- lo que el libro deja a proposito para el lector, con el sitio
+# donde lo declara.
+#
+# Vive aparte de mapeo.yaml porque el mini-parser del extractor solo entiende el
+# subconjunto de YAML que necesita para el mapeo, y una seccion mas de primer
+# nivel le hacia leer estas entradas como destinos.
+#
+# `imports.py` las lee de aqui. Una laguna declarada no es un import roto, y
+# separarlas es lo unico que hace que un import roto DE VERDAD se vea.
+- modulo: herramientas
+  nombres: [devolver_transferencia]
+  localizador: >-
+    4.3, L1435: «Una sola pieza de este fichero no esta impresa:
+    devolver_transferencia, la quinta herramienta, que sale del Ejercicio 3.1
+    y se decora en el 4.1 con las otras»
+- modulo: evals.medidas
+  nombres: [faithfulness, chat_autonomo, lote_sin_humano, redteam,
+            ahorro_vs_humano, cargar, juzga]
+  localizador: >-
+    Ejercicio 31.1, L10170: «Completa las cinco medidas que le faltan al
+    evals/medidas.py del 15.7». El aceptacion.py del 31.2 anota al lado de cada
+    import el ejercicio que lo escribe.

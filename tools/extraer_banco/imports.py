@@ -45,7 +45,7 @@ def raiz(modulo):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--arbol", default=str(pathlib.Path(__file__).parents[2] / "banco"))
-    ap.add_argument("--mapeo", default=str(pathlib.Path(__file__).parent / "mapeo.yaml"))
+    ap.add_argument("--deudas", default=str(pathlib.Path(__file__).parent / "deudas.yaml"))
     a = ap.parse_args()
     arbol = pathlib.Path(a.arbol)
 
@@ -54,7 +54,7 @@ def main():
     # verdad no se pierda entre ellas.
     import yaml as _y
     deudas, localiza = {}, {}
-    for d in (_y.safe_load(pathlib.Path(a.mapeo).read_text(encoding="utf-8")) or {}).get("deudas", []):
+    for d in (_y.safe_load(pathlib.Path(a.deudas).read_text(encoding="utf-8")) or []):
         deudas[d["modulo"]] = set(d["nombres"])
         localiza[d["modulo"]] = d.get("localizador", "")
 

@@ -13,21 +13,6 @@
 # bloques: rangos de lineas de CONTENIDO (sin las vallas ```), 1-indexado.
 
 libro_lineas: 12546
-# Lo que el libro deja a proposito para el lector, con el sitio donde lo declara.
-# `imports.py` las lee de aqui: una laguna declarada no es un import roto, y
-# distinguirlas es lo que hace que un import roto DE VERDAD se vea.
-deudas:
-  - modulo: herramientas
-    nombres: [devolver_transferencia]
-    localizador: '4.3, L1435: «Una sola pieza de este fichero no esta impresa:
-      devolver_transferencia, la quinta herramienta, que sale del Ejercicio 3.1»'
-  - modulo: evals.medidas
-    nombres: [faithfulness, chat_autonomo, lote_sin_humano, redteam,
-              ahorro_vs_humano, cargar, juzga]
-    localizador: 'Ejercicio 31.1, L10170: «Completa las cinco medidas que le
-      faltan al evals/medidas.py del 15.7». El aceptacion.py del 31.2 anota al
-      lado de cada import el ejercicio que lo escribe.'
-
 entradas:
   - destino: src/rag/responder.py
     modulo: '7.5'
