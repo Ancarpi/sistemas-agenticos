@@ -75,7 +75,12 @@ jobs:
         run: |
           if [ -f "$LIBRO_MD" ]; then
             python3 tools/extraer_banco/extraer_banco.py --verificar --libro "$LIBRO_MD"
+            # Y la cobertura, que es otra pregunta: --verificar responde si las
+            # anclas siguen en su sitio, no si FALTA una entrada. Sin este paso,
+            # un fichero del libro puede no estar nunca en el arbol y el
+            # verificador seguir diciendo OK --- paso con cuatro de la Parte III.
+            python3 tools/extraer_banco/cobertura.py --libro "$LIBRO_MD"
           else
             echo "SALTADO: libro.md no esta disponible en CI (la prosa del libro no se publica en este repo)."
-            echo "En local: python3 tools/extraer_banco/extraer_banco.py --verificar"
+            echo "En local: python3 tools/extraer_banco/extraer_banco.py --verificar && python3 tools/extraer_banco/cobertura.py --libro ../fuente/libro.md"
           fi

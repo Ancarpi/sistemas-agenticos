@@ -124,7 +124,7 @@ CREATE POLICY manuales_por_nivel ON manuales
                      'publica'), ',')));
 
 
--- --- anadido del M16.6 (extraer_meridiano) ---
+-- --- anadido del M16.6 (extraer_banco) ---
 -- registro_ia (Art. 12). El libro dice literalmente que va en el schema.sql del 7.6.
 -- registro_ia --- Art. 12. Va en el schema.sql del 7.6.
 CREATE TABLE IF NOT EXISTS registro_ia (

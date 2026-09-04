@@ -11,6 +11,7 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import wrap_tool_call    # el 4.2
 from langchain_core.messages import ToolMessage
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langgraph.runtime import get_runtime                 # el ctx
 from langgraph.store.postgres.aio import AsyncPostgresStore
 from langgraph.types import interrupt                     # el 6.1
 from psycopg.rows import dict_row
@@ -107,7 +108,9 @@ def compilar(pk, sello, propio=None):
     (nombre, `version`, `status`) del 33.4 y de las filas de
     aprobación del 33.6: sin él, ni marcar una tool `retired` ni
     retirarle la aprobación revocan nada. `propio`: el grafo del
-    paquete (9.2). El `guardia` es el de abajo, en este fichero."""
+    paquete (9.2), que recibe las tools recortadas y `despachar`,
+    la guarda de abajo con la forma de una función: un bucle
+    escrito a mano no tiene tubería donde montar middleware."""
     clave = (pk["id"], pk["version"], sello)
     if clave in CACHE:
         return CACHE[clave]
@@ -116,11 +119,12 @@ def compilar(pk, sello, propio=None):
     tools = resolver(pk["tools_allowed"])
     if propio is not None:
         # El paquete con grafo propio NO se busca sus herramientas
-        # ni su middleware: los recibe, o la revocación y la
-        # política no le llegan. Migrar el supervisor del 9.2 es
-        # eso --- `g` pasa a `g(tools, mw)` --- y llega sin
-        # compilar: la durabilidad la pone la plataforma.
-        CACHE[clave] = propio(tools, [guardia]).compile(
+        # ni su guarda: las recibe, o la revocación y la política
+        # no le llegan. Migrar el supervisor del 9.2 es eso ---
+        # `g` pasa a `g(tools, despachar)` y su bucle despacha por
+        # ahí --- y llega sin compilar: la durabilidad la pone la
+        # plataforma.
+        CACHE[clave] = propio(tools, despachar).compile(
             checkpointer=SAVER, store=STORE)
     else:
         CACHE[clave] = create_agent(
@@ -146,20 +150,25 @@ async def ejecutar(agente_id, sujeto, texto, proposito, humano):
            "metadata": atributos(pk, ctx)}                 # 36.1
     return await compilar(pk, sello_catalogo(), propio).ainvoke(
         {"messages": [("user", texto)]}, cfg, context=ctx)
-# La política y el HITL, en el mismo `wrap_tool_call` del 4.2 que
-# ya usaste en el 13.4: una decisión por llamada, para los cuatro.
-# Va debajo de `ejecutar`, en el mismo fichero, y `async` con
-# `await` como aquel: uno síncrono invocado desde `ainvoke` no se
-# ejecuta nunca --- aborta la primera llamada y se lleva por
-# delante las dos fronteras que este apartado llama insaltables.
-@wrap_tool_call
-async def guardia(peticion, siguiente):
-    ctx, llamada = peticion.runtime.context, peticion.tool_call
+# La política y el HITL: una decisión por llamada, para los
+# cuatro. Va debajo de `ejecutar`, en el mismo fichero. El cuerpo
+# se escribe una vez y se enchufa de dos formas, porque los cuatro
+# agentes no tienen una sola forma: el `wrap_tool_call` del 4.2
+# que ya usaste en el 13.4, para el que monta un `create_agent`
+# --- los dos de turno y el paquete del worker de SEPA (11.5) ---,
+# y una función normal para el que despacha sus herramientas a
+# mano, que es el supervisor del 9.2. Con solo la primera, la
+# mitad de la flota corre sin política y sin HITL.
+def decidir(ctx, llamada) -> str | None:
+    """Devuelve None si la llamada procede --- con los `args` ya
+    editados si el aprobador los tocó --- y el texto del rechazo
+    si no. El ctx es el `context=` de `ejecutar` en las dos."""
     clase, peldano = CATALOGO[llamada["name"]][3:]
     # El dict del 35.2 con sus seis claves, que son los seis
     # atributos que el Ejercicio 35.1 obliga a evaluar. `autorizar`
     # es ese policy engine y devuelve una de sus cinco cadenas. La
-    # tool va por su nombre: `peticion.tool` es None si retirada.
+    # tool va por su nombre, lo único que las dos formas comparten;
+    # y en el middleware `peticion.tool` es None si está retirada.
     decision = autorizar({
         "subject": {"user_id": ctx["humano"]["id"],
                     "auth_level": ctx["humano"]["auth"]},
@@ -178,7 +187,7 @@ async def guardia(peticion, siguiente):
                       "run.id": ctx["run"]}))
     if decision == "require_human":
         # El `interrupt()` va PRIMERO y no hay efecto externo por
-        # encima (la regla del 11.5): al reanudar, este wrapper se
+        # encima (la regla del 11.5): al reanudar, esta función se
         # reejecuta desde su primera línea, y encolando arriba la
         # segunda vuelta deja una propuesta gemela, con su segundo
         # receipt, para un solo commit. La propuesta va en la
@@ -196,11 +205,22 @@ async def guardia(peticion, siguiente):
         # 35.4: sin este reparto las tres cadenas caen en
         # `siguiente` y rechazar ejecuta igual que aprobar.
         if d["decision"] == "reject":
-            return ToolMessage(f"RECHAZADO: {d['motivo_rechazo']}",
-                               tool_call_id=llamada["id"])
+            return f"RECHAZADO: {d['motivo_rechazo']}"
         if d["decision"] == "edit":
             llamada["args"] = d["args"]     # el commit va editado
     elif decision != "allow":      # dry-run y step-up: aún no están
-        return ToolMessage(f"política: {decision}",
-                           tool_call_id=llamada["id"])
+        return f"política: {decision}"
+    return None
+
+
+@wrap_tool_call
+async def guardia(peticion, siguiente):
+    """La forma middleware, y `async` con `await` como el del 4.2:
+    uno síncrono invocado desde `ainvoke` no se ejecuta nunca ---
+    aborta la primera llamada y se lleva por delante las dos
+    fronteras que este apartado llama insaltables."""
+    motivo = decidir(peticion.runtime.context, peticion.tool_call)
+    if motivo:
+        return ToolMessage(motivo,
+                           tool_call_id=peticion.tool_call["id"])
     return await siguiente(peticion)

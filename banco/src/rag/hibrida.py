@@ -46,7 +46,10 @@ def sesion_lectura(niveles: str = NIVELES):
     encima del índice el freno del escaneo iterativo deja de ser
     un lujo.
     """
-    with psycopg.connect(os.environ["DATABASE_URL"]) as con:
+    # es_banco vive en banco y plainto_tsquery la busca por
+    # nombre: sin este -c, el del pool del 10.2, no la encuentra.
+    with psycopg.connect(os.environ["DATABASE_URL"],
+                         options="-c search_path=banco") as con:
         with con.transaction():
             con.execute("SET LOCAL ROLE agente_lectura")
             con.execute("SELECT set_config('banco.niveles',"

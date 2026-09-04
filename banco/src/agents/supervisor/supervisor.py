@@ -169,7 +169,14 @@ CIERRE = ("Cierra tu parte: qué hechos has establecido y si has "
           "cumplido el encargo. No redactes nada para el cliente.")
 
 
-def trabajador(nombre: str, sistema: str, kit: list):
+# La guarda por defecto: sin plataforma no hay política que
+# aplicar, así que se invoca y ya. El 37.2 pasa la suya --- una
+# decisión por llamada --- y este bucle no cambia ni una línea más.
+def directo(llamada, herramienta):
+    return herramienta.invoke(llamada["args"])
+
+
+def trabajador(nombre: str, sistema: str, kit: list, despachar=directo):
     despacho = {h.name: h for h in kit}
 
     def nodo(
@@ -192,7 +199,7 @@ def trabajador(nombre: str, sistema: str, kit: list):
                 # Decisión 2 del 3.2: un nombre alucinado es un
                 # error esperable, no una excepción que tumba el nodo.
                 h = despacho.get(c["name"])
-                salida = (h.invoke(c["args"]) if h else
+                salida = (despachar(c, h) if h else
                           {"error": "UNKNOWN_TOOL",
                            "mensaje": f"usa una de {list(despacho)}"})
                 local.append(ToolMessage(
