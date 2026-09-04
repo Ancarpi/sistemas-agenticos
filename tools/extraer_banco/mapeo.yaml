@@ -12,7 +12,7 @@
 #
 # bloques: rangos de lineas de CONTENIDO (sin las vallas ```), 1-indexado.
 
-libro_lineas: 13781
+libro_lineas: 13786
 entradas:
   - destino: src/core/memoria.sql
     modulo: '34.7'
@@ -38,7 +38,7 @@ entradas:
   - destino: src/core/supresion.py
     modulo: '34.7'
     modo: verbatim
-    bloques: [11624-11818]
+    bloques: [11629-11823]
     anclas: ["# src/core/supresion.py --- la operación distribuida del 34.6:"]
     anclas_fin: ["print(f\"\\nTTL vencido: {purgar_caducadas()}\")"]
     nota: 'Entregado del M34.7.'
@@ -59,7 +59,7 @@ entradas:
   - destino: src/core/hitl.py
     modulo: '35.6'
     modo: verbatim
-    bloques: [12073-12344]
+    bloques: [12078-12349]
     anclas: ["# src/core/hitl.py --- el servicio de aprobaciones del 35.4. La cola"]
     anclas_fin: ["return caducadas"]
     nota: 'Entregado del M35.6.'
@@ -206,7 +206,7 @@ entradas:
   - destino: plataforma/trazas.py
     modulo: '36.6'
     modo: verbatim
-    bloques: [12539-12601]
+    bloques: [12544-12606]
     anclas: ['# plataforma/trazas.py --- la tabla del 36.1 como código. Es la función que']
     anclas_fin: ['return dentro']
     nota: 'El esquema de traza del 36.1 como codigo: la unidad de observacion de una flota es la decision, no la CPU.'
@@ -321,7 +321,7 @@ entradas:
   - destino: db/schema.sql
     modulo: '35.6'
     modo: patch
-    bloques: [12355-12405]
+    bloques: [12360-12410]
     anclas: ["-- Al final de db/schema.sql (7.6), junto a banco.trabajos (21.5):"]
     anclas_fin: ["WHERE estado = 'pendiente';"]
     nota: 'banco.aprobaciones (la cola de aprobaciones con su receipt firmado). El libro dice literalmente que va al final del db/schema.sql del 7.6, junto a banco.trabajos.'
@@ -589,14 +589,14 @@ entradas:
   - destino: src/core/memoria.py
     modulo: '34.7'
     modo: patch
-    bloques: [11277-11398]
+    bloques: [11277-11400]
     anclas: ["# src/core/memoria.py --- las tres APIs del 34.5 con cuerpo, sus"]
     anclas_fin: ["return cur.fetchone()[\"hay\"]"]
     nota: 'Anadido del M34.7.'
   - destino: src/core/memoria.py
     modulo: '34.7'
     modo: patch
-    bloques: [11402-11616]
+    bloques: [11404-11621]
     anclas: ["ESCRIBIR = \"\"\""]
     anclas_fin: ["return cuenta"]
     nota: 'Continuacion del M34.7. El bloque no lleva cabecera con su ruta:
@@ -639,7 +639,7 @@ entradas:
   - destino: plataforma/runtime.py
     modulo: '37.2'
     modo: verbatim
-    bloques: [12662-12815, 12826-12945]
+    bloques: [12667-12820, 12831-12950]
     anclas: ['# runtime.py --- nadie importa un grafo: se pide por id. Ni', '# La política y el HITL: una decisión por llamada, para los']
     anclas_fin: ['{"messages": [("user", texto)]}, cfg, context=ctx)', "else herramienta.invoke(llamada[\"args\"]))"]
     nota: 'Nadie importa un grafo: se pide por id, con el sello del catalogo en la clave de la cache. La politica y el HITL van en el mismo wrap_tool_call.'

@@ -82,8 +82,10 @@ class MemoryWriteReceipt(BaseModel):
 
 
 class MemoryProposalReceipt(BaseModel):
-    """Que NO se publicó nada: la fila pendiente de la cola del
-    35.6 y el `count` del namespace, igual antes y después."""
+    """Que proponer no publica: la fila de la cola del 35.6 en el
+    estado en que esté --- pendiente al proponer; su decisión, si
+    la reejecución llega tarde --- y el `count` del namespace,
+    igual antes y después."""
     referencia: str
     dominio: str
     tipo: str
@@ -249,25 +251,28 @@ def proponer_memoria_colectiva(
             raise MemoriaRechazada(f"sin traza: {faltan} (34.3)")
         cur.execute(CUENTA, (ns,))
         antes = cur.fetchone()["n"]
-    # `encolar` contesta con la fila mínima del 35.6: aquí basta
-    # el id, que es lo que el receipt del steward lleva dentro.
-    pid = hitl.encolar(
+    # `encolar` contesta con la fila mínima del 35.6, y el
+    # receipt la repite entera: si esta llamada es la reejecución
+    # de una propuesta ya decidida, mentiría diciendo `pendiente`
+    # de lo que el steward ya contestó.
+    fila_hitl = hitl.encolar(
         hilo=f"memoria|{ref}", run=ctx["run"], agente=ctx["agente"],
         accion="memoria.publicar",
         propone=propone,
         propuesta={"referencia": ref, "dominio": dominio,
                    "tipo": tipo, "resumen": resumen,
                    "evidencias_run_ids": list(evidencias_run_ids)},
-    )["id"]
+    )
     with conectar() as cx, cx.cursor() as cur:
         cur.execute(CUENTA, (ns,))
         despues = cur.fetchone()["n"]
     return MemoryProposalReceipt(
         referencia=ref, dominio=dominio, tipo=tipo,
-        propuesta_id=pid, hilo=f"memoria|{ref}", publicado=False,
+        propuesta_id=fila_hitl["id"], hilo=f"memoria|{ref}",
+        publicado=fila_hitl["estado"] in ("aprobada", "editada"),
         evidencias_run_ids=list(evidencias_run_ids),
         colectivas_antes=antes, colectivas_despues=despues,
-        estado="pendiente")
+        estado=fila_hitl["estado"])
 
 
 def publicar(receipt: dict) -> MemoryWriteReceipt | None:

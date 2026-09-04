@@ -3,17 +3,17 @@
 **Generado por `tools/extraer_banco/extraer_banco.py`. No se edita a mano:**
 se edita `tools/extraer_banco/mapeo.yaml` y se vuelve a ejecutar el script.
 
-Libro de origen: 13781 lineas. 72 ficheros, 89 entradas de mapeo.
+Libro de origen: 13786 lineas. 72 ficheros, 89 entradas de mapeo.
 
 | Fichero | Modulo | Modo | Lineas del libro | Nota |
 |---|---|---|---|---|
 | `src/core/memoria.sql` | M34.7 | verbatim | L11107-11197 | Entregado del M34.7. |
 | `tests/test_registro.py` | M16.7 | verbatim | L5950-5977 | Entregado del M16.7. |
 | `tests/test_art50.py` | M16.7 | verbatim | L5930-5946 | Anadido del M16.7. |
-| `src/core/supresion.py` | M34.7 | verbatim | L11624-11818 | Entregado del M34.7. |
+| `src/core/supresion.py` | M34.7 | verbatim | L11629-11823 | Entregado del M34.7. |
 | `src/rag/responder.py` | M7.5 | verbatim | L2443-2539 | Entregado del M7.5. |
 | `evals/run_rag_eval.py` | M8.3 | verbatim | L3264-3391 | Entregado del M8.3. |
-| `src/core/hitl.py` | M35.6 | verbatim | L12073-12344 | Entregado del M35.6. |
+| `src/core/hitl.py` | M35.6 | verbatim | L12078-12349 | Entregado del M35.6. |
 | `src/core/router.py` | M19.6 | verbatim | L6632-6772 | Entregado del M19.6. |
 | `src/core/catalogo_tools.py` | M20.6 | verbatim | L7040-7182 | Entregado del M20.6. |
 | `src/evals/trayectoria.py` | M25.7 | verbatim | L8717-8789 | Entregado del M25.7. |
@@ -34,7 +34,7 @@ Libro de origen: 13781 lineas. 72 ficheros, 89 entradas de mapeo.
 | `plataforma/estado.py` | M32.2 | verbatim | L10546-10579 | Un pool, un checkpointer y un store para toda la plataforma: el estado deja de ser de cada agente. |
 | `plataforma/registro.py` | M32.3 | verbatim | L10634-10678 | El control plane resolviendo un id a paquete y fabrica. Sin publicacion no hay produccion. |
 | `plataforma/catalogo.py` | M33.6 | verbatim | L10837-10902 | El resolutor del catalogo compartido: seleccion dinamica por contexto y permisos, con el sello que invalida la cache. |
-| `plataforma/trazas.py` | M36.6 | verbatim | L12539-12601 | El esquema de traza del 36.1 como codigo: la unidad de observacion de una flota es la decision, no la CPU. |
+| `plataforma/trazas.py` | M36.6 | verbatim | L12544-12606 | El esquema de traza del 36.1 como codigo: la unidad de observacion de una flota es la decision, no la CPU. |
 | `gateway/config.yaml` | M0.5 | verbatim | L294-372 | El gateway del 0.5: el unico fichero del sistema que nombra proveedores. Solo os.environ/, ni un secreto. |
 | `gateway/.env.gateway.example` | M0.5 | verbatim | L383-389 | Plantilla del .env del gateway. Los valores del libro ya son marcadores. |
 | `src/core/models.py` | M0.4 | verbatim | L242-268 | La fabrica get_model()/get_embeddings(). Ruta obligada por el Ejercicio 0.1: de ella tira el resto del libro. |
@@ -50,7 +50,7 @@ Libro de origen: 13781 lineas. 72 ficheros, 89 entradas de mapeo.
 | `db/schema.sql` | M7.6 | verbatim | L2588-2621, L2629-2641, L2686-2735, L2749-2775 | Corpus con metadatos tipados, indice HNSW, mod-97 con su CHECK y la RLS. Los tres bloques del 7.6 que empiezan por NO va en schema.sql se quedan en el libro. |
 | `db/schema.sql` | M16.6 | patch | L5786-5839 | registro_ia (Art. 12). El libro dice literalmente que va en el schema.sql del 7.6. |
 | `db/schema.sql` | M21.5 | patch | L7511-7552 | banco.trabajos y banco.efectos (cola con leases y libro mayor de la saga). El libro dice literalmente que van al final del db/schema.sql del 7.6. |
-| `db/schema.sql` | M35.6 | patch | L12355-12405 | banco.aprobaciones (la cola de aprobaciones con su receipt firmado). El libro dice literalmente que va al final del db/schema.sql del 7.6, junto a banco.trabajos. |
+| `db/schema.sql` | M35.6 | patch | L12360-12410 | banco.aprobaciones (la cola de aprobaciones con su receipt firmado). El libro dice literalmente que va al final del db/schema.sql del 7.6, junto a banco.trabajos. |
 | `db/schema.sql` | M34.7 | patch | L11205-11269 | banco.supresiones y los cuatro ALTER de la supresion RGPD (aprobaciones, manuales, registro_ia). Va detras de aprobaciones: sus ALTER la necesitan creada. |
 | `src/rag/indexar.py` | M7.4 | verbatim | L2404-2425 | PGEngine con driver explicito postgresql+psycopg:// y create_sync. Fragmento: texto y meta son las variables del bucle del lector. |
 | `src/rag/08_hibrida.sql` | M8.1 | verbatim | L2850-2883 | Migracion del lado lexico: tsvector, GIN y unaccent. |
@@ -87,14 +87,14 @@ Libro de origen: 13781 lineas. 72 ficheros, 89 entradas de mapeo.
 | `src/core/contratos.py` | M22.3 | patch | L7631-7646 | HumanHandoffPacket: el escalado a humano como producto. Trae sus imports repetidos, tal cual estan en el libro. |
 | `src/core/contratos.py` | M23.1 | patch | L7923-7937 | HandoffContract y su campo authority: la frontera entre agentes. |
 | `src/core/memoria.py` | M34.1 | verbatim | L10975-10990 | MemoryRecord: sin owner, sensibilidad, TTL y procedencia no hay memoria gobernada. |
-| `src/core/memoria.py` | M34.7 | patch | L11277-11398 | Anadido del M34.7. |
-| `src/core/memoria.py` | M34.7 | patch | L11402-11616 |  |
+| `src/core/memoria.py` | M34.7 | patch | L11277-11400 | Anadido del M34.7. |
+| `src/core/memoria.py` | M34.7 | patch | L11404-11621 |  |
 | `src/evals/medidas.py` | M15.7 | verbatim | L5270-5398 | Entregado del M15.7. |
 | `src/evals/medidas.py` | M15.7 | patch | L5425-5497 | Anadido del M15.7. |
 | `.github/workflows/agent-evals.yml` | M25.5 | verbatim | L8679-8692 | Extracto conceptual, igual que en el libro: no es un workflow completo. |
 | `aceptacion.py` | M31.2 | verbatim | L10409-10450 | La puerta del capstone: seis medidas, semilla, pases e intervalo, con el veredicto NO CONCLUYENTE. |
 | `catalogo/cards-disputes/agent.yaml` | M32.3 | verbatim | L10596-10622 | Agent Package publicable. Valida contra schemas/agent-package.schema.json. |
-| `plataforma/runtime.py` | M37.2 | verbatim | L12662-12815, L12826-12945 | Nadie importa un grafo: se pide por id, con el sello del catalogo en la clave de la cache. La politica y el HITL van en el mismo wrap_tool_call. |
+| `plataforma/runtime.py` | M37.2 | verbatim | L12667-12820, L12831-12950 | Nadie importa un grafo: se pide por id, con el sello del catalogo en la clave de la cache. La politica y el HITL van en el mismo wrap_tool_call. |
 | `smoke_test.py` | Ej. 0.1 | plantilla | --- | Andamio del Ejercicio 0.1: dos alias, latencia y tokens, Postgres y traza. El unico fichero del repo que corre solo. |
 
 `verbatim` = el bloque del libro tal cual. `patch` = anadido al final del
