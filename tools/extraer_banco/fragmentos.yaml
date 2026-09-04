@@ -1,0 +1,41 @@
+# fragmentos.yaml --- los ficheros que el libro presenta como fragmentos, con el
+# sitio donde lo dice.
+#
+# El 0.1 lo promete con estas palabras: «los fragmentos marcados como
+# fragmentos». `nombres.py` los lee de aqui, porque un boceto de firmas con el
+# cuerpo en `...` o un trozo que el lector completa en un ejercicio no es un
+# fichero roto. Lo que no puede pasar, y es la razon de que esta lista exista y
+# sea corta, es que un fichero que el libro presenta como ENTREGADO no importe.
+#
+# Cada entrada lleva su localizador para que se pueda comprobar que el libro lo
+# declara de verdad, y no que alguien lo apunto aqui para silenciar un aviso.
+- fichero: src/agents/cards_disputes/herramientas.py
+  localizador: >-
+    20.2. El apartado imprime el patron read-plan-dry-run-commit sobre una
+    herramienta de tarjetas que el lector adapta: `cards_core`, `transaction`,
+    `masked` y `summary` son de su core, no del banco del libro.
+- fichero: src/core/identidad.py
+  localizador: >-
+    18.3. Las dos funciones que separan cinco canales de cinco sistemas, con los
+    cuerpos de resolucion (`cliente_de`, `ev`, `ref`) a cargo del lector: el
+    apartado dice que «quien es el hilo» depende de su propio core.
+- fichero: src/rag/indexar.py
+  localizador: >-
+    7.4. El indexado se imprime como el uso de `trocear` y `get_embeddings`, no
+    como fichero autonomo: `texto` y `meta` son las variables del bucle del
+    lector sobre su corpus.
+- fichero: src/core/banco.py
+  localizador: >-
+    3.3, y declarado alli: «en el 9.2 los sacaras a src/core/banco.py». Es el
+    corte de constantes y ayudantes del bloque de `nano_agent.py`, marcado
+    `parcial: true` en el mapeo; `datetime` y `timedelta` los importa el fichero
+    del que sale.
+- fichero: plataforma/catalogo.py
+  localizador: >-
+    33.6, y el propio bloque lo dice: «Pega aqui el CATALOGO del 37.2 tal cual».
+    `CATALOGO` es la constante que el lector trae del capstone.
+- fichero: src/core/contratos.py
+  localizador: >-
+    20.3 mas los parches del 22.3 y del 23.1. El fichero crece en tres
+    apartados, y cada bloque trae sus propios imports porque el libro los
+    imprime por separado: de ahi las redefiniciones.

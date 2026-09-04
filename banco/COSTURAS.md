@@ -12,11 +12,56 @@ una operacion de texto. Estas son las que quedan pendientes.
 |---|---|---|
 | `src/channels/backend/batch_nocturno.py` | M17.2 | PENDIENTE. Apagado ordenado por SIGTERM: el libro lo pega justo encima de main(), y la condicion del bucle de tandas pasa a mirar PARANDO. |
 | `src/channels/chat/servidor.py` | M17.2 | PENDIENTE. Lifespan y apagado ordenado: SUSTITUYE al FastAPI() del 12.5. Pegado al final reasigna api y el canal se queda sin rutas. |
-| `src/core/politica.py` | M35.2 | PENDIENTE. La forma de la llamada del 35.2 y las cinco decisiones del engine: es una llamada de ejemplo a nivel de modulo, asi que hay que comentarla o moverla a un test o el import revienta. |
-| `src/core/memoria.py` | M34.5 | PENDIENTE. Las tres APIs tipadas de memoria con sus receipts: los cuerpos son ... y los tres tipos de receipt no existen todavia, asi que el modulo no importa hasta que los escribas. |
 
 El resto de los `patch` de `MAPEO.md` son anadidos al final que no
 piden nada mas: el fichero ya queda como tiene que quedar.
+
+## Costura del M34.5
+
+
+
+``` python
+# src/core/memoria.py --- las tres APIs tipadas del 34.5. El fichero
+# entero, con su esquema y su supresion, esta en el 34.7: esto es su
+# cara publica, la que el agente ve.
+# Los tres receipts se anotan sin importarlos porque se definen más
+# abajo, en el bloque del 34.7 de este mismo fichero.
+from __future__ import annotations
+
+from typing import Literal
+
+from langchain_core.tools import tool
+
+
+@tool
+def recordar_preferencia_cliente(
+    cliente_id: str,
+    clave: Literal['idioma', 'canal_preferido', 'formato_resumen'],
+    valor: str,
+    evidencia: str,
+) -> MemoryWriteReceipt:
+    """Guarda una preferencia declarada del cliente, con su evidencia."""
+    ...
+
+@tool
+def proponer_memoria_colectiva(
+    dominio: str,
+    tipo: Literal['faq', 'eval_case', 'playbook', 'policy_candidate'],
+    resumen: str,
+    evidencias_run_ids: list[str],
+) -> MemoryProposalReceipt:
+    """Propone un candidato de memoria colectiva; no publica nada."""
+    ...
+
+@tool
+def olvidar_memoria(
+    namespace: tuple[str, ...],
+    key: str,
+    motivo: Literal['user_request', 'expired', 'incorrect', 'policy'],
+) -> MemoryDeletionReceipt:
+    """Borra una entrada de memoria y deja constancia del motivo."""
+    ...
+```
 
 ## Costura del M16.5
 

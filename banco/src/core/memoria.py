@@ -16,39 +16,6 @@ class MemoryRecord(BaseModel):
     expires_at: datetime | None
 
 
-# --- costura PENDIENTE del M34.5 (extraer_banco) ---
-# PENDIENTE. Las tres APIs tipadas de memoria con sus receipts: los cuerpos son ... y los tres tipos de receipt no existen todavia, asi que el modulo no importa hasta que los escribas.
-# El script no la aplica en su sitio: eso es una decision. Ver COSTURAS.md.
-@tool
-def recordar_preferencia_cliente(
-    cliente_id: str,
-    clave: Literal['idioma', 'canal_preferido', 'formato_resumen'],
-    valor: str,
-    evidencia: str,
-) -> MemoryWriteReceipt:
-    """Guarda una preferencia declarada del cliente, con su evidencia."""
-    ...
-
-@tool
-def proponer_memoria_colectiva(
-    dominio: str,
-    tipo: Literal['faq', 'eval_case', 'playbook', 'policy_candidate'],
-    resumen: str,
-    evidencias_run_ids: list[str],
-) -> MemoryProposalReceipt:
-    """Propone un candidato de memoria colectiva; no publica nada."""
-    ...
-
-@tool
-def olvidar_memoria(
-    namespace: tuple[str, ...],
-    key: str,
-    motivo: Literal['user_request', 'expired', 'incorrect', 'policy'],
-) -> MemoryDeletionReceipt:
-    """Borra una entrada de memoria y deja constancia del motivo."""
-    ...
-
-
 # --- anadido del M34.7 (extraer_banco) ---
 # Anadido del M34.7.
 # src/core/memoria.py --- las tres APIs del 34.5 con cuerpo, sus
@@ -60,8 +27,6 @@ def olvidar_memoria(
 import hashlib
 import json
 import os
-from datetime import datetime
-from typing import Literal
 
 import psycopg
 from psycopg.rows import dict_row

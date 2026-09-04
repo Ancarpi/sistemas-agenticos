@@ -223,30 +223,6 @@ if __name__ == "__main__":
     asyncio.run(demo())
 
 
-# --- anadido del M5.1 (extraer_banco) ---
-# El estado y el grafo del 5.1: EstadoBackoffice, nodos y aristas.
-from typing import Annotated, TypedDict
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-
-class EstadoBackoffice(TypedDict):
-    messages: Annotated[list, add_messages]   # reducer: acumula
-    referencia: str
-    categoria: str | None                     # sin reducer: se sobrescribe
-    resuelto: bool
-
-g = StateGraph(EstadoBackoffice)
-g.add_node("triage", nodo_triage)
-g.add_node("resolver", nodo_resolver)
-g.add_node("revision_humana", nodo_revision)
-g.add_edge(START, "triage")
-g.add_conditional_edges("triage", ruta_por_urgencia,
-                        {"auto": "resolver", "humano": "revision_humana"})
-g.add_edge("resolver", END)
-g.add_edge("revision_humana", END)   # sin ella la rama humana no cierra
-app = g.compile()
-
-
 # --- anadido del M6.3 (extraer_banco) ---
 # El nodo investigar del 6.3, que el propio libro coloca en este fichero.
 # Este nodo es el `investigar` del 5.3 con las dos líneas que

@@ -95,3 +95,12 @@ jobs:
         run: |
           python3 tools/extraer_banco/imports.py
 
+      # La quinta pregunta, y la que resume las otras cuatro: los nombres que el
+      # codigo USA. `compileall` pasa porque el fichero parsea e `imports.py`
+      # pasa porque audita lo importado, asi que un `@tool` sin importar cruzaba
+      # las cuatro comprobaciones anteriores.
+      - name: los nombres que el arbol usa estan definidos
+        run: |
+          pip install --quiet pyflakes
+          python3 tools/extraer_banco/nombres.py
+

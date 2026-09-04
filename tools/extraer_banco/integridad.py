@@ -27,6 +27,7 @@ declarado tiene que ir de la primera a la ultima linea de contenido de su valla.
 """
 import argparse
 import pathlib
+import re
 import sys
 
 import yaml
@@ -65,6 +66,41 @@ def main():
                 return (ini, fin)
         return None
 
+    # LA GRIETA QUE ESTA COMPROBACION ABRIO, y merece quedar escrita porque es
+    # la leccion mas incomoda del proyecto. Al exigir que cada rango sea su valla
+    # entera, esta comprobacion OBLIGA a fusionar dos entregas que compartan
+    # valla: la 5843 del libro imprimia `test_art50.py` y `test_registro.py`
+    # dentro de la misma, y el fichero extraido se llevaba el otro dentro con dos
+    # funciones tapandose. La comprobacion estrella producia el defecto que venia
+    # a cerrar. Se arregla mirando si una cabecera de fichero aparece DENTRO de la
+    # valla y no en su primera linea: eso son dos entregas y la valla hay que
+    # partirla en el libro.
+    # Una cabecera de entrega es la forma que el libro usa siempre: el comentario,
+    # un espacio, la ruta y la raya. Un comentario que solo MENCIONA un fichero
+    # («# evals/medidas.py del 15.7: cada funcion...») no abre una entrega, y sin
+    # exigir la raya esta regla daba tres falsos positivos de cuatro.
+    CABEZA = re.compile(
+        r"^(?:#|--) (?!\s)([A-Za-z0-9_./-]+\.(?:py|sql|ya?ml|toml|sh)) ---")
+    dobles = []
+    for ini, fin in caja:
+        dentro = [n for n in range(ini + 1, fin + 1) if CABEZA.match(lineas[n - 1])]
+        if dentro:
+            dobles.append((ini, fin, dentro))
+
+    # Y la otra pregunta que ninguna comprobacion hacia: ¿se entrega alguna linea
+    # del libro DOS VECES? `plataforma/runtime.py` declaraba el mismo rango en un
+    # verbatim y en un patch, asi que el fichero se contenia a si mismo, 422
+    # lineas donde el fichero son 264, con veintidos funciones redefinidas. Los
+    # cuatro verificadores daban verde, y la prueba estaba impresa en pantalla
+    # desde el primer dia: esta comprobacion contaba 101 bloques y `cobertura.py`
+    # 100, porque aquella los mete en un `set()`. Ese uno de diferencia era el bug.
+    from collections import Counter
+    veces = Counter()
+    for e in m["entradas"]:
+        for r in e.get("bloques", []):
+            veces[(e["destino"], str(r))] += 1
+    repes = [(d, r, n) for (d, r), n in veces.items() if n > 1]
+
     total, malos, parciales = 0, [], []
     for e in m["entradas"]:
         for r in e.get("bloques", []):
@@ -84,13 +120,25 @@ def main():
                               (real[1] - real[0]) - (fin - ini)))
 
     print(f"  {total} bloques declarados en el mapeo")
+    if repes:
+        print(f"\n  {len(repes)} RANGO(S) DECLARADO(S) MAS DE UNA VEZ --- el fichero se contiene a si mismo:")
+        for d, r, n in repes:
+            print(f"    - {d}: {r} declarado {n} veces")
+    if dobles:
+        print(f"\n  {len(dobles)} VALLA(S) CON DOS ENTREGAS --- no se pueden dar enteras a un destino:")
+        for ini, fin, dentro in dobles:
+            print(f"    - valla {ini}-{fin}: hay cabecera de fichero en {dentro}")
+            print(f"      Partela en el libro en dos bloques, o declarala `parcial: true` con un rango por destino.")
     if parciales:
         print(f"  {len(parciales)} declarados `parcial: true`, y por eso no se exigen enteros:")
         for destino, r in parciales:
             print(f"    - {destino}: {r}")
-    if not malos:
-        print("  integridad completa: cada rango es su bloque entero.")
+    if not malos and not repes and not dobles:
+        print("  integridad completa: cada rango es su bloque entero, ninguno")
+        print("  se declara dos veces y ninguna valla lleva dos entregas.")
         return 0
+    if not malos:
+        return 1
 
     print(f"\n  {len(malos)} RANGOS QUE NO SON SU BLOQUE ENTERO:")
     for destino, r, real, faltan in sorted(malos, key=lambda x: -x[3]):
