@@ -9,7 +9,8 @@ from typing import Literal
 from pydantic import BaseModel
 
 from cumplimiento import AVISOS, POOL, anotar, anotar_aviso
-from src.rag.hibrida import NIVELES, sesion_lectura
+from src.rag.gobierno import procedencia   # las fichas del 24.6
+from src.rag.hibrida import NIVELES
 
 LATIDO = 4.0       # s de silencio antes de volver a decir algo
 SLA_TURNO = 25.0   # s tras los cuales el turno deja de ser síncrono
@@ -28,12 +29,14 @@ PROXIMA = {   # el humano abre el caso con una propuesta, no en blanco
 
 class Cita(BaseModel):
     """Fuente, versión y vigencia salen de la FILA; del texto del
-    modelo solo sale el número entre corchetes."""
+    modelo solo sale el número entre corchetes. La vigencia es
+    `caduca` (24.6) y nunca la columna `fecha`, que es la de
+    redacción del documento."""
     indice: int
     fuente: str
     seccion: str | None
     version: int
-    fecha: str
+    caduca: str
 
 
 class HumanHandoffPacket(BaseModel):

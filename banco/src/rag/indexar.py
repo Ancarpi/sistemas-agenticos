@@ -1,5 +1,7 @@
 from langchain_postgres import PGEngine, PGVectorStore
 
+from src.rag.trocear import documentos, trocear   # el 7.3
+
 # la URL debe llevar driver explícito: postgresql+psycopg://...
 engine = PGEngine.from_connection_string(
     url=os.environ["DATABASE_URL_SQLALCHEMY"])
@@ -11,6 +13,7 @@ vectores = PGVectorStore.create_sync(
     table_name="manuales",
     embedding_service=get_embeddings("emb-multilingue"),
 )
-vectores.add_documents(chunks)           # cada doc con su .metadata
+trozos = trocear(texto, meta)            # dicts, no Document
+vectores.add_documents(documentos(trozos))   # el puente del 7.3
 hits = vectores.similarity_search("¿comisión por descubierto?",
                                   k=5, filter={"producto": "cuentas"})

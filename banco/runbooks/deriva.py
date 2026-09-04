@@ -17,11 +17,17 @@ SLO = 0.92        # el piso del 28.1; la puerta del 18.4 es otra
 CAIDA = 0.02      # a 0,90 el sistema ya no pasaría su release
 TIER = "L1"       # el `risk_tier` del `agent.yaml` del 32.3
 HORAS = 168       # una semana, como el SLO que vigila
-# La ventana se elige en CASOS y luego se traduce a horas. Esos
-# dos puntos sobre 0,92 piden 707 runs juzgados, y al 10% de
-# muestreo del 36.3 son 7.070 de tráfico. Las palancas son
-# alargar la ventana o declarar una caída mayor, y la segunda
-# es cuadrática: cinco puntos bajan a 114 juzgados.
+# La ventana se elige en CASOS y luego se traduce a horas. El
+# intervalo de esos dos puntos sobre 0,92 se cierra con 707
+# runs juzgados, y al 10% de muestreo del 36.3 son 7.070 de
+# tráfico. Ojo con lo que compra la cifra: es el SUELO para
+# comparar dos ventanas, y con ella una caída de exactamente
+# dos puntos dispara el 55% de las semanas. Nueve de cada
+# diez piden unas 2.000 juzgadas, y `casos_para_detectar`
+# hace esa cuenta para la regla del 15.7. Las palancas
+# siguen siendo alargar la ventana o declarar una caída
+# mayor, y la segunda es cuadrática: cinco puntos bajan a
+# 114 juzgados.
 MINIMOS = casos_para(CAIDA, SLO)
 TRAFICO = round(MINIMOS / MUESTREO[TIER])
 

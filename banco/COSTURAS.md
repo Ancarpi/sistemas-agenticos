@@ -36,8 +36,8 @@ if nuevo:
     yield sse({"tipo": "aviso", "texto": AVISOS["chat"]})
     await asyncio.to_thread(anotar_aviso, "chat", cliente_id)
 
-# 12.6 webhook.py --- el quinto canal, que se cuela por un
-# import: `from servidor import AVISO` pasa a ser `from
+# 12.6 webhook_slack.py --- el quinto canal, que se cuela por
+# un import: `from servidor import AVISO` pasa a ser `from
 # cumplimiento import AVISOS, anotar_aviso`. Mismo texto que el
 # chat web, otra superficie, y por eso anota `slack`.
 if "thread_ts" not in ev:

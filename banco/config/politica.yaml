@@ -9,9 +9,21 @@ limites:
   step_up_desde: L3                     # el peldaño del Anexo H
   mueve_dinero: [core.sepa.devolver]    # la 5.ª tool del Ej. 3.1
 reglas:
+  # Primera a propósito: el worker nocturno del 11.5 corre sin
+  # humano detrás, y las de abajo están escritas para uno
+  # autenticado. Sin ella, el `step_up_desde` de arriba le pide un
+  # segundo factor a nadie en cada caso del lote.
+  - id: lote-nocturno
+    cuando:
+      subject.kind: workload
+      tool.id: [core.sepa.buscar, core.sepa.historial,
+                core.sepa.resolver, core.sepa.escalar]
+      risk.autonomy_level: [L0, L3]
+      context.env: [prod, eu-prod]
+    entonces: allow
   - id: lectura-de-cuenta
     cuando:
-      agent.id: [banco.chat.support, banco.cards.disputes.v1]
+      agent.id: [banco.chat.support.v4, banco.cards.disputes.v1]
       tool.id: [core.sepa.buscar, core.sepa.historial]
       risk.autonomy_level: L0
       resource.data_class: [internal, confidential]

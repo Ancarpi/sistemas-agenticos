@@ -7,8 +7,11 @@ intent: "bloquear temporalmente una tarjeta reportada como robada"
 auth:
   subject_required: authenticated_customer
   scopes: [cards:block]
+  # Aquí, y no bajo `preconditions:`, que es prosa para el
+  # revisor: este es el eje que el catálogo del 20.4 compara con
+  # el sujeto en cada llamada.
+  identity_level: 2
 preconditions:
-  - identity_level >= 2
   - card_status in [active, suspected_fraud]
   - fraud_signal or explicit_customer_request
 effects:
@@ -24,6 +27,10 @@ timeouts:
   p95_ms: 1200
   hard_timeout_ms: 4000
 audit:
+  # Sin este campo, el `clase_y_peldano` del 20.4 la degradaba a
+  # `internal` y la política del 26.2 decidía sobre un dato que no
+  # era el que tenía delante.
+  data_class: confidential
   log_args: masked
   log_result: summary
   pii: [customer_id, masked_pan]

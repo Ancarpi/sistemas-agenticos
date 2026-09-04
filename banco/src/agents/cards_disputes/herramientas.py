@@ -1,5 +1,9 @@
 from typing import Literal
+
+from langgraph.runtime import get_runtime   # el ctx del 37.2
 from pydantic import BaseModel
+
+from src.core.politica import autorizar     # el motor del 26.5
 
 class BloqueoTarjetaPlan(BaseModel):
     masked_pan: str
@@ -10,9 +14,22 @@ class BloqueoTarjetaPlan(BaseModel):
 @tool
 def bloquear_tarjeta_dry_run(plan: BloqueoTarjetaPlan) -> dict:
     """Valida si el bloqueo sería permitido. No modifica el core."""
-    d = policy_engine.authorize({"action": "cards.block",
-                                 "context": plan.model_dump()})
-    return {"allowed": d.allow, "reasons": d.reasons}
+    # La decisión la toma el `autorizar` del 26.5, que entra
+    # con el dict de seis claves del 35.2 y sale con UNA de sus
+    # cinco cadenas; aquí solo se rellena la petición. El ctx es
+    # el mismo `context=` que lee el `despachar` del 37.2.
+    ctx = get_runtime().context
+    decision = autorizar({
+        "subject": {"user_id": ctx["humano"]["id"],
+                    "auth_level": ctx["humano"]["auth"]},
+        "agent": ctx["agente"], "tool": {"id": "core.cards.block"},
+        "resource": {"account_owner": ctx["sujeto"],
+                     "data_class": "confidential"},
+        "context": {"purpose": ctx["proposito"],
+                    "env": ctx["entorno"]},
+        "risk": {"autonomy_level": "L4"}})   # el 20.1, y Anexo H
+    return {"decision": decision,
+            "impacto": cards_core.simular(plan.masked_pan)}
 
 @tool
 def bloquear_tarjeta_commit(

@@ -167,6 +167,12 @@ DO $do$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='banco_app')
     THEN CREATE ROLE banco_app LOGIN NOSUPERUSER NOBYPASSRLS;
   END IF; END $do$;
+-- El mismo GRANT USAGE que agente_lectura en el 7.6, y por lo
+-- mismo: la tabla vive en el esquema banco, y sin permiso
+-- sobre el ESQUEMA el primer INSERT muere con «permission
+-- denied for schema banco». El rol que este apartado exige
+-- usar no podría escribir ni una fila del Art. 12.
+GRANT USAGE ON SCHEMA banco TO banco_app;
 GRANT INSERT, SELECT ON registro_ia TO banco_app;
 GRANT USAGE, SELECT ON SEQUENCE registro_ia_id_seq
     TO banco_app;

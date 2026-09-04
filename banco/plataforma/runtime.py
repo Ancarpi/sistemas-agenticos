@@ -1,5 +1,5 @@
-# runtime.py --- nadie importa un grafo: se pide por id. Solo
-# `autorizar` (Ejercicio 35.1) y `encolar` (35.2) son tuyos.
+# runtime.py --- nadie importa un grafo: se pide por id. Ni
+# `autorizar` (el 26.5) ni `encolar` (el 35.6) se escriben aquí.
 import hashlib
 import json
 import os
@@ -20,7 +20,7 @@ from psycopg_pool import AsyncConnectionPool
 import identidad                            # el fichero del 18.3
 from herramientas import (buscar_transferencia, escalar_a_humano,
                           historial_cuenta, marcar_resuelta)  # 4.1
-from hitl import encolar                    # Ejercicio 35.2
+from src.core.hitl import encolar           # la cola del 35.6
 from src.core.politica import autorizar     # el motor del 26.5
 from src.core.models import get_embeddings, get_model    # el 0.4
 from trazas import atributos                # el fichero del 36.6
@@ -133,13 +133,15 @@ def compilar(pk, sello, propio=None):
     return CACHE[clave]
 
 
-async def ejecutar(agente_id, sujeto, texto, proposito, humano):
+async def ejecutar(agente_id, sujeto, texto, proposito,
+                   humano=None):
     """El hilo no se inventa aquí: es el `hilo(grafo, sujeto)` del
     18.3 --- con el agente delante, porque el checkpointer indexa
     por thread_id ---, y `sujeto` llega con su clase: `cliente:C-99`.
     `humano` es quien delega y cómo se autenticó --- `{"id":
     "E-123", "auth": "strong"}` ---, los dos de la sesión del canal
-    y ninguno del agente (35.3)."""
+    y ninguno del agente (35.3). Vale `None` en el worker nocturno
+    del 11.5, que corre sin nadie detrás."""
     pk, propio = cargar(agente_id)                      # el 32.3
     ctx = {"sujeto": sujeto, "humano": humano, "run": uuid.uuid4().hex,
            "proposito": proposito, "entorno": ENTORNO,
@@ -169,9 +171,18 @@ def decidir(ctx, llamada) -> str | None:
     # es ese policy engine y devuelve una de sus cinco cadenas. La
     # tool va por su nombre, lo único que las dos formas comparten;
     # y en el middleware `peticion.tool` es None si está retirada.
+    # El sujeto llega con su clase, y la clase es una rama: el
+    # worker nocturno del 11.5 corre sin humano detrás, así que
+    # entra como carga (35.3) y lo atiende su regla del bundle.
+    # Con `ctx["humano"]["id"]` a secas, ese lote muere en la
+    # primera llamada con un TypeError.
+    h = ctx.get("humano")
+    quien = ({"kind": "human", "user_id": h["id"],
+              "auth_level": h["auth"]} if h else
+             {"kind": "workload", "user_id": ctx["agente"]["id"],
+              "auth_level": "workload_identity"})
     decision = autorizar({
-        "subject": {"user_id": ctx["humano"]["id"],
-                    "auth_level": ctx["humano"]["auth"]},
+        "subject": quien,
         "agent": ctx["agente"], "tool": {"id": llamada["name"]},
         "resource": {"account_owner": ctx["sujeto"],
                      "data_class": clase},
@@ -197,9 +208,13 @@ def decidir(ctx, llamada) -> str | None:
                        "accion": llamada["name"],
                        "propuesta": llamada["args"]})
         # Se reanuda con el hilo, nunca con el run. Y quien PROPONE
-        # es el humano que delegó, jamás el agente (regla del 35.4).
+        # es el humano que delegó, jamás el agente (regla del 35.4);
+        # el lote nocturno no tiene ninguno, y la fila lo dice con
+        # la clase delante, que es lo que manda ese caso a
+        # operaciones en vez de a una autoaprobación.
         encolar(hilo=ctx["hilo"], run=ctx["run"],
-                agente=ctx["agente"], propone=ctx["humano"]["id"],
+                agente=ctx["agente"],
+                propone=f"{quien['kind']}:{quien['user_id']}",
                 propuesta=llamada["args"], receipt=d)
         # `approve/reject` y `edit before commit` son dos filas del
         # 35.4: sin este reparto las tres cadenas caen en

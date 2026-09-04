@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+import equipo                  # el validador del 30.5
 import estado                  # ENTORNO, del 32.2
 import identidad               # el 18.3, con su lista blanca
 
@@ -29,6 +30,11 @@ def cargar(agente_id: str) -> tuple[dict, object | None]:
         aprobadas = (ruta.parent / "aprobado").read_text().split()
         if f"{pk['version']}@{estado.ENTORNO}" not in aprobadas:
             raise PermissionError(f"{agente_id}: sin aprobar aquí")
+        # La puerta del 30.5, y DENTRO del `if`: un YAML leído
+        # por versión y no en cada turno de cada usuario.
+        # `SinDueno` hereda de PermissionError, así que la
+        # recoge el mismo `except` del publicador.
+        equipo.comprobar(pk)
         modulo, _, obj = pk.get("entrypoint", ":").partition(":")
         modulo = modulo.replace("/", ".").removesuffix(".py")
         fab = getattr(import_module(modulo), obj) if modulo else None

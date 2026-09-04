@@ -62,8 +62,11 @@ if __name__ == "__main__":
     salida = app.invoke(
         {"referencias": [f"REF-{n}" for n in range(4451, 4471)],
          "veredictos": []},
-        # Sin este techo salen 20 peticiones a la vez y el gateway
-        # devuelve 429: el rpm: 400 del 0.5 son 6,6 por segundo.
+        # El techo mantiene la ráfaga por debajo de la cuota
+        # que ata, el `rpm_limit: 60` de la clave virtual del
+        # 0.5. Estas veinte gastan 20 de esos 60 y ninguna ve
+        # un 429; las cinco mil del lote grande cruzan la
+        # cuota dentro del primer minuto, y ahí sí llega.
         config={"max_concurrency": 5},
     )
     print(salida["informe"])

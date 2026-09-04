@@ -90,7 +90,7 @@ def _limite_economico(bundle: dict, peticion: dict, d: str) -> str:
 # El script no la aplica en su sitio: eso es una decision. Ver COSTURAS.md.
 decision = policy_engine.authorize({
   'subject': {'user_id': 'C-99', 'auth_level': 'strong'},
-  'agent': {'id': 'banco.chat.support', 'version': '4.2.1'},
+  'agent': {'id': 'banco.chat.support.v4', 'version': '4.2.1'},
   'tool': {'id': 'core.accounts.read_movements', 'kind': 'read'},
   'resource': {'account_owner': 'C-99', 'data_class': 'confidential'},
   'context': {'purpose': 'customer_support', 'env': 'prod'},

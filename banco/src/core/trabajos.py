@@ -8,8 +8,8 @@ import random
 from datetime import timedelta
 
 LEASE = 300        # s; ha de superar al paso más lento del grafo
-MAX_INTENTOS = 5   # al sexto reclamo, dead_letter
-BASE = 20          # s; topes de espera 20, 40, 80, 160, 320
+MAX_INTENTOS = 5   # cinco reclamos y a dead_letter, no seis
+BASE = 20          # s; topes de espera 20, 40, 80, 160
 TECHO = 3600       # s; el backoff no crece más allá de una hora
 
 RECLAMO = """
@@ -19,15 +19,34 @@ UPDATE banco.trabajos
        lease_hasta = now() + make_interval(secs => %(lease)s)
  WHERE id = (
      SELECT id FROM banco.trabajos
-      WHERE (estado IN ('pending', 'retry_scheduled')
-             AND correr_tras <= now())
-         -- La línea del Ejercicio 21.1: el lease vencido vuelve a
-         -- la cola sin que nadie declare muerto al que lo tenía.
-         OR (estado = 'leased' AND lease_hasta < now())
+      -- El tope de intentos se cobra AQUÍ. El trabajo veneno mata
+      -- al proceso antes de su `except`, así que `fallar` no llega
+      -- a mirar MAX_INTENTOS ni una vez y sin esta línea vuelve a
+      -- la cola para siempre.
+      WHERE intentos < %(max)s
+        AND ((estado IN ('pending', 'retry_scheduled')
+              AND correr_tras <= now())
+             -- La línea del Ejercicio 21.1: el lease vencido
+             -- vuelve a la cola sin que nadie declare muerto al
+             -- que lo tenía. Con 'running' dentro, porque
+             -- `en_marcha` mueve ahí la fila en cuanto arranca el
+             -- grafo: mirando solo 'leased', el caso cuyo proceso
+             -- muere pasada esa línea no lo reclama nadie más.
+             OR (estado IN ('leased', 'running')
+                 AND lease_hasta < now()))
       ORDER BY prioridad DESC, creado_en
         FOR UPDATE SKIP LOCKED
       LIMIT 1)
 RETURNING *
+"""
+
+AGOTADOS = """
+UPDATE banco.trabajos
+   SET estado = 'dead_letter', worker = NULL, lease_hasta = NULL,
+       error = coalesce(error, 'agotado sin llegar a contarlo')
+ WHERE estado IN ('leased', 'running') AND lease_hasta < now()
+   AND intentos >= %(max)s
+RETURNING id
 """
 
 
@@ -43,11 +62,22 @@ def encolar(cur, tipo: str, clave: str, carga: dict, prioridad=0):
     return fila["id"] if fila else None
 
 
+def agotados(cur) -> list[int]:
+    """Los que gastaron sus intentos sin llegar a contar el fallo.
+    El worker la llama al empezar cada pasada y compensa los ids
+    que devuelve: el reclamo ya no los mira, y sin este barrido se
+    quedarían en 'running' con el lease vencido, invisibles y
+    ocupando su clave en el índice `trabajos_uno_vivo`."""
+    cur.execute(AGOTADOS, {"max": MAX_INTENTOS})
+    return [f["id"] for f in cur.fetchall()]
+
+
 def claim_next_job(cur, worker: str, lease: int = LEASE):
     """El del 21.2, ya no conceptual. Cuenta el intento al
     RECLAMAR y no al fallar, así el caso que mata al worker antes
     de escribir nada llega igual a dead_letter."""
-    cur.execute(RECLAMO, {"worker": worker, "lease": lease})
+    cur.execute(RECLAMO, {"worker": worker, "lease": lease,
+                          "max": MAX_INTENTOS})
     return cur.fetchone()
 
 
