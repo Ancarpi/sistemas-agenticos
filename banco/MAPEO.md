@@ -3,27 +3,30 @@
 **Generado por `tools/extraer_banco/extraer_banco.py`. No se edita a mano:**
 se edita `tools/extraer_banco/mapeo.yaml` y se vuelve a ejecutar el script.
 
-Libro de origen: 11223 lineas. 63 ficheros, 73 entradas de mapeo.
+Libro de origen: 11695 lineas. 65 ficheros, 75 entradas de mapeo.
 
 | Fichero | Modulo | Modo | Lineas del libro | Nota |
 |---|---|---|---|---|
+| `src/core/router.py` | M19.6 | verbatim | L6002-6134 | Entregado del M19.6. |
+| `src/core/catalogo_tools.py` | M20.6 | verbatim | L6367-6462 | Entregado del M20.6. |
+| `src/evals/trayectoria.py` | M25.7 | verbatim | L7945-8017 | Entregado del M25.7. |
 | `src/rag/trocear.py` | M7.3 | verbatim | L2054-2143 | Entregado del M7.3. |
-| `src/channels/confianza.py` | M22.5 | verbatim | L6610-6697 | Entregado del M22.5. |
-| `src/agents/handoff.py` | M23.5 | verbatim | L6943-7092 | Entregado del M23.5. |
-| `src/rag/gobierno.sql` | M24.6 | verbatim | L7305-7367 | Entregado del M24.6. |
-| `src/rag/gobierno.py` | M24.6 | verbatim | L7375-7497 | Entregado del M24.6. |
-| `config/politica.yaml` | M26.2 | verbatim | L7741-7775 | Entregado del M26.2. |
-| `src/ops/migrar_checkpoints.py` | M27.4 | verbatim | L8062-8193 | Entregado del M27.4. |
-| `runbooks/deriva.py` | M28.5 | verbatim | L8436-8517 | Entregado del M28.5. |
-| `src/finops/coste_por_resolucion.py` | M29.4 | verbatim | L8615-8798 | Entregado del M29.4. |
-| `equipo.yaml` | M30.5 | verbatim | L8913-8968 | Entregado del M30.5. |
-| `equipo.py` | M30.5 | verbatim | L8979-9068 | Entregado del M30.5. |
-| `src/core/trabajos.py` | M21.5 | verbatim | L6286-6452 | Entregado del M21.5. |
-| `src/core/politica.py` | M26.5 | verbatim | L7826-7910 | Entregado del M26.5. |
-| `plataforma/estado.py` | M32.2 | verbatim | L9263-9296 | Un pool, un checkpointer y un store para toda la plataforma: el estado deja de ser de cada agente. |
-| `plataforma/registro.py` | M32.3 | verbatim | L9351-9388 | El control plane resolviendo un id a paquete y fabrica. Sin publicacion no hay produccion. |
-| `plataforma/catalogo.py` | M33.6 | verbatim | L9547-9612 | El resolutor del catalogo compartido: seleccion dinamica por contexto y permisos, con el sello que invalida la cache. |
-| `plataforma/trazas.py` | M36.6 | verbatim | L10026-10088 | El esquema de traza del 36.1 como codigo: la unidad de observacion de una flota es la decision, no la CPU. |
+| `src/channels/confianza.py` | M22.5 | verbatim | L6907-6994 | Entregado del M22.5. |
+| `src/agents/handoff.py` | M23.5 | verbatim | L7240-7389 | Entregado del M23.5. |
+| `src/rag/gobierno.sql` | M24.6 | verbatim | L7602-7664 | Entregado del M24.6. |
+| `src/rag/gobierno.py` | M24.6 | verbatim | L7672-7794 | Entregado del M24.6. |
+| `config/politica.yaml` | M26.2 | verbatim | L8213-8247 | Entregado del M26.2. |
+| `src/ops/migrar_checkpoints.py` | M27.4 | verbatim | L8534-8665 | Entregado del M27.4. |
+| `runbooks/deriva.py` | M28.5 | verbatim | L8908-8989 | Entregado del M28.5. |
+| `src/finops/coste_por_resolucion.py` | M29.4 | verbatim | L9087-9270 | Entregado del M29.4. |
+| `equipo.yaml` | M30.5 | verbatim | L9385-9440 | Entregado del M30.5. |
+| `equipo.py` | M30.5 | verbatim | L9451-9540 | Entregado del M30.5. |
+| `src/core/trabajos.py` | M21.5 | verbatim | L6583-6749 | Entregado del M21.5. |
+| `src/core/politica.py` | M26.5 | verbatim | L8298-8382 | Entregado del M26.5. |
+| `plataforma/estado.py` | M32.2 | verbatim | L9735-9768 | Un pool, un checkpointer y un store para toda la plataforma: el estado deja de ser de cada agente. |
+| `plataforma/registro.py` | M32.3 | verbatim | L9823-9860 | El control plane resolviendo un id a paquete y fabrica. Sin publicacion no hay produccion. |
+| `plataforma/catalogo.py` | M33.6 | verbatim | L10019-10084 | El resolutor del catalogo compartido: seleccion dinamica por contexto y permisos, con el sello que invalida la cache. |
+| `plataforma/trazas.py` | M36.6 | verbatim | L10498-10560 | El esquema de traza del 36.1 como codigo: la unidad de observacion de una flota es la decision, no la CPU. |
 | `gateway/config.yaml` | M0.5 | verbatim | L265-343 | El gateway del 0.5: el unico fichero del sistema que nombra proveedores. Solo os.environ/, ni un secreto. |
 | `gateway/.env.gateway.example` | M0.5 | verbatim | L354-360 | Plantilla del .env del gateway. Los valores del libro ya son marcadores. |
 | `src/core/models.py` | M0.4 | verbatim | L216-228 | La fabrica get_model()/get_embeddings(). Ruta obligada por el Ejercicio 0.1: de ella tira el resto del libro. |
@@ -65,20 +68,19 @@ Libro de origen: 11223 lineas. 63 ficheros, 73 entradas de mapeo.
 | `src/core/identidad.py` | M18.3 | verbatim | L5730-5774 | Quien es el hilo: dos funciones separan cinco canales de cinco sistemas. |
 | `src/core/context_contracts.py` | M19.1 | verbatim | L5872-5902 | El ContextContract y el contrato de triaje. Valida contra schemas/context-contract.schema.json. |
 | `config/model_routing.yaml` | M19.2 | verbatim | L5924-5945 | Politica de routing por tarea, con presupuesto de pensamiento y de coste. |
-| `tools/bloquear_tarjeta.capability.yaml` | M20.1 | verbatim | L6036-6067 | Tool Capability Manifest. Valida contra schemas/tool-capability.schema.json. |
-| `src/agents/cards_disputes/herramientas.py` | M20.2 | verbatim | L6084-6113 | read-plan-dry-run-commit con clave de idempotencia y outbox. Es el entrypoint que declara catalogo/cards-disputes/agent.yaml. |
-| `src/core/contratos.py` | M20.3 | verbatim | L6131-6150 | ToolError tipado: el error como lenguaje de coordinacion, devuelto como ToolMessage y nunca como excepcion cruda. |
-| `src/core/contratos.py` | M22.3 | patch | L6579-6594 | HumanHandoffPacket: el escalado a humano como producto. Trae sus imports repetidos, tal cual estan en el libro. |
-| `src/core/contratos.py` | M23.1 | patch | L6871-6885 | HandoffContract y su campo authority: la frontera entre agentes. |
-| `src/core/politica.py` | M35.2 | patch | L9850-9858 | PENDIENTE. La forma de la llamada del 35.2 y las cinco decisiones del engine: es una llamada de ejemplo a nivel de modulo, asi que hay que comentarla o moverla a un test o el import revienta. |
-| `src/core/memoria.py` | M34.1 | verbatim | L9681-9696 | MemoryRecord: sin owner, sensibilidad, TTL y procedencia no hay memoria gobernada. |
-| `src/core/memoria.py` | M34.5 | patch | L9737-9745 | PENDIENTE. Las tres APIs tipadas de memoria con sus receipts: los cuerpos son ... y los tres tipos de receipt no existen todavia, asi que el modulo no importa hasta que los escribas. |
-| `src/evals/trayectoria.py` | M25.3 | verbatim | L7572-7594 | ExpectedTrajectory y assert_trajectory: se evalua el camino, no solo la respuesta. |
+| `tools/bloquear_tarjeta.capability.yaml` | M20.1 | verbatim | L6212-6243 | Tool Capability Manifest. Valida contra schemas/tool-capability.schema.json. |
+| `src/agents/cards_disputes/herramientas.py` | M20.2 | verbatim | L6260-6289 | read-plan-dry-run-commit con clave de idempotencia y outbox. Es el entrypoint que declara catalogo/cards-disputes/agent.yaml. |
+| `src/core/contratos.py` | M20.3 | verbatim | L6307-6332 | ToolError tipado: el error como lenguaje de coordinacion, devuelto como ToolMessage y nunca como excepcion cruda. |
+| `src/core/contratos.py` | M22.3 | patch | L6876-6891 | HumanHandoffPacket: el escalado a humano como producto. Trae sus imports repetidos, tal cual estan en el libro. |
+| `src/core/contratos.py` | M23.1 | patch | L7168-7182 | HandoffContract y su campo authority: la frontera entre agentes. |
+| `src/core/politica.py` | M35.2 | patch | L10322-10330 | PENDIENTE. La forma de la llamada del 35.2 y las cinco decisiones del engine: es una llamada de ejemplo a nivel de modulo, asi que hay que comentarla o moverla a un test o el import revienta. |
+| `src/core/memoria.py` | M34.1 | verbatim | L10153-10168 | MemoryRecord: sin owner, sensibilidad, TTL y procedencia no hay memoria gobernada. |
+| `src/core/memoria.py` | M34.5 | patch | L10209-10217 | PENDIENTE. Las tres APIs tipadas de memoria con sus receipts: los cuerpos son ... y los tres tipos de receipt no existen todavia, asi que el modulo no importa hasta que los escribas. |
 | `src/evals/medidas.py` | Ej. 31.1 | plantilla | --- | Andamio del Ejercicio 31.1: las seis medidas que aceptacion.py importa. El libro no las entrega, y lo dice. |
-| `.github/workflows/agent-evals.yml` | M25.5 | verbatim | L7610-7623 | Extracto conceptual, igual que en el libro: no es un workflow completo. |
-| `aceptacion.py` | M31.2 | verbatim | L9126-9167 | La puerta del capstone: seis medidas, semilla, pases e intervalo, con el veredicto NO CONCLUYENTE. |
-| `catalogo/cards-disputes/agent.yaml` | M32.3 | verbatim | L9313-9339 | Agent Package publicable. Valida contra schemas/agent-package.schema.json. |
-| `plataforma/runtime.py` | M37.2 | verbatim | L10149-10300, L10311-10384 | Nadie importa un grafo: se pide por id, con el sello del catalogo en la clave de la cache. La politica y el HITL van en el mismo wrap_tool_call. |
+| `.github/workflows/agent-evals.yml` | M25.5 | verbatim | L7907-7920 | Extracto conceptual, igual que en el libro: no es un workflow completo. |
+| `aceptacion.py` | M31.2 | verbatim | L9598-9639 | La puerta del capstone: seis medidas, semilla, pases e intervalo, con el veredicto NO CONCLUYENTE. |
+| `catalogo/cards-disputes/agent.yaml` | M32.3 | verbatim | L9785-9811 | Agent Package publicable. Valida contra schemas/agent-package.schema.json. |
+| `plataforma/runtime.py` | M37.2 | verbatim | L10621-10772, L10783-10856 | Nadie importa un grafo: se pide por id, con el sello del catalogo en la clave de la cache. La politica y el HITL van en el mismo wrap_tool_call. |
 | `smoke_test.py` | Ej. 0.1 | plantilla | --- | Andamio del Ejercicio 0.1: dos alias, latencia y tokens, Postgres y traza. El unico fichero del repo que corre solo. |
 
 `verbatim` = el bloque del libro tal cual. `patch` = anadido al final del

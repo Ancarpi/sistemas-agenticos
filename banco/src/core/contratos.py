@@ -10,6 +10,12 @@ class ToolError(BaseModel):
     safe_message: str
     retryable: bool
     suggested_next_step: str | None = None
+    # Sin estos tres, `retryable: True` invita a repetir la misma
+    # llamada mal formada. Los dos primeros dicen QUÉ corregir; el
+    # tercero, cuándo, y sin él el reintento sale en el acto.
+    campo: str | None = None            # 'dias', 'plan.reason'
+    esperado: str | None = None         # 'entero entre 1 y 90'
+    retry_after_s: float | None = None
 
 # Ejemplo devuelto como ToolMessage, no como excepción cruda.
 ToolError(
