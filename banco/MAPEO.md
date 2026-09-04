@@ -3,7 +3,7 @@
 **Generado por `tools/extraer_banco/extraer_banco.py`. No se edita a mano:**
 se edita `tools/extraer_banco/mapeo.yaml` y se vuelve a ejecutar el script.
 
-Libro de origen: 9091 lineas. 52 ficheros, 62 entradas de mapeo.
+Libro de origen: 9095 lineas. 52 ficheros, 62 entradas de mapeo.
 
 | Fichero | Modulo | Modo | Lineas del libro | Nota |
 |---|---|---|---|---|

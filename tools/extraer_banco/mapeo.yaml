@@ -12,7 +12,7 @@
 #
 # bloques: rangos de lineas de CONTENIDO (sin las vallas ```), 1-indexado.
 
-libro_lineas: 9091
+libro_lineas: 9095
 entradas:
   - destino: plataforma/estado.py
     modulo: '32.2'
