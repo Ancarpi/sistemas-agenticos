@@ -60,8 +60,6 @@ Afecta a `herramientas.py` y `agente_backoffice.py` (4.1, 4.3), `canal_chat.py`,
 |---|---|
 | `src/agents/conciliacion/grafo_conciliacion.py` | Andamio del Ejercicio 5.1. El libro nunca lo publica entero y aun así lo importa en el 6.3 y en el 12.5. Falta teclear los nodos. |
 | `src/evals/medidas.py` | Andamio del Ejercicio 31.1. Las seis medidas se escriben contra *tus* entrypoints; el libro no las da. Cada una lanza `NotImplementedError` con su encargo. |
-| `src/core/politica.py` | Completo: `autorizar()` con sus reglas YAML. Corre tal cual; el 26.5 lo ejecuta contra diez escenarios. |
-| `src/core/memoria.py` | Completo: las tres APIs del 34.5 con `@tool`, sus tres *receipts* y la purga. Necesita `plataforma/` en el path. |
 | `src/agents/cards_disputes/herramientas.py` | El 20.2 enseña la barrera dry-run/commit: `policy_engine`, `transaction` y `cards_core` son tu infraestructura. |
 | `src/rag/indexar.py` | El 7.4 es un fragmento de seis líneas: le falta el `import os` y de dónde salen los `chunks`. |
 | `plataforma/runtime.py` | El 37.2 es la costura de una plataforma: `plataforma.catalogo`, `hitl`, `registro` y `trazas` son el ejercicio del módulo. |
