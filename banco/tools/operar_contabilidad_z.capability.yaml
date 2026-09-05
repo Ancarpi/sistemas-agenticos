@@ -1,0 +1,22 @@
+# tools/operar_contabilidad_z.capability.yaml --- el nodo del 1.5,
+# publicado como capacidad del 20.1. Mismo catálogo (33.3), misma
+# política (26.5): computer use no entra por la puerta de atrás.
+name: operar_contabilidad_z
+version: 0.3.0
+owner: operaciones_legado
+kind: commit        # el eje del 33.3: esto ESCRIBE en el legado
+risk_tier: L4       # sin API no hay dry-run barato: Anexo H
+intent: "registrar el asiento que el core Z solo admite por pantalla"
+runtime:
+  type: computer_use
+  env: vm_efimera   # snapshot al entrar, restauración al salir
+  apps_allowlist: [contabilidad_z]     # y ninguna otra ventana
+  credentials: operador_humano         # el agente nunca las teclea
+limits:
+  step_budget: 40   # al paso 41 se aborta y se escala, no se insiste
+  hard_timeout_s: 600
+approval:
+  human_required: true                 # el HITL del 35.4, siempre
+audit:
+  screen_recording: true
+  log_result: summary
