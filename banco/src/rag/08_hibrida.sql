@@ -4,9 +4,12 @@
 -- resuelve, porque el 7.6 la dejó en banco.
 SET search_path = banco, public;
 
--- 1. La configuración 'spanish' de serie stemiza («comisiones» y
---    «comisión» son el mismo lexema) pero NO quita tildes, y el
---    cliente escribe «comision». Se encadena unaccent delante.
+-- 1. La configuración 'spanish' de serie stemiza, y su stemmer
+--    trata las tildes a su aire: «comisión» y «comision» acaban
+--    en el mismo lexema, pero «devolución» stemiza DISTINTO con
+--    y sin tilde ('devolu' vs 'devolucion'), igual que «interés»
+--    y «subrogación» --- y el cliente escribe sin tildes. Se
+--    encadena unaccent delante: quita la tilde ANTES de stemizar.
 CREATE EXTENSION IF NOT EXISTS unaccent;
 CREATE TEXT SEARCH CONFIGURATION es_banco (COPY = spanish);
 ALTER TEXT SEARCH CONFIGURATION es_banco

@@ -213,6 +213,11 @@ def _decidir(id_prop, aprobador, decision, args=None, motivo=None,
         fila = cur.fetchone()
         if fila is None:
             raise ReciboInvalido(f"{id_prop}: decidida o inexistente")
+        if fila["purgado_en"] is not None:
+            # Defensa en profundidad frente a la purga del 34.7:
+            # una pendiente ya vaciada no se firma a ciegas.
+            raise ReciboInvalido(f"{id_prop}: purgada por una"
+                                 " supresión, no se decide")
         if decision != "reject" and aprobador == fila["propone"]:
             # El intento se va al log. La fila es el libro de
             # decisiones, y una firma rechazada nunca llegó a
@@ -275,3 +280,32 @@ def caducar(sla=SLA, reanudar=None) -> list[int]:
                 log.exception("hitl: %s caducada sin reanudar",
                               fila["hilo"])
     return caducadas
+
+
+def cerrar_por_supresion(sujeto, reanudar=None) -> list[int]:
+    """El otro rechazo del sistema, y el ORDEN es la regla: el
+    `_a5_auditoria` del 34.7 lo llama ANTES de redactar. Una
+    pendiente que solo se vaciara seguiría en `pendientes` como
+    `{}` y un aprobador la firmaría a ciegas, reanudando el
+    grafo de un sujeto que acaba de ejercer su derecho. Mismo
+    camino que `caducar`: rechazo firmado por el sistema, y la
+    reanudación rota no frena el expediente."""
+    cerradas = []
+    with _cx() as cx, cx.cursor() as cur:
+        cur.execute("SELECT * FROM banco.aprobaciones WHERE"
+                    " estado='pendiente' AND sujeto=%s",
+                    (sujeto,))
+        for fila in cur.fetchall():
+            recibo = _receipt(cur, fila, "reject",
+                              "sistema:supresion", None,
+                              "sujeto en supresión (34.6)")
+            if not _cerrar(cur, fila, "rechazada", recibo):
+                continue
+            cerradas.append(fila["id"])
+            try:
+                (reanudar or REANUDAR)(
+                    fila["hilo"], Command(resume=recibo), fila)
+            except Exception:
+                log.exception("hitl: %s suprimida sin reanudar",
+                              fila["hilo"])
+    return cerradas

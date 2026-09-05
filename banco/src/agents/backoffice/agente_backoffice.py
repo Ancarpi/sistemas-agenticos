@@ -61,9 +61,10 @@ MIDDLEWARE = [
     # 3 --- La decisión 1 del 3.2, ya industrializada.
     ModelCallLimitMiddleware(thread_limit=40, run_limit=8,
                              exit_behavior="end"),
-    # 4 --- max_retries=1, no 3: el gateway ya reintenta dos veces
-    # (num_retries del 0.5) y encima cae al fallback. Un 3 aquí
-    # son 4x3 = 12 llamadas al proveedor por vuelta perdida.
+    # 4 --- max_retries=1, no el 2 por defecto: el gateway ya
+    # reintenta dos veces (num_retries del 0.5) y encima cae al
+    # fallback. El 2 por defecto son 3x3 = 9 llamadas al proveedor
+    # por vuelta perdida.
     ModelRetryMiddleware(max_retries=1, initial_delay=2.0,
                          on_failure="error"),
     # 5 --- El humano el ÚLTIMO: after_model recorre la lista al

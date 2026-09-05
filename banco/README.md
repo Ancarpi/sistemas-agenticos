@@ -39,11 +39,11 @@ El libro es didáctico: algunos bloques son ficheros completos y otros son fragm
 | `src/agents/supervisor/supervisor.py` | `PYTHONPATH=. uv run python src/agents/supervisor/supervisor.py` | 9.2 |
 | `src/rag/hibrida.py` | `uv run python -m src.rag.hibrida "comisión por devolver la REF-4471"` | 8.1 |
 | `db/schema.sql`, `src/rag/08_hibrida.sql` | `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/schema.sql` | 7.6, 16.6, 8.1 |
-| `tests/` (los tres) | `uv run pytest tests/` | 16.7 |
+| `tests/` (los cuatro) | `uv run pytest tests/` | 16.7, 34.6 |
 
-Esa última fila es la que más letra pequeña tiene, así que va entera. `pytest` se ejecuta desde `banco/`, y necesita dos cosas que el árbol del Ejercicio 0.1 no da solo. Las dos están puestas: el `pythonpath` de `[tool.pytest.ini_options]` en `pyproject.toml`, porque `tests/test_art50.py` importa `cumplimiento` plano, igual que el libro, y aquí ese fichero vive en `src/core/`; y `conftest.py`, que carga el `.env`, porque `src/core/cumplimiento.py` abre su pool a nivel de módulo y sin `DATABASE_URL` el import muere antes de la primera aserción, pytest aborta la tanda entera y ejecuta cero tests. Si falta el `.env`, la cabecera de pytest lo dice en una línea.
+Esa última fila es la que más letra pequeña tiene, así que va entera. `pytest` se ejecuta desde `banco/`, y necesita dos cosas que el árbol del Ejercicio 0.1 no da solo. Las dos están puestas: el `pythonpath` de `[tool.pytest.ini_options]` en `pyproject.toml`, porque `tests/test_art50.py` importa `cumplimiento` plano, igual que el libro, y aquí ese fichero vive en `src/core/` --- y `plataforma/` va en la misma lista, porque `tests/test_supresion.py` importa la supresión del 34.6 y esta llega a `trazas` igual de plano vía `memoria.py`; y `conftest.py`, que carga el `.env`, porque `src/core/cumplimiento.py` abre su pool a nivel de módulo y sin `DATABASE_URL` el import muere antes de la primera aserción, pytest aborta la tanda entera y ejecuta cero tests. Si falta el `.env`, la cabecera de pytest lo dice en una línea.
 
-Comprobado sobre este árbol: con `.env` puesto y Postgres arriba, `3 passed`. Con `.env` puesto y sin Postgres, `2 passed, 1 failed`, y ese fallo es el resultado correcto: `tests/test_registro.py` mide la RLS del 16.6 contra la base de datos, y un test de RLS sin base de datos no mide nada. Falla, y no se salta. Lo que sale es `psycopg.OperationalError: connection failed`. Ese test se conecta con `DATABASE_URL_APP`, que es el rol `banco_app` del 16.6 y no el superusuario, por lo que dice la arruga de abajo.
+Comprobado sobre este árbol: con `.env` puesto y Postgres arriba, `5 passed`. Con `.env` puesto y sin Postgres, `2 passed, 1 failed, 2 skipped`, y ese reparto es el resultado correcto: `tests/test_registro.py` mide la RLS del 16.6 contra la base de datos, y un test de RLS sin base de datos no mide nada. Falla, y no se salta. Lo que sale es `psycopg.OperationalError: connection failed`. Ese test se conecta con `DATABASE_URL_APP`, que es el rol `banco_app` del 16.6 y no el superusuario, por lo que dice la arruga de abajo. Los dos `skipped` son `tests/test_supresion.py` --- los dos casos negativos que el red team dejó sobre la supresión del 34.6: que un guion bajo en el sujeto no actúe de comodín del `LIKE` y borre filas de OTRO cliente, y que una propuesta pendiente del sujeto se cierre firmada antes de purgarse, en vez de quedar vaciada y aprobable a ciegas ---, y saltar es su resultado correcto: miden código de aplicación, no una promesa del schema, y sin base de datos no mienten ni en rojo ni en verde.
 
 **2. Corre con sus hermanos en el `PYTHONPATH`.** El libro pone estos ficheros unos al lado de otros y los importa planos --- `from herramientas import ...`, `from canal_chat import canal_chat` ---, mientras que el Ejercicio 0.1 los reparte por `src/`. Los dos son correctos y son incompatibles, y no se ha tocado ni un `import` para disimularlo. Se resuelve al ejecutar:
 
@@ -53,6 +53,15 @@ PYTHONPATH=.:src/agents:src/agents/backoffice:src/agents/conciliacion:src/channe
 ```
 
 Afecta a `herramientas.py` y `agente_backoffice.py` (4.1, 4.3), `canal_chat.py`, `servidor.py` y `webhook_slack.py` (6.3, 12.5, 12.6), `batch_nocturno.py` (11.5), `agente_voz.py` (13.4) y `cara.py` (14.2). La alternativa honesta es la del libro: copia los cuatro ficheros de un canal a un directorio y ejecútalos ahí.
+
+La pareja de la memoria del M34 está en el mismo caso, con `plataforma/` como hermano: `memoria.py` (34.5) importa `trazas` plano y `supresion.py` (34.6) se apoya en él, así que `python -m src.core.supresion` muere en `ModuleNotFoundError: No module named 'trazas'` hasta que ese directorio entra en el path. Con él puesto, y con Postgres arriba, la supresión corre entera e imprime su receipt de siete almacenes:
+
+```
+PYTHONPATH=.:plataforma \
+  uv run python -m src.core.supresion C-99 EXP-2026-0001 dpo:ana
+```
+
+`memoria.py` no tiene `__main__`: se importa --- sus tres `@tool` del 34.5 --- o lo ejercita `tests/test_supresion.py`.
 
 **3. Son fragmentos y no importan.** A propósito, y el libro lo dice en cada caso. No están rotos: están incompletos.
 

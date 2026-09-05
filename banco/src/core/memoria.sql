@@ -1,6 +1,7 @@
 -- src/core/memoria.sql --- lo que le falta al schema.sql del 7.6
 -- para que la memoria del 34.1 se pueda gobernar y borrar.
--- Reaplicable:
+-- Requiere el DDL de banco.aprobaciones del 35.6 ya aplicado:
+-- los ALTER del final la tocan. Reaplicable:
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f src/core/memoria.sql
 SET search_path = banco, public;
 

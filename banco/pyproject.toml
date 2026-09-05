@@ -73,10 +73,12 @@ dev = [
 # muere. El libro escribe los ficheros planos y los importa planos
 # (`from cumplimiento import AVISOS`, 16.7), y el Ejercicio 0.1 los
 # reparte por `src/`: sin `src/core` aqui, tests/test_art50.py no
-# importa, pytest aborta la tanda entera y ejecuta cero tests. El
+# importa, pytest aborta la tanda entera y ejecuta cero tests; y sin
+# `plataforma`, tests/test_supresion.py tampoco, porque memoria.py
+# importa `trazas` plano (36.6) y ese fichero vive en plataforma/. El
 # `.env` lo carga conftest.py, que dice por que si falta.
 [tool.pytest.ini_options]
-pythonpath = [".", "src/core"]
+pythonpath = [".", "src/core", "plataforma"]
 testpaths = ["tests"]
 
 [tool.uv]

@@ -26,7 +26,7 @@ Ese árbol lo genera `tools/extraer_banco/` desde el libro, byte a byte. Cualqui
 
 ### Antes de abrir el PR
 
-El CI (`.github/workflows/promesas.yml`) comprueba promesas concretas del README, y todas corren en local sin montar nada:
+El CI (`.github/workflows/promesas.yml`) comprueba promesas concretas del README, y todas corren en local sin montar nada --- la única que quiere un Postgres, `esquemas.py`, salta limpio y lo dice si no le das `ESQUEMAS_URL`:
 
 ```bash
 python3 -m compileall -q .                                  # todo .py compila
@@ -36,6 +36,8 @@ python3 tools/isa_validate/isa_validate.py eval-card        banco/evals/capstone
 python3 tools/isa_validate/isa_validate.py agent-package    banco/catalogo/cards-disputes/agent.yaml
 python3 tools/isa_validate/isa_validate.py capability tools/isa_validate/casos-negativos/capability-sin-idempotencia.yaml  # debe salir con 1
 python3 tools/isa_validate/isa_validate.py eval-card  tools/isa_validate/casos-negativos/eval-card-sin-n-cases.yaml        # debe salir con 1
+python3 tools/extraer_banco/guiones.py                      # todo bloque __main__ es la ultima sentencia de su guion
+ESQUEMAS_URL=postgresql://...  python3 tools/extraer_banco/esquemas.py   # los .sql aplican en su orden (salta sin la variable)
 ```
 
 Si tu cambio añade una palabra clave de JSON Schema a un esquema, el validador tiene que aprenderla en el mismo PR: un esquema con reglas que nadie comprueba es exactamente lo que este paquete existe para impedir (`tools/isa_validate/API.md`).

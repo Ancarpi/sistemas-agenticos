@@ -21,8 +21,9 @@ def cargar(nombre: str, version: str, n: int,
     """El conjunto dorado, muestreado igual en tu portátil y en CI.
     Dos reglas que parecen burocracia y no lo son. La versión va en
     el NOMBRE del fichero y un fichero publicado no se edita:
-    añadir un caso al final cambia la muestra ENTERA con la misma
-    semilla, y tu serie histórica deja de comparar. Y el sha viaja
+    añadir un caso al final ya mueve casos de la muestra con la
+    misma semilla --- cuántos depende de la semilla: de ninguno a
+    varios ---, y tu serie histórica deja de comparar. Y el sha viaja
     con el resultado, porque «v3» es una promesa y el sha, la
     prueba."""
     ruta = CONJUNTOS / f"{nombre}.{version}.jsonl"

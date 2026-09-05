@@ -36,6 +36,7 @@ def aprobadas() -> dict:
         nuevo = json.loads(FICHAS.read_text("utf-8"))
     except (OSError, ValueError):
         nuevo = {}     # un JSON a medio escribir tampoco revoca nada
+        logging.warning("aprobadas.json ilegible: sirvo el último bueno")
     if nuevo:
         # Se asigna DESPUÉS de validar: cachear un {} legal haría
         # que el TTL entero sirviera vacío sin excepción.

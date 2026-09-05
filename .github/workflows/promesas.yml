@@ -10,6 +10,21 @@ on:
 jobs:
   promesas:
     runs-on: ubuntu-latest
+    # Para la novena comprobacion (esquemas.py): un Postgres real con
+    # pgvector. Es un service container, no un mock: los .sql solo
+    # fallan al aplicarlos, y aplicarlos es lo que se comprueba.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_PASSWORD: promesas
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -131,4 +146,28 @@ jobs:
       - name: toda tabla banco.* que el arbol usa tiene su CREATE TABLE
         run: |
           python3 tools/extraer_banco/tablas.py
+
+      # La octava: EJECUTAR, no solo compilar. Un guion se ejecuta de
+      # arriba abajo, asi que lo que viene detras del bloque
+      # `if __name__ == "__main__"` no existe cuando el bloque corre:
+      # batch_nocturno.py compilaba, importaba y tenia sus nombres
+      # definidos, y aun asi moria con NameError porque main() llama a
+      # informe(), definido despues del bloque. Es estatica (ast) y no
+      # necesita servicios; habria cazado ese bloqueante.
+      - name: todo bloque __main__ es la ultima sentencia de su guion
+        run: |
+          python3 tools/extraer_banco/guiones.py
+
+      # La novena: los .sql del arbol APLICAN, en su orden documentado,
+      # contra un Postgres real (el service container de arriba, con
+      # pgvector). Un .sql solo falla al ejecutarlo: una POLICY mal
+      # escrita o un CHECK que rechaza lo que otro modulo inserta pasan
+      # enteros por las ocho anteriores. Los que se declaran
+      # reaplicables se aplican dos veces, que tambien es promesa.
+      # En local, sin ESQUEMAS_URL, esquemas.py SALTA diciendolo.
+      - name: los .sql del arbol aplican en su orden documentado
+        env:
+          ESQUEMAS_URL: postgresql://postgres:promesas@localhost:55432/postgres
+        run: |
+          python3 tools/extraer_banco/esquemas.py
 

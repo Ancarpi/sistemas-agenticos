@@ -3,8 +3,9 @@
 # no una línea de Python: UPDATE y DELETE tienen que salir SIN
 # error y con cero filas afectadas. Con el `DATABASE_URL_APP` del
 # `.env` del 0.4, que es el rol NOBYPASSRLS del 16.6: con un
-# superusuario el test pasa en verde midiendo lo contrario de lo
-# que dice medir.
+# superusuario el DELETE sí borra (rowcount 1) y el test FALLA en
+# rojo --- ruidoso, pero midiendo la sesión del superusuario y no
+# la RLS que la aplicación va a vivir.
 import os
 import uuid
 

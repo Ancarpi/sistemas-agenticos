@@ -5,7 +5,7 @@
 # y el `ANOTAR` salen del memoria.py; aquí solo se borra.
 import json
 
-from src.core import trabajos             # la cola del 21.5
+from src.core import hitl, trabajos   # la firma del 35.6, la cola del 21.5
 from src.core.memoria import (ANOTAR, SIETE, TENANT,
                               AlmacenBorrado,
                               MemoryDeletionReceipt, conectar,
@@ -16,6 +16,17 @@ from trazas import PERSONAL               # el regex del 36.6
 # borra, se bloquea.
 VIVOS = ("pending", "leased", "running", "waiting_human",
          "retry_scheduled")
+
+
+def _literal(s: str) -> str:
+    """Escapa `%`, `_` y la barra invertida antes de meter `s`
+    en un patrón LIKE. El sujeto viene de FUERA, y en un id
+    legítimo como C_1 el guion bajo es parte del id, no un
+    comodín: sin esto, suprimir C_1 barre el store y los
+    checkpoints de CX1 --- las filas de OTRO cliente."""
+    for comodin in ("\\", "%", "_"):
+        s = s.replace(comodin, "\\" + comodin)
+    return s
 
 
 def _a1_store(cur, c) -> AlmacenBorrado:
@@ -31,8 +42,8 @@ def _a1_store(cur, c) -> AlmacenBorrado:
     # pelo bajo banco.soporte.C-99 también es del sujeto, y
     # barrer solo `preferencias` lo dejaría vivo sin receipt.
     n = len(filas)
-    like = (f"{TENANT}.%.{c['sujeto']}",
-            f"{TENANT}.%.{c['sujeto']}.%")
+    suj = _literal(c["sujeto"])
+    like = (f"{TENANT}.%.{suj}", f"{TENANT}.%.{suj}.%")
     for t in ("store_vectors", "store"):
         if existe(cur, t):
             cur.execute(f"DELETE FROM {t} WHERE prefix LIKE %s"
@@ -50,7 +61,7 @@ def _a2_checkpoints(cur, c) -> AlmacenBorrado:
     for t in ("checkpoint_writes", "checkpoints"):
         if existe(cur, t):
             cur.execute(f"DELETE FROM {t} WHERE thread_id LIKE"
-                        " %s", ("%:" + c["sujeto"],))
+                        " %s", ("%:" + _literal(c["sujeto"]),))
             n += cur.rowcount
     tablas = ["checkpoints", "checkpoint_writes"]
     return parte(1, tablas, "borrado", n, "Plataforma")
@@ -62,7 +73,7 @@ def _a3_resumenes(cur, c) -> AlmacenBorrado:
     n = 0
     if existe(cur, "checkpoint_blobs"):
         cur.execute("DELETE FROM checkpoint_blobs WHERE thread_id"
-                    " LIKE %s", ("%:" + c["sujeto"],))
+                    " LIKE %s", ("%:" + _literal(c["sujeto"]),))
         n = cur.rowcount
     cur.execute("SELECT detalle::text AS t FROM banco.registro_ia"
                 " WHERE sujeto = %s", (c["sujeto"],))
@@ -87,6 +98,12 @@ def _a4_trazas(cur, c) -> AlmacenBorrado:
 
 
 def _a5_auditoria(cur, c) -> AlmacenBorrado:
+    # PRIMERO se cierra, LUEGO se redacta: la pendiente del
+    # sujeto que solo se vaciara quedaría en `pendientes` como
+    # `{}`, firmable a ciegas. El rechazo lo firma el 35.6
+    # (`sistema:supresion`), no este fichero, y en su propia
+    # conexión: cerrado queda aunque esto se caiga después.
+    hitl.cerrar_por_supresion(c["sujeto"])
     cur.execute(
         "UPDATE banco.aprobaciones SET propuesta = '{}'::jsonb,"
         " diff = NULL, purgado_en = now(), purgado_por = %s"

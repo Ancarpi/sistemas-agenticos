@@ -101,10 +101,6 @@ def main() -> None:
             bd.commit()   # una transacción por TANDA: el fallo de
                           # la 17 no deshace las 16 ya cerradas
         print(informe(cur, n, gasto_usd() - gasto_0))
-
-
-if __name__ == "__main__":
-    main()
 def informe(cur, n: dict, gasto: float) -> str:
     """Lo que un humano lee a las 8:00. Abre por lo único que
     exige una decisión hoy: el informe que empieza por «390
@@ -121,6 +117,10 @@ def informe(cur, n: dict, gasto: float) -> str:
     filas.append(f"COSTE {gasto:6.2f} USD de {PRESUPUESTO_USD:.2f}"
                  f"   ({gasto / max(hechas, 1):.4f} por caso)")
     return "\n".join(filas)
+
+
+if __name__ == "__main__":
+    main()
 
 
 # --- costura PENDIENTE del M17.2 (extraer_banco) ---

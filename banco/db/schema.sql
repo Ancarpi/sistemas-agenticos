@@ -343,10 +343,13 @@ ALTER TABLE manuales
 CREATE INDEX IF NOT EXISTS manuales_sujeto
     ON manuales (sujeto) WHERE sujeto IS NOT NULL;
 
--- El registro del 16.6 admite tres tipos, y una supresión del
--- RGPD es un cuarto hecho que hay que poder enseñar en la misma
--- consulta. Un CHECK no se amplía: se sustituye.
+-- El registro del 16.6 nació con tres tipos y el M22 ya le
+-- sustituyó este mismo CHECK para añadir el cuarto
+-- (art14_traspaso); una supresión del RGPD es el quinto hecho
+-- que hay que poder enseñar en la misma consulta. Un CHECK no
+-- se amplía: se sustituye, y se sustituye la lista VIGENTE
+-- entera, no la del 16.6 impreso.
 ALTER TABLE registro_ia DROP CONSTRAINT IF EXISTS tipo_valido;
 ALTER TABLE registro_ia ADD CONSTRAINT tipo_valido CHECK (
-    tipo IN ('art50_aviso', 'art14_aprobacion',
-             'art26_decision', 'rgpd_supresion'));
+    tipo IN ('art50_aviso', 'art14_aprobacion', 'art26_decision',
+             'art14_traspaso', 'rgpd_supresion'));

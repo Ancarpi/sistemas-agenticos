@@ -78,7 +78,7 @@ async def eventos(req: Request, tareas: BackgroundTasks,
     base = f"v0:{x_slack_request_timestamp}:".encode() + crudo
     mia = "v0=" + hmac.new(SECRETO, base, hashlib.sha256).hexdigest()
     # compare_digest con dos str exige ASCII en los dos: una firma
-    # con un solo carácter raro lanzaría UnicodeEncodeError y daría
+    # con un solo carácter raro lanzaría TypeError y daría
     # un 500 --- crash sin autenticar --- en vez del 401 que toca.
     firma = x_slack_signature.encode("ascii", "ignore")
     if not hmac.compare_digest(mia.encode(), firma):
@@ -94,6 +94,11 @@ async def eventos(req: Request, tareas: BackgroundTasks,
     # se deduplica por event_id en tabla, no por cabecera: así un
     # evento genuinamente perdido sí se reentrega.
     if x_slack_retry_num:
+        return Response(status_code=200)
+    # Slack también firma avisos SIN 'event' (app_rate_limited):
+    # sin este guard, cuerpo["event"] sería un 500 con firma
+    # válida en vez de un ack.
+    if "event" not in cuerpo:
         return Response(status_code=200)
     ev = cuerpo["event"]
     # Lo que publica el propio bot vuelve por aquí como evento:

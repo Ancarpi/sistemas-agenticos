@@ -48,8 +48,10 @@ def sesion_lectura(niveles: str = NIVELES):
     """
     # es_banco vive en banco y plainto_tsquery la busca por
     # nombre: sin este -c, el del pool del 10.2, no la encuentra.
+    # Y public porque el tipo vector y su <=> viven allí: el
+    # CREATE EXTENSION del 7.6 corre antes del SET search_path.
     with psycopg.connect(os.environ["DATABASE_URL"],
-                         options="-c search_path=banco") as con:
+                         options="-c search_path=banco,public") as con:
         with con.transaction():
             con.execute("SET LOCAL ROLE agente_lectura")
             con.execute("SELECT set_config('banco.niveles',"
@@ -98,8 +100,9 @@ def trozos(ids: list[str],
     Esta es la consulta que se olvida: la fusión ya respetó la
     política, y este SELECT, si sale de la transacción, entra
     como dueño de la tabla y sirve el trozo restringido. El
-    ::uuid[] tampoco es opcional: sin él Postgres compara uuid
-    con text y no casa ni una fila.
+    ::uuid[] no defiende nada: psycopg manda la lista sin tipo
+    y el = ANY ya la resuelve a uuid[]; el cast solo deja el
+    tipo escrito para quien lea la consulta.
     """
     with sesion_lectura(niveles) as con:
         filas = con.execute(

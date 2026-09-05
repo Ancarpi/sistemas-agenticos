@@ -50,7 +50,7 @@ $$;
 -- El TO acota la restricción al rol del retriever, para que la
 -- ingesta y el inventario sigan viendo el corpus entero.
 DROP POLICY IF EXISTS manuales_vigentes ON manuales;
-CREATE POLICY manuales_vigentes AS RESTRICTIVE
+CREATE POLICY manuales_vigentes ON manuales AS RESTRICTIVE
     FOR SELECT TO agente_lectura USING (
         valid_from <= current_date
         AND coalesce(caduca_el(tipo, indexado_en, valid_to),
