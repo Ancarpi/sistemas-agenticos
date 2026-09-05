@@ -81,6 +81,12 @@ async def plan(app, hilo: str) -> tuple[str, dict | None]:
     v = valores.get("version_estado", 1)
     if v == VERSION_ESTADO:
         return "al día", None
+    if v > VERSION_ESTADO:
+        # El rollback: un checkpoint escrito por código más nuevo.
+        # Sin esta guarda no entra en «al día» ni en el while y
+        # sale con un parche {version_estado: N} que reetiqueta a
+        # la baja un estado que nadie transformó.
+        return f"versión {v} futura (código en v{VERSION_ESTADO})", None
     parche = {}
     while v < VERSION_ESTADO:
         if v not in SALTOS:

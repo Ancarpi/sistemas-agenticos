@@ -107,10 +107,15 @@ def esperar_humano(cur, job_id: int):
 
 def despertar(cur, job_id: int):
     """La aprobación lo devuelve a la cola con su thread_id
-    intacto; lo reanuda el worker que lo reclame."""
+    intacto; lo reanuda el worker que lo reclame. Y devuelve el
+    intento que el reclamo cobró: llegar a la pausa prueba que
+    aquel reclamo no era veneno, y sin esta resta cada aprobación
+    gasta un intento contra MAX_INTENTOS hasta agotar el caso sin
+    un solo fallo."""
     cur.execute("UPDATE banco.trabajos SET estado='pending',"
-                " correr_tras=now() WHERE id=%s AND"
-                " estado='waiting_human'", (job_id,))
+                " correr_tras=now(),"
+                " intentos=greatest(intentos - 1, 0) WHERE id=%s"
+                " AND estado='waiting_human'", (job_id,))
     return cur.rowcount == 1
 
 

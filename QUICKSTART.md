@@ -69,6 +69,6 @@ A partir de aquí, `banco/README.md` es el mapa: qué fichero corre con qué com
 
 ## Lo que NO corre, dicho de frente
 
-- **Los fragmentos didácticos** (`grafo_conciliacion.py`, `medidas.py`, `memoria.py`...) no se completan montando infraestructura: les falta el código que el libro te deja como ejercicio. La lista exacta, con qué le falta a cada uno, está en `banco/README.md`.
+- **Los fragmentos didácticos** (`grafo_conciliacion.py`, `medidas.py`, `indexar.py`...) no se completan montando infraestructura: les falta el código que el libro te deja como ejercicio. La lista exacta, con qué le falta a cada uno, está en `banco/README.md`.
 - **`uv run pytest tests/` sin `.env` no ejecuta ni un test, y lo dice en la cabecera.** `src/core/cumplimiento.py` abre su pool a nivel de módulo, así que sin `DATABASE_URL` el import de `tests/test_art50.py` muere y pytest aborta la tanda entera. Con el `.env` puesto y sin Postgres son `2 passed, 1 failed`: el que falla es el test de RLS del 16.6, contra una base de datos que no está. Falla en vez de saltarse, y eso es el resultado correcto.
 - **`tools/extraer_banco/`** necesita `libro.md`, que no se publica en este repo. Sin el libro fuente, el extractor no tiene nada que extraer; el árbol ya extraído es `banco/`.

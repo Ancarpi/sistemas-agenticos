@@ -255,10 +255,12 @@ def proponer_memoria_colectiva(
     # receipt la repite entera: si esta llamada es la reejecución
     # de una propuesta ya decidida, mentiría diciendo `pendiente`
     # de lo que el steward ya contestó.
+    # Una propuesta colectiva no es de nadie: `sujeto` va NULL a
+    # propósito, y la supresión de un cliente no la redacta.
     fila_hitl = hitl.encolar(
         hilo=f"memoria|{ref}", run=ctx["run"], agente=ctx["agente"],
         accion="memoria.publicar",
-        propone=propone,
+        propone=propone, sujeto=None,
         propuesta={"referencia": ref, "dominio": dominio,
                    "tipo": tipo, "resumen": resumen,
                    "evidencias_run_ids": list(evidencias_run_ids)},

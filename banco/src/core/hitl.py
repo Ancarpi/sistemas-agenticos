@@ -72,7 +72,7 @@ def _diff(propuesta: dict, args) -> dict:
 
 
 def encolar(*, hilo, run, agente, propone, propuesta, accion=None,
-            receipt=None) -> dict:
+            receipt=None, sujeto=None) -> dict:
     """Las dos mitades del ciclo en una firma, y el `decidir` del
     37.2 las usa las dos: sin `receipt` encima del `interrupt()`,
     y con él al reanudar. Sin receipt abre la propuesta --- o
@@ -108,14 +108,19 @@ def encolar(*, hilo, run, agente, propone, propuesta, accion=None,
         vieja = cur.fetchone()
         if vieja is not None:
             return vieja
+        # `sujeto` es la columna que el ALTER del 34.7 añade para
+        # que `_a5_auditoria` encuentre las filas de una persona:
+        # sin ella la supresión redacta cero y no avisa. None es
+        # legítimo solo cuando la propuesta no es de nadie (una
+        # memoria colectiva); si hay cliente, se pasa.
         cur.execute(
             "INSERT INTO banco.aprobaciones (hilo, huella, run_id,"
-            " agente, version, accion, propuesta, propone) VALUES"
-            " (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (hilo, huella)"
-            " WHERE estado='pendiente' DO NOTHING"
+            " agente, version, accion, propuesta, propone, sujeto)"
+            " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT"
+            " (hilo, huella) WHERE estado='pendiente' DO NOTHING"
             " RETURNING id, estado, motivo",
             (hilo, huella, run, agente["id"], agente["version"],
-             accion, json.dumps(propuesta), propone))
+             accion, json.dumps(propuesta), propone, sujeto))
         fila = cur.fetchone()
         if fila is not None:
             return fila

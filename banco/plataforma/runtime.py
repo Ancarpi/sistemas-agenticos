@@ -212,7 +212,8 @@ def decidir(ctx, llamada) -> str | None:
         fila = encolar(hilo=ctx["hilo"], run=ctx["run"],
                        accion=llamada["name"], agente=ctx["agente"],
                        propuesta=llamada["args"],
-                       propone=f"{quien['kind']}:{quien['user_id']}")
+                       propone=f"{quien['kind']}:{quien['user_id']}",
+                       sujeto=ctx["sujeto"])
         if fila["estado"] in ("rechazada", "caducada"):
             # La reejecución tras un rechazo o una caducidad: la
             # decisión ya está firmada en la fila, y volver a

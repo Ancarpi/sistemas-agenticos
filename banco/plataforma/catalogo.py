@@ -33,9 +33,13 @@ def aprobadas() -> dict:
     if time.monotonic() - _visto[0] < TTL:
         return _visto[1]
     try:
-        _visto = (time.monotonic(), json.loads(FICHAS.read_text("utf-8")))
+        nuevo = json.loads(FICHAS.read_text("utf-8"))
     except (OSError, ValueError):
-        pass       # un JSON a medio escribir tampoco revoca nada
+        nuevo = {}     # un JSON a medio escribir tampoco revoca nada
+    if nuevo:
+        # Se asigna DESPUÉS de validar: cachear un {} legal haría
+        # que el TTL entero sirviera vacío sin excepción.
+        _visto = (time.monotonic(), nuevo)
     if not _visto[1]:
         raise RuntimeError("catálogo sin aprobaciones")
     return _visto[1]

@@ -26,11 +26,17 @@ def _a1_store(cur, c) -> AlmacenBorrado:
                 " RETURNING source_run_id", (c["sujeto"],))
     filas = cur.fetchall()
     c["runs"] = sorted({f["source_run_id"] for f in filas})
-    n, pre = len(filas), f"{TENANT}.preferencias.{c['sujeto']}"
+    # El namespace del store es (tenant, propósito, sujeto) y el
+    # propósito se barre con comodín: lo que un agente escribió a
+    # pelo bajo banco.soporte.C-99 también es del sujeto, y
+    # barrer solo `preferencias` lo dejaría vivo sin receipt.
+    n = len(filas)
+    like = (f"{TENANT}.%.{c['sujeto']}",
+            f"{TENANT}.%.{c['sujeto']}.%")
     for t in ("store_vectors", "store"):
         if existe(cur, t):
-            cur.execute(f"DELETE FROM {t} WHERE prefix = %s OR"
-                        " prefix LIKE %s", (pre, pre + ".%"))
+            cur.execute(f"DELETE FROM {t} WHERE prefix LIKE %s"
+                        " OR prefix LIKE %s", like)
             n += cur.rowcount
     tablas = ["banco.memoria", "store", "store_vectors"]
     return parte(0, tablas, "borrado", n, "DPO")
@@ -102,13 +108,17 @@ def _a6_corpus(cur, c) -> AlmacenBorrado:
     # 21.5 para su dueño, que es quien lo republica sin el dato.
     cur.execute("DELETE FROM banco.manuales WHERE sujeto = %s"
                 " RETURNING fuente", (c["sujeto"],))
-    c["fuentes"] = sorted({f["fuente"] for f in cur.fetchall()})
+    trozos = cur.fetchall()
+    c["fuentes"] = sorted({f["fuente"] for f in trozos})
     for f in c["fuentes"]:
         trabajos.encolar(cur, "reindexar", f,
                          {"fuente": f, "motivo": "supresion"},
                          prioridad=5)
-    return parte(5, ["banco.manuales"], "borrado",
-                 len(c["fuentes"]), "Productos")
+    # `filas` cuenta filas, como promete el DDL: los TROZOS que
+    # cayeron, no las fuentes. Dos trozos de un documento son dos
+    # filas borradas y un solo trabajo de reindexado.
+    return parte(5, ["banco.manuales"], "borrado", len(trozos),
+                 "Productos")
 
 
 def _a7_trabajos(cur, c) -> AlmacenBorrado:
