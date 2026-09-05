@@ -12,6 +12,7 @@ una operacion de texto. Estas son las que quedan pendientes.
 |---|---|---|
 | `src/channels/backend/batch_nocturno.py` | M17.2 | PENDIENTE. Apagado ordenado por SIGTERM: el libro lo pega justo encima de main(), y la condicion del bucle de tandas pasa a mirar PARANDO. |
 | `src/channels/chat/servidor.py` | M17.2 | PENDIENTE. Lifespan y apagado ordenado: SUSTITUYE al FastAPI() del 12.5. Pegado al final reasigna api y el canal se queda sin rutas. |
+| `deploy/despliegue-chat.yaml` | M27.2 | Anadido del M27.2. |
 
 El resto de los `patch` de `MAPEO.md` son anadidos al final que no
 piden nada mas: el fichero ya queda como tiene que quedar.

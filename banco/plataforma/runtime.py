@@ -43,6 +43,10 @@ CATALOGO = {
     "core.sepa.escalar": (escalar_a_humano, "1.0.0", "active",
                           "internal", "L3"),
 }
+# El modelo llama por el nombre `@tool` del 4.1, no por el id:
+# `llamada["name"]` trae `buscar_transferencia`. Este índice lo
+# traduce al id, que es el que las reglas del 26.2 entienden.
+POR_NOMBRE = {x[0].name: n for n, x in CATALOGO.items()}
 CACHE = {}
 
 
@@ -165,12 +169,14 @@ def decidir(ctx, llamada) -> str | None:
     """Devuelve None si la llamada procede --- con los `args` ya
     editados si el aprobador los tocó --- y el texto del rechazo
     si no. El ctx es el `context=` de `ejecutar` en las dos."""
-    clase, peldano = CATALOGO[llamada["name"]][3:]
+    nombre = POR_NOMBRE.get(llamada["name"], llamada["name"])
+    clase, peldano = CATALOGO[nombre][3:]
     # El dict del 35.2 con sus seis claves, que son los seis
     # atributos que el Ejercicio 35.1 obliga a evaluar. `autorizar`
     # es ese policy engine y devuelve una de sus cinco cadenas. La
-    # tool va por su nombre, lo único que las dos formas comparten;
-    # y en el middleware `peticion.tool` es None si está retirada.
+    # tool va por su id de catálogo, traducido del nombre de la
+    # llamada, que es lo único que las dos formas comparten; y en
+    # el middleware `peticion.tool` es None si está retirada.
     # El sujeto llega con su clase, y la clase es una rama: el
     # worker nocturno del 11.5 corre sin humano detrás, así que
     # entra como carga (35.3) y lo atiende su regla del bundle.
@@ -183,7 +189,7 @@ def decidir(ctx, llamada) -> str | None:
               "auth_level": "workload_identity"})
     decision = autorizar({
         "subject": quien,
-        "agent": ctx["agente"], "tool": {"id": llamada["name"]},
+        "agent": ctx["agente"], "tool": {"id": nombre},
         "resource": {"account_owner": ctx["sujeto"],
                      "data_class": clase},
         "context": {"purpose": ctx["proposito"],
@@ -194,7 +200,7 @@ def decidir(ctx, llamada) -> str | None:
     # denegación que no deja rastro no es un control, es una
     # opinión del proceso que la tomó.
     print(json.dumps({"policy.decision": decision,
-                      "tool.id": llamada["name"],
+                      "tool.id": nombre,
                       "run.id": ctx["run"]}))
     if decision == "require_human":
         # La fila se abre ANTES de la pausa, porque lo que la

@@ -34,8 +34,9 @@ spec:
             limits: {memory: "512Mi"}     # memoria sí, CPU no
 
 
-# --- anadido del M27.2 (extraer_banco) ---
+# --- costura PENDIENTE del M27.2 (extraer_banco) ---
 # Anadido del M27.2.
+# El script no la aplica en su sitio: eso es una decision. Ver COSTURAS.md.
 # despliegue-chat.yaml --- lo que el 27.2 añade al 17.2. Todo lo
 # demás del pod (envFrom, sondas, preStop, resources) no se toca.
 spec:

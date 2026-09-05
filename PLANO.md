@@ -178,7 +178,7 @@ Cinco lentes = cinco dimensiones independientes = un fanout en paralelo, que es 
 | *(apps/v1, 27.3)* | `deploy/runtime-prolongado.yaml` | |
 | `identidad.py` (18.3) | `src/core/identidad.py` | |
 | `src/core/context_contracts.py` (19.1) | `src/core/context_contracts.py` | verbatim |
-| `config/model_routing.yaml` (19.2) | `config/model_routing.yaml` | verbatim |
+| `config/model_routing.yaml` (19.6) | `config/model_routing.yaml` | verbatim; el 19.6 imprime el fichero entero (las rutas del 19.2 fusionadas): dos claves raíz `routes` no son un YAML |
 | `tools/bloquear_tarjeta.capability.yaml` (20.1) | `tools/bloquear_tarjeta.capability.yaml` | verbatim; valida contra `schemas/tool-capability.schema.json` |
 | *(dry-run/commit, 20.2)* | `src/agents/cards_disputes/herramientas.py` | el `entrypoint` que declara `agent.yaml` |
 | *(ToolError 20.3, Handoff 23.1, HumanHandoffPacket 22.3)* | `src/core/contratos.py` | el vocabulario tipado que cruza fronteras |

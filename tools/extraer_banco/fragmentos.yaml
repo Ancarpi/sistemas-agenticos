@@ -14,6 +14,14 @@
     20.2. El apartado imprime el patron read-plan-dry-run-commit sobre una
     herramienta de tarjetas que el lector adapta: `cards_core`, `transaction`,
     `masked` y `summary` son de su core, no del banco del libro.
+- fichero: src/agents/backoffice/agente_backoffice.py
+  localizador: >-
+    4.3, y el propio apartado lo declara: «Una sola pieza de este fichero no
+    esta impresa: devolver_transferencia, la quinta herramienta, que sale del
+    Ejercicio 3.1 y se decora en el 4.1 con las otras cuatro [...] Si no
+    hiciste el 3.1, el ImportError es de la primera linea, y ese es su
+    sitio». El herramientas.py del 4.1 no la necesita: importa entero con
+    sus cuatro tools impresas (la quinta la escribe el lector alli).
 - fichero: src/core/identidad.py
   localizador: >-
     18.3. Las dos funciones que separan cinco canales de cinco sistemas, con los

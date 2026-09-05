@@ -54,6 +54,15 @@ model_list:
     model_info:
       mode: embedding   # sin esto /health lo prueba como chat y falla
 
+  # rerank-multilingue --- cross-encoder. Reordena, no genera; lo
+  # gasta el rerank.py del 8.2, contra el /rerank del proxy.
+  - model_name: rerank-multilingue
+    litellm_params:
+      model: cohere/rerank-v4.0-fast  # caduca: comprueba el vigente
+      api_key: os.environ/COHERE_API_KEY
+    model_info:
+      mode: rerank   # sin esto /health lo prueba como chat y falla
+
 router_settings:
   routing_strategy: simple-shuffle
   num_retries: 2

@@ -5,12 +5,9 @@
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f src/core/memoria.sql
 SET search_path = banco, public;
 
--- Los siete tipos del 34.1, con su TTL y su dueño. Misma forma
--- que el `ttl_corpus` del 24.6 y otro eje: allí el tipo es el de
--- DOCUMENTO y lo firma Cumplimiento, aquí el de MEMORIA y cada
--- tipo tiene un dueño distinto. `dias` en NULL es «no caduca por
--- tiempo», y solo lo llevan los dos que versiona un PR. Los
--- números son política, no medición: cámbialos por los tuyos.
+-- Los siete tipos del 34.1, con su TTL y su dueño. `dias` en
+-- NULL es «no caduca por tiempo», y solo lo llevan los dos que
+-- versiona un PR.
 CREATE TABLE IF NOT EXISTS ttl_memoria (
     tipo  text PRIMARY KEY,
     dias  integer CHECK (dias IS NULL OR dias > 0),
@@ -51,24 +48,17 @@ CREATE TABLE IF NOT EXISTS memoria (
         'public', 'internal', 'confidential', 'restricted')),
     CONSTRAINT confianza_valida CHECK (
         confianza > 0 AND confianza <= 1),
-    -- La sexta regla del arquitecto, en la base: procedencia y
-    -- caducidad. Los dos tipos sin `expira_en` son los que
-    -- versiona un PR, y el REFERENCES de arriba es lo que impide
-    -- inventarse un octavo tipo de memoria.
+    -- La sexta regla del arquitecto, en la base.
     CONSTRAINT memoria_gobernada CHECK (
         source_run_id <> ''
         AND (expira_en IS NOT NULL
              OR tipo IN ('procedural', 'episodic'))),
-    -- El aprendizaje controlado del 34.3, también en la base: una
-    -- memoria de dominio o colectiva sin aprobador y sin la fila
-    -- de la cola del 35.6 que la aprobó no existe, y eso incluye
-    -- la consola SQL de las once de la noche.
+    -- El aprendizaje controlado del 34.3, también en la base.
     CONSTRAINT colectiva_aprobada CHECK (
         tipo NOT IN ('domain', 'collective')
         OR (aprobado_por IS NOT NULL
             AND propuesta_id IS NOT NULL)),
-    -- Y el permiso: una preferencia individual sin base jurídica
-    -- es un dato que nadie autorizó a guardar.
+    -- Y el permiso, cobrado.
     CONSTRAINT individual_con_base CHECK (
         tipo <> 'individual' OR consent_basis IS NOT NULL)
 );
@@ -80,10 +70,8 @@ CREATE INDEX IF NOT EXISTS memoria_por_sujeto
 CREATE INDEX IF NOT EXISTS memoria_caducidad
     ON memoria (expira_en) WHERE expira_en IS NOT NULL;
 
--- La caducidad efectiva, con la forma del `caduca_el` del 24.6 y
--- el otro eje: el TTL del tipo de memoria sobre `creado_en`. Un
--- tipo con `dias` en NULL devuelve NULL, y el CHECK de arriba es
--- el que decide si eso vale.
+-- La caducidad efectiva. Un tipo con `dias` en NULL devuelve
+-- NULL, y el CHECK de arriba es el que decide si eso vale.
 CREATE OR REPLACE FUNCTION caduca_memoria(
     p_tipo text, p_creado timestamptz)
 RETURNS timestamptz LANGUAGE sql STABLE AS $$

@@ -1,5 +1,6 @@
 from typing import Literal
 
+from langchain_core.tools import tool   # el esquema, como en el 4.1
 from langgraph.runtime import get_runtime   # el ctx del 37.2
 from pydantic import BaseModel
 

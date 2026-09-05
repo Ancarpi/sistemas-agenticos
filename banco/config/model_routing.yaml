@@ -1,4 +1,8 @@
-# config/model_routing.yaml
+# config/model_routing.yaml --- ENTERO, y sustituye al bloque del
+# 19.2: dos bloques con la misma clave raíz `routes:` no son un
+# YAML. Lo nuevo: tope por llamada, canary, la ruta que no admite
+# degradar y los precios (EUR por millón, entrada y salida; los
+# del ejemplo caducan, los tuyos salen de tu factura).
 routes:
   triage_low_risk:
     primary: agente-rapido
@@ -7,12 +11,16 @@ routes:
     reasoning_effort: low
     max_output_tokens: 300
     eval_gate: triage_accuracy >= 0.92
+    max_cost_eur: 0.002
+    canary: 10                # % de tráfico que va al fallback
   supervisor_high_risk:
     primary: agente-listo
     fallback: agente-listo-backup
     reasoning_effort: high
     max_output_tokens: 5000
     eval_gate: route_accuracy >= 0.95 and unsafe_tool_calls == 0
+    max_cost_eur: 0.12        # 5.000 de salida se comen 0,05
+    degradar: false           # antes que bajar de alias, falla
   user_final_answer:
     primary: agente-equilibrado
     fallback: agente-listo
@@ -20,21 +28,6 @@ routes:
     reasoning_effort: low
     max_output_tokens: 1200
     eval_gate: faithfulness >= 0.90 and pii_leakage == 0
-
-
-# --- anadido del M19.6 (extraer_banco) ---
-# Anadido del M19.6.
-# config/model_routing.yaml --- lo que el 19.2 no declaraba: el
-# tope por llamada, el canary, la ruta que no admite degradar y
-# los precios (EUR por millón de tokens, entrada y salida). Los
-# del ejemplo caducan; los tuyos salen de tu factura.
-routes:
-  triage_low_risk:            # el resto de claves, las del 19.2
-    max_cost_eur: 0.002
-    canary: 10                # % de tráfico que va al fallback
-  supervisor_high_risk:
-    max_cost_eur: 0.12        # 5.000 de salida se comen 0,05
-    degradar: false           # antes que bajar de alias, falla
 precios:
   agente-rapido:       [0.25, 1.00]
   agente-rapido-2:     [0.25, 1.00]

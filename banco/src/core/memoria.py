@@ -19,11 +19,9 @@ class MemoryRecord(BaseModel):
 # --- anadido del M34.7 (extraer_banco) ---
 # Anadido del M34.7.
 # src/core/memoria.py --- las tres APIs del 34.5 con cuerpo, sus
-# tres receipts definidos, el TTL por tipo y el olvido de una
-# clave. Los siete almacenes de la supresión distribuida del 34.6
-# los cierra el supresion.py de al lado. La cola y la firma NO se
-# escriben aquí: son el `hitl.py` del 35.6. Antes: el memoria.sql.
-# Cursores con `row_factory=dict_row`, como el pool del 32.2.
+# receipts, el TTL por tipo y el olvido de una clave. La cola y la
+# firma son el `hitl.py` del 35.6; los siete almacenes del 34.6,
+# el supresion.py de al lado. Cursores con `dict_row` (32.2).
 import hashlib
 import json
 import os
@@ -129,8 +127,7 @@ def conectar(autocommit=True):
 
 
 def sin_personal(campos: dict) -> None:
-    """La negativa del `atributos` del 36.6 en la otra punta:
-    allí muere la traza, aquí la escritura."""
+    """La negativa del `atributos` del 36.6, en la otra punta."""
     sucios = sorted(k for k, v in campos.items()
                     if PERSONAL.search(str(v)))
     if sucios:
@@ -255,8 +252,7 @@ def proponer_memoria_colectiva(
     # receipt la repite entera: si esta llamada es la reejecución
     # de una propuesta ya decidida, mentiría diciendo `pendiente`
     # de lo que el steward ya contestó.
-    # Una propuesta colectiva no es de nadie: `sujeto` va NULL a
-    # propósito, y la supresión de un cliente no la redacta.
+    # Una propuesta colectiva no es de nadie: `sujeto` va NULL.
     fila_hitl = hitl.encolar(
         hilo=f"memoria|{ref}", run=ctx["run"], agente=ctx["agente"],
         accion="memoria.publicar",
@@ -288,9 +284,8 @@ def publicar(receipt: dict) -> MemoryWriteReceipt | None:
     if fila is None:
         raise hitl.ReciboInvalido("publicar: propuesta ausente")
     p = fila["propuesta"]
-    # La firma la comprueba el 35.6: `encolar` con `receipt`
-    # recalcula la huella y revienta si el recibo no salió de esa
-    # cola o si lo firmó quien lo propuso.
+    # El 35.6 recalcula huella y firma: revienta si el recibo no
+    # salió de esa cola o si lo firmó quien lo propuso.
     hitl.encolar(hilo=receipt["hilo"], run=receipt["run"],
                  agente={"id": receipt["agente"],
                          "version": receipt["version"]},

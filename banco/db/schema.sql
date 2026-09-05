@@ -316,17 +316,10 @@ CREATE TABLE IF NOT EXISTS supresiones (
 CREATE UNIQUE INDEX IF NOT EXISTS supresiones_una_por_almacen
     ON supresiones (solicitud, almacen);
 
--- El receipt del 35.6 es inmutable por diseño y aun así lleva la
--- propuesta dentro, y una propuesta lleva lo que el modelo
--- escribió. Se le añade la marca de purga: se va el CONTENIDO
--- (`propuesta` y `diff`), se queda el HECHO (quién firmó, cuándo
--- y con qué firma). `propuesta` es NOT NULL allí, así que la
--- purga escribe `{}` y no NULL.
---
--- Y la columna que hace posible encontrar las filas de una
--- persona: el `hilo` del 18.3 lleva el CASO y no al sujeto, así
--- que una supresión sin ella es un LIKE que no acierta. La
--- rellena el `encolar` del 35.6, que gana un kwarg y nada más.
+-- La marca de purga del receipt del 35.6: se va el CONTENIDO
+-- (`propuesta` y `diff`), se queda el HECHO. `propuesta` es NOT
+-- NULL allí, así que la purga escribe `{}` y no NULL. Y `sujeto`,
+-- la columna por la que una supresión encuentra a una persona.
 ALTER TABLE aprobaciones
   ADD COLUMN IF NOT EXISTS purgado_en timestamptz,
   ADD COLUMN IF NOT EXISTS purgado_por text,
@@ -334,21 +327,15 @@ ALTER TABLE aprobaciones
 CREATE INDEX IF NOT EXISTS aprobaciones_sujeto
     ON aprobaciones (sujeto) WHERE sujeto IS NOT NULL;
 
--- El cuarto hábito del 34.6 hecho columna: el documento con dato
--- personal se marca al indexarlo. Sin ella, la supresión en el
--- corpus es un LIKE sobre `content` que no encuentra al cliente
--- cuyo nombre quedó partido entre dos trozos.
+-- El cuarto hábito del 34.6 hecho columna.
 ALTER TABLE manuales
   ADD COLUMN IF NOT EXISTS sujeto text;
 CREATE INDEX IF NOT EXISTS manuales_sujeto
     ON manuales (sujeto) WHERE sujeto IS NOT NULL;
 
--- El registro del 16.6 nació con tres tipos y el M22 ya le
--- sustituyó este mismo CHECK para añadir el cuarto
--- (art14_traspaso); una supresión del RGPD es el quinto hecho
--- que hay que poder enseñar en la misma consulta. Un CHECK no
--- se amplía: se sustituye, y se sustituye la lista VIGENTE
--- entera, no la del 16.6 impreso.
+-- El quinto hecho del registro del 16.6. Un CHECK no se amplía:
+-- se sustituye, y se sustituye la lista VIGENTE entera, no la
+-- del 16.6 impreso.
 ALTER TABLE registro_ia DROP CONSTRAINT IF EXISTS tipo_valido;
 ALTER TABLE registro_ia ADD CONSTRAINT tipo_valido CHECK (
     tipo IN ('art50_aviso', 'art14_aprobacion', 'art26_decision',

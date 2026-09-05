@@ -1,8 +1,7 @@
 # src/core/supresion.py --- la operación distribuida del 34.6:
-# los siete almacenes en el orden en que aquel apartado los
-# cuenta, y un `MemoryDeletionReceipt` que dice cuál se borró,
-# cuál se redactó y cuál sigue pendiente. Los tipos, la conexión
-# y el `ANOTAR` salen del memoria.py; aquí solo se borra.
+# los siete almacenes, y un `MemoryDeletionReceipt` que dice cuál
+# se borró, cuál se redactó y cuál sigue pendiente. Los tipos, la
+# conexión y el `ANOTAR` salen del memoria.py; aquí solo se borra.
 import json
 
 from src.core import hitl, trabajos   # la firma del 35.6, la cola del 21.5
@@ -30,9 +29,7 @@ def _literal(s: str) -> str:
 
 
 def _a1_store(cur, c) -> AlmacenBorrado:
-    # Dos tablas y no una: la gobernada del memoria.sql y la que
-    # crea el setup() del PostgresStore (6.2), donde escribe todo
-    # agente que no pase por la API tipada del 34.5.
+    # Dos tablas y no una: la gobernada y la del setup() del 6.2.
     cur.execute("DELETE FROM banco.memoria WHERE sujeto = %s"
                 " RETURNING source_run_id", (c["sujeto"],))
     filas = cur.fetchall()
@@ -54,9 +51,7 @@ def _a1_store(cur, c) -> AlmacenBorrado:
 
 
 def _a2_checkpoints(cur, c) -> AlmacenBorrado:
-    # Se encuentran porque el `hilo()` del 18.3 pone el sujeto
-    # DENTRO del thread_id. Con un uuid ahí, este almacén queda
-    # inalcanzable, y eso es un defecto de diseño, no de aquí.
+    # El `hilo()` del 18.3 pone el sujeto DENTRO del thread_id.
     n = 0
     for t in ("checkpoint_writes", "checkpoints"):
         if existe(cur, t):
@@ -68,8 +63,7 @@ def _a2_checkpoints(cur, c) -> AlmacenBorrado:
 
 
 def _a3_resumenes(cur, c) -> AlmacenBorrado:
-    # El resumen no tiene columna: es un valor de canal dentro
-    # del blob, y por eso se borra el HILO y no el campo.
+    # El resumen vive dentro del blob: se borra el HILO entero.
     n = 0
     if existe(cur, "checkpoint_blobs"):
         cur.execute("DELETE FROM checkpoint_blobs WHERE thread_id"
@@ -98,11 +92,8 @@ def _a4_trazas(cur, c) -> AlmacenBorrado:
 
 
 def _a5_auditoria(cur, c) -> AlmacenBorrado:
-    # PRIMERO se cierra, LUEGO se redacta: la pendiente del
-    # sujeto que solo se vaciara quedaría en `pendientes` como
-    # `{}`, firmable a ciegas. El rechazo lo firma el 35.6
-    # (`sistema:supresion`), no este fichero, y en su propia
-    # conexión: cerrado queda aunque esto se caiga después.
+    # PRIMERO se cierra, LUEGO se redacta. El 35.6 firma en su
+    # propia conexión: cerrado queda aunque esto se caiga después.
     hitl.cerrar_por_supresion(c["sujeto"])
     cur.execute(
         "UPDATE banco.aprobaciones SET propuesta = '{}'::jsonb,"
@@ -120,9 +111,7 @@ def _a5_auditoria(cur, c) -> AlmacenBorrado:
 
 
 def _a6_corpus(cur, c) -> AlmacenBorrado:
-    # Un embedding no se edita: se reindexa. Borrar los trozos
-    # deja el documento incompleto y un trabajo en la cola del
-    # 21.5 para su dueño, que es quien lo republica sin el dato.
+    # Un embedding no se edita: se reindexa, y reindexa su dueño.
     cur.execute("DELETE FROM banco.manuales WHERE sujeto = %s"
                 " RETURNING fuente", (c["sujeto"],))
     trozos = cur.fetchall()
@@ -155,9 +144,7 @@ def _a7_trabajos(cur, c) -> AlmacenBorrado:
     n += cur.rowcount
     tablas = ["banco.trabajos", "banco.efectos"]
     if vivos:
-        # Borrar el trabajo de una devolución en vuelo pierde
-        # dinero, así que el caso abierto se bloquea y el
-        # receipt lo dice con su número.
+        # La devolución en vuelo no se borra: se bloquea.
         return parte(6, tablas, "bloqueado", n, "Operaciones",
                      None, f"sin cerrar: {vivos}; caen con su"
                            " trabajo")
@@ -171,9 +158,8 @@ ALMACENES = (_a1_store, _a2_checkpoints, _a3_resumenes,
 def suprimir_sujeto(sujeto: str, solicitud: str, quien: str,
                     motivo: str = "user_request",
                     ) -> MemoryDeletionReceipt:
-    """La supresión distribuida del 34.6, en UNA transacción. No
-    es un @tool y no debe serlo: ningún modelo abre un
-    expediente de supresión."""
+    """La supresión distribuida del 34.6, en UNA transacción,
+    y no un @tool: ningún modelo abre este expediente."""
     c = {"sujeto": sujeto, "quien": quien, "runs": [],
          "fuentes": []}
     with conectar(autocommit=False) as cx, cx.cursor() as cur:
