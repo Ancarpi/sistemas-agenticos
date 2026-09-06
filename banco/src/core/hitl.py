@@ -108,11 +108,11 @@ def encolar(*, hilo, run, agente, propone, propuesta, accion=None,
         vieja = cur.fetchone()
         if vieja is not None:
             return vieja
-        # `sujeto` es la columna que el ALTER del 34.7 añade para
-        # que `_a5_auditoria` encuentre las filas de una persona:
-        # sin ella la supresión redacta cero y no avisa. None es
-        # legítimo solo cuando la propuesta no es de nadie (una
-        # memoria colectiva); si hay cliente, se pasa.
+        # `sujeto`: la columna por la que `_a5_auditoria` (34.7)
+        # encuentra a una persona; sin ella la supresión redacta
+        # cero y no avisa. None es legítimo solo si la propuesta
+        # no es de nadie (una memoria colectiva, 34.5).
+        sujeto = sujeto_id(sujeto)   # y UNA sola grafía (35.6)
         cur.execute(
             "INSERT INTO banco.aprobaciones (hilo, huella, run_id,"
             " agente, version, accion, propuesta, propone, sujeto)"
@@ -282,6 +282,16 @@ def caducar(sla=SLA, reanudar=None) -> list[int]:
     return caducadas
 
 
+def sujeto_id(sujeto):
+    """La grafía ÚNICA de la columna `sujeto`: el id a secas. El
+    `ctx["sujeto"]` del 37.2 lleva su clase (`cliente:C-99`) y
+    las tools del 34.5 manejan el id pelado (`C-99`); si cada
+    módulo escribe la suya, la supresión barre una grafía y deja
+    viva la otra --- en silencio. Es el reparto del 18.3: la
+    clase se queda en el hilo, a las columnas llega el id."""
+    return None if sujeto is None else sujeto.rpartition(":")[2]
+
+
 def cerrar_por_supresion(sujeto, reanudar=None) -> list[int]:
     """El otro rechazo del sistema, y el ORDEN es la regla: el
     `_a5_auditoria` del 34.7 lo llama ANTES de redactar. Una
@@ -294,7 +304,7 @@ def cerrar_por_supresion(sujeto, reanudar=None) -> list[int]:
     with _cx() as cx, cx.cursor() as cur:
         cur.execute("SELECT * FROM banco.aprobaciones WHERE"
                     " estado='pendiente' AND sujeto=%s",
-                    (sujeto,))
+                    (sujeto_id(sujeto),))
         for fila in cur.fetchall():
             recibo = _receipt(cur, fila, "reject",
                               "sistema:supresion", None,

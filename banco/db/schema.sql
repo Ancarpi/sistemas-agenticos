@@ -244,12 +244,16 @@ CREATE TABLE IF NOT EXISTS banco.aprobaciones (
     accion      text  NOT NULL,      -- el nombre del catálogo
     propuesta   jsonb NOT NULL,      -- los `args` del modelo
     propone     text  NOT NULL,      -- el humano que delegó (35.3)
+    sujeto      text,                -- el id del 34.6, a secas y
+                                     -- sin clase; NULL: de nadie
     estado      text  NOT NULL DEFAULT 'pendiente',
     aprobador   text,
     decidido_en timestamptz,
     diff        jsonb,
     motivo      text,
     firma       text,
+    purgado_en  timestamptz,         -- la purga del 34.7: se va el
+    purgado_por text,                -- contenido, queda el hecho
     creado_en   timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT estado_aprobacion CHECK (estado IN ('pendiente',
         'aprobada', 'editada', 'rechazada', 'caducada')),
@@ -274,8 +278,13 @@ CREATE TABLE IF NOT EXISTS banco.aprobaciones (
 -- run que pregunta. Una decidida solo cuenta para su propio run:
 -- desde otro run, la misma huella es una propuesta nueva.
 CREATE UNIQUE INDEX IF NOT EXISTS aprobaciones_una_viva
-    ON banco.aprobaciones (hilo, huella)
- WHERE estado = 'pendiente';
+    ON banco.aprobaciones (hilo, huella) WHERE estado = 'pendiente';
+
+-- La supresión del 34.6 pregunta por persona, y el `hilo` del
+-- 18.3 lleva el caso: sin esta columna con su índice, redacta
+-- cero filas y no avisa.
+CREATE INDEX IF NOT EXISTS aprobaciones_sujeto
+    ON banco.aprobaciones (sujeto) WHERE sujeto IS NOT NULL;
 
 -- La pantalla pide siempre lo mismo, y ordenado por antigüedad.
 CREATE INDEX IF NOT EXISTS aprobaciones_pendientes
@@ -316,16 +325,11 @@ CREATE TABLE IF NOT EXISTS supresiones (
 CREATE UNIQUE INDEX IF NOT EXISTS supresiones_una_por_almacen
     ON supresiones (solicitud, almacen);
 
--- La marca de purga del receipt del 35.6: se va el CONTENIDO
--- (`propuesta` y `diff`), se queda el HECHO. `propuesta` es NOT
--- NULL allí, así que la purga escribe `{}` y no NULL. Y `sujeto`,
--- la columna por la que una supresión encuentra a una persona.
-ALTER TABLE aprobaciones
-  ADD COLUMN IF NOT EXISTS purgado_en timestamptz,
-  ADD COLUMN IF NOT EXISTS purgado_por text,
-  ADD COLUMN IF NOT EXISTS sujeto text;
-CREATE INDEX IF NOT EXISTS aprobaciones_sujeto
-    ON aprobaciones (sujeto) WHERE sujeto IS NOT NULL;
+-- La purga del receipt del 35.6 (se va el CONTENIDO, se queda
+-- el HECHO) no necesita ALTER: `sujeto`, `purgado_en` y
+-- `purgado_por` vienen impresos en aquel DDL, con su índice.
+-- `propuesta` es NOT NULL allí, así que la purga escribe `{}`
+-- y no NULL, y `diff` sí queda en NULL.
 
 -- El cuarto hábito del 34.6 hecho columna.
 ALTER TABLE manuales

@@ -159,7 +159,10 @@ def suprimir_sujeto(sujeto: str, solicitud: str, quien: str,
                     motivo: str = "user_request",
                     ) -> MemoryDeletionReceipt:
     """La supresión distribuida del 34.6, en UNA transacción,
-    y no un @tool: ningún modelo abre este expediente."""
+    y no un @tool: ningún modelo abre este expediente. El
+    expediente llega con cualquiera de las dos grafías del
+    sujeto; aquí se reduce a la única que hablan las columnas."""
+    sujeto = hitl.sujeto_id(sujeto)          # la del 35.6
     c = {"sujeto": sujeto, "quien": quien, "runs": [],
          "fuentes": []}
     with conectar(autocommit=False) as cx, cx.cursor() as cur:

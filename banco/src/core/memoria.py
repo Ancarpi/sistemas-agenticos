@@ -194,10 +194,10 @@ def recordar_preferencia_cliente(
         clave: Literal["idioma", "canal_preferido",
                        "formato_resumen"],
         valor: str, evidencia: str) -> MemoryWriteReceipt:
-    """El primer @tool del 34.5. El `owner` no lo elige quien
-    llama: sale del `ttl_memoria`, con su TTL al lado."""
+    """El primer @tool del 34.5: `owner` y TTL, de `ttl_memoria`."""
     if clave not in CLAVES:
         raise MemoriaRechazada(f"clave fuera de catálogo: {clave}")
+    cliente_id = hitl.sujeto_id(cliente_id)     # una grafía (35.6)
     sin_personal({"valor": valor, "evidencia": evidencia})
     with conectar() as cx, cx.cursor() as cur:
         cur.execute(ESCRIBIR, {

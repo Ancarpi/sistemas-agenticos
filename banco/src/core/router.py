@@ -37,6 +37,10 @@ def cargar(fichero: str = FICHERO) -> dict[str, dict]:
             if not ALIAS.match(alias) or alias not in PRECIOS:
                 raise ValueError(f"{nodo}: '{alias}' no es un alias"
                                  " del gateway con precio")
+        if "max_cost_eur" not in r:
+            raise ValueError(f"{nodo}: ruta sin max_cost_eur ---"
+                             " el tope revienta aquí, no en el"
+                             " nodo de las 03:12")
         rutas[nodo] = dict(r, params={k: r[k] for k in PARAMS
                                       if k in r})
     return rutas

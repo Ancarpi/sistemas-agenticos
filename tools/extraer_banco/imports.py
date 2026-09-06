@@ -21,18 +21,14 @@ import ast
 import pathlib
 import sys
 
-# Lo que viene de PyPI o de la stdlib no es asunto de este script.
-EXTERNO = {
-    "os", "sys", "re", "json", "time", "random", "hashlib", "hmac", "base64",
-    "argparse", "pathlib", "asyncio", "logging", "datetime", "typing",
-    "dataclasses", "collections", "contextlib", "functools", "itertools",
-    "math", "statistics", "subprocess", "tempfile", "textwrap", "unicodedata",
-    "uuid", "decimal", "enum", "abc", "io", "csv", "sqlite3", "importlib",
+# Lo que viene de PyPI o de la stdlib no es asunto de este script. La
+# stdlib entera la sabe el interprete (asi `import types` no sale como
+# modulo del arbol); lo de PyPI se enumera.
+EXTERNO = set(sys.stdlib_module_names) | {
     "yaml", "psycopg", "pydantic", "httpx", "fastapi", "uvicorn", "pytest",
     "langchain", "langchain_core", "langchain_openai", "langchain_postgres",
     "langgraph", "langsmith", "livekit", "mcp", "ragas", "numpy", "dotenv",
     "slack_sdk", "requests", "boto3", "redis", "prometheus_client", "cohere",
-    "operator", "signal", "socket", "shutil", "threading", "traceback",
     "psycopg_pool", "langchain_mcp_adapters", "pipecat", "opentelemetry",
     "jinja2", "tiktoken", "sqlalchemy", "alembic", "croniter", "jwt",
 }

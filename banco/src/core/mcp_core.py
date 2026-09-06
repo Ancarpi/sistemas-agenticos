@@ -17,7 +17,10 @@ mcp = FastMCP("banco-core", stateless_http=True,
 
 
 def _filas(sql: str, args: tuple) -> list[dict]:
-    log.info("%s %s", sql[:30], args)       # criterio del Ej. 10.1
+    # Toda invocación al log, que es el criterio del Ej. 10.1 ---
+    # con el IBAN entero dentro: enmascararlo es la primera tarea
+    # del endurecimiento del Ej. 10.2, no un extra.
+    log.info("%s %s", sql[:30], args)
     with POOL.connection() as cx, cx.cursor(row_factory=dict_row) as c:
         c.execute(sql, args)
         return c.fetchall()

@@ -14,8 +14,9 @@ WITH densa AS (
     FROM banco.manuales
     -- Columnas tipadas del 7.6, no langchain_metadata. El
     -- «IS NULL OR» hace opcional cada filtro sin partir la
-    -- consulta en dos, y con el parámetro ya sustituido el
-    -- planificador se queda con manuales_filtros.
+    -- consulta en dos; el parámetro viaja aparte y se liga en
+    -- servidor, y el planificador, que ve su valor al planear,
+    -- se queda con manuales_filtros.
     WHERE (%(tipo)s::text IS NULL OR tipo = %(tipo)s)
       AND (%(producto)s::text IS NULL OR producto = %(producto)s)
     ORDER BY dist                    -- aquí manda el HNSW del 7.6

@@ -6,8 +6,9 @@ version: 7          # sube en el mismo PR que mueve a una persona
 turnos:
   # Una rotación semanal para toda la plataforma, contada desde
   # este instante. Entre comillas a propósito: sin ellas PyYAML
-  # devuelve un `datetime` naive en UTC, y restárselo a un
-  # `now(timezone.utc)` es un TypeError en la primera alerta.
+  # ya devuelve un `datetime` (consciente, en UTC), y el
+  # `fromisoformat` del `equipo.py` de al lado espera un `str`:
+  # TypeError en la primera alerta.
   arranque: "2026-01-05T08:00:00+00:00"
   turno_horas: 168
   rotacion: [ana.ruiz, marc.oller, laura.pena, dani.souto]

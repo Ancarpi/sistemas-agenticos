@@ -108,11 +108,13 @@ def cargar(agente_id):
 
 
 def compilar(pk, sello, propio=None):
-    """La clave lleva el sello del catálogo --- hash de las ternas
-    (nombre, `version`, `status`) del 33.4 y de las filas de
-    aprobación del 33.6: sin él, ni marcar una tool `retired` ni
-    retirarle la aprobación revocan nada. `propio`: el grafo del
-    paquete (9.2), que recibe las tools recortadas y `despachar`,
+    """La clave lleva el sello del catálogo --- aquí, hash de las
+    ternas (nombre, `version`, `status`) del 33.4: sin él, marcar
+    una tool `retired` no revoca nada. Que retirar la APROBACIÓN
+    también revoque lo añade el `sello_catalogo` del 33.6, que
+    suma esas filas al hash; el de arriba aún no las ve. `propio`:
+    el grafo del paquete (9.2), que recibe las tools recortadas y
+    `despachar`,
     la guarda de abajo con la forma de una función: un bucle
     escrito a mano no tiene tubería donde montar middleware."""
     clave = (pk["id"], pk["version"], sello)
@@ -216,7 +218,7 @@ def decidir(ctx, llamada) -> str | None:
         # `encolar` del 35.6, que discrimina por run y devuelve la
         # fila de ESTE run en el estado en que esté.
         fila = encolar(hilo=ctx["hilo"], run=ctx["run"],
-                       accion=llamada["name"], agente=ctx["agente"],
+                       accion=nombre, agente=ctx["agente"],
                        propuesta=llamada["args"],
                        propone=f"{quien['kind']}:{quien['user_id']}",
                        sujeto=ctx["sujeto"])

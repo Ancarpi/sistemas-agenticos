@@ -28,6 +28,7 @@ routes:
     reasoning_effort: low
     max_output_tokens: 1200
     eval_gate: faithfulness >= 0.90 and pii_leakage == 0
+    max_cost_eur: 0.01        # 1.200 de salida reservan 0,0048
 precios:
   agente-rapido:       [0.25, 1.00]
   agente-rapido-2:     [0.25, 1.00]

@@ -68,7 +68,11 @@ async def entrypoint(ctx: agents.JobContext):
     await session.start(
         agent=Agent(instructions=""), room=ctx.room,
         # En el AGENTE, no en el trunk: ver más abajo. Este
-        # plugin es propietario y pide LiveKit Cloud.
+        # plugin es propietario y pide LiveKit Cloud. Y 1.7.1 ya
+        # marca este kwarg como deprecado --- lo vigente es
+        # room_options=RoomOptions(audio_input=...), que esa
+        # versión aún no exporta plano desde livekit.agents ---:
+        # se queda el viejo, con su aviso al arrancar la sesión.
         room_input_options=RoomInputOptions(
             noise_cancellation=noise_cancellation.BVCTelephony()),
     )

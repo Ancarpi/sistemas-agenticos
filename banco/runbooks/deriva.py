@@ -56,7 +56,7 @@ def ventana(cur, version: str, fin: datetime) -> tuple:
 def estado(cur, version: str) -> str:
     """Dos preguntas, y las dos abren el runbook. La del suelo
     absoluto va primera porque ve lo que la otra no puede ver:
-    media décima por semana nunca supera el ruido entre dos
+    medio punto por semana nunca supera el ruido entre dos
     ventanas seguidas y se lleva el trimestre entero."""
     fin = datetime.now(timezone.utc)
     n1, m1 = ventana(cur, version, fin)

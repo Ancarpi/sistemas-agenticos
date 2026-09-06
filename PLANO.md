@@ -193,7 +193,7 @@ Cinco lentes = cinco dimensiones independientes = un fanout en paralelo, que es 
 | `plataforma/runtime.py` (37.2) | `plataforma/runtime.py` | verbatim, con la política y el HITL del 37.2 en el mismo `wrap_tool_call` |
 | *(Ejercicio 0.1)* | `smoke_test.py` | dos alias, latencia y tokens, Postgres y traza |
 
-Más, a mano: `README.md` (qué es, qué módulo entrega cada fichero, cómo arrancar), `pyproject.toml` (`uv`, como el libro), `conftest.py` (el `.env` que pytest no lee solo), `docker-compose.yml` (el Postgres con pgvector que el árbol necesita), `contratos/triage_sepa.contract.yaml` y `evals/capstone_gate.eval.yaml` (los dos artefactos del libro traducidos a datos, 19.1 y 18.4), `MAPEO.md` (**generado**, no escrito) y `.env.example` (**generado** por `tools/generar_env/` desde el bloque `.env` del 0.4).
+Más, a mano: `README.md` (qué es, qué módulo entrega cada fichero, cómo arrancar), `pyproject.toml` (`uv`, como el libro), `conftest.py` (el `.env` que pytest no lee solo), `docker-compose.yml` (el Postgres con pgvector que el árbol necesita), `tests/test_supresion.py` y `tests/test_integracion.py` (los dos casos negativos del red team sobre la supresión del 34.6 y el humo de integración hitl+memoria+supresión+runtime: ejercitan el árbol, no salen del libro), `contratos/triage_sepa.contract.yaml` y `evals/capstone_gate.eval.yaml` (los dos artefactos del libro traducidos a datos, 19.1 y 18.4), `MAPEO.md` (**generado**, no escrito) y `.env.example` (**generado** por `tools/generar_env/` desde el bloque `.env` del 0.4).
 
 ### F.3 Extracción
 

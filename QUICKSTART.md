@@ -40,15 +40,19 @@ Y sin ejecutar nada: `knowledge/INDEX.md` (las doce reglas), `schemas/` (lo que 
 cd banco
 docker compose up -d
 docker compose exec -T db psql -U banco -d banco -v ON_ERROR_STOP=1 < db/schema.sql
+# El schema.sql del 7.6 no trae banco.memoria: la crea memoria.sql (34.7),
+# y la tocan tests/test_supresion.py y tests/test_integracion.py. Sin esta
+# línea, «3 failed, 3 passed».
+docker compose exec -T db psql -U banco -d banco -v ON_ERROR_STOP=1 < src/core/memoria.sql
 # El rol banco_app del 16.6 nace sin contraseña, y es el rol con el que se
 # conecta tests/test_registro.py: la RLS no se mide con un superusuario.
 docker compose exec -T db psql -U banco -d banco \
     -c "ALTER ROLE banco_app PASSWORD 'local-desechable'"
 cp .env.example .env         # para los tests bastan las dos DATABASE_URL
-uv run pytest tests/         # 3 passed
+uv run pytest tests/         # 6 passed
 ```
 
-Comprobado sobre este repo: la imagen es `pgvector/pgvector:pg17`, y el `schema.sql` aplica limpio **dos veces seguidas** con `ON_ERROR_STOP=1` --- exit 0 en ambas pasadas, `vector 0.8.6` instalado y los roles `agente_lectura` y `banco_app` creados con el rodeo `DO $do$` que `CREATE ROLE` obliga a usar. Es reaplicable de verdad, que es lo que promete su primera línea. Y con eso los tres tests del 16.7 pasan, que es la única fila de la tabla de `banco/README.md` que se comprueba sin gateway.
+Comprobado sobre este repo: la imagen es `pgvector/pgvector:pg17`, y el `schema.sql` aplica limpio **dos veces seguidas** con `ON_ERROR_STOP=1` --- exit 0 en ambas pasadas, `vector 0.8.6` instalado y los roles `agente_lectura` y `banco_app` creados con el rodeo `DO $do$` que `CREATE ROLE` obliga a usar. Es reaplicable de verdad, que es lo que promete su primera línea, y `memoria.sql` aplica igual de limpio en la segunda pasada. Y con eso los tests del árbol pasan enteros --- los del 16.7, los dos que el red team dejó sobre la supresión del 34.6 y el humo de integración del 37.2 ---, que es la única fila de la tabla de `banco/README.md` que se comprueba sin gateway.
 
 ## Escalón 2 --- el gateway y una clave de proveedor (lo que el libro monta en el 0.5)
 
@@ -70,5 +74,5 @@ A partir de aquí, `banco/README.md` es el mapa: qué fichero corre con qué com
 ## Lo que NO corre, dicho de frente
 
 - **Los fragmentos didácticos** (`grafo_conciliacion.py`, `medidas.py`, `indexar.py`...) no se completan montando infraestructura: les falta el código que el libro te deja como ejercicio. La lista exacta, con qué le falta a cada uno, está en `banco/README.md`.
-- **`uv run pytest tests/` sin `.env` no ejecuta ni un test, y lo dice en la cabecera.** `src/core/cumplimiento.py` abre su pool a nivel de módulo, así que sin `DATABASE_URL` el import de `tests/test_art50.py` muere y pytest aborta la tanda entera. Con el `.env` puesto y sin Postgres son `2 passed, 1 failed`: el que falla es el test de RLS del 16.6, contra una base de datos que no está. Falla en vez de saltarse, y eso es el resultado correcto.
+- **`uv run pytest tests/` sin `.env` no ejecuta ni un test, y lo dice en la cabecera.** `src/core/cumplimiento.py` abre su pool a nivel de módulo, así que sin `DATABASE_URL` el import de `tests/test_art50.py` muere y pytest aborta la tanda entera. Con el `.env` puesto y sin Postgres son `2 passed, 1 failed, 3 skipped`: el que falla es el test de RLS del 16.6, contra una base de datos que no está --- falla en vez de saltarse, y eso es el resultado correcto ---, y los que saltan son los dos de `tests/test_supresion.py` y el humo de `tests/test_integracion.py`, que miden código de aplicación y no una promesa del schema: sin base de datos no mienten ni en rojo ni en verde.
 - **`tools/extraer_banco/`** necesita `libro.md`, que no se publica en este repo. Sin el libro fuente, el extractor no tiene nada que extraer; el árbol ya extraído es `banco/`.

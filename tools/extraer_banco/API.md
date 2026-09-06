@@ -45,6 +45,8 @@ Defaults assume the author's layout: `../../../fuente/libro.md` and
   Pasting a fragment into its right place is a decision, not a text operation.
 - **Generated, therefore never hand-edited:** the whole `banco/` tree
   except `README.md`, `pyproject.toml`, `conftest.py`, `docker-compose.yml`,
+  `tests/test_supresion.py` (the red team's two negative cases on the §34.6
+  suppression — they exercise the tree, they are not in the book),
   and the two book artifacts translated to data by hand,
   `contratos/triage_sepa.contract.yaml` and `evals/capstone_gate.eval.yaml`.
   `MAPEO.md` and `COSTURAS.md` are rewritten on every

@@ -116,7 +116,7 @@ async def conversar(app, u: Usuario, ref: str, cfg: dict) -> dict:
     historia, dados, repetidos, t = [], [], [], []
     for turno in range(1, u.paciencia + 1):
         # El perfil viaja en TODOS los turnos, no solo en el primero.
-        r = modelo.invoke(GUION.format(
+        r = await modelo.ainvoke(GUION.format(
             perfil=u.perfil, objetivo=u.objetivo,
             quedan=u.paciencia - turno + 1,
             oculto=json.dumps(u.oculto, ensure_ascii=False),
