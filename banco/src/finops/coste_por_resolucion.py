@@ -86,15 +86,19 @@ class Llamada:
     reranks: int = 0
 
 
-def coste_usd(ll: Llamada, t: dict) -> float:
+def coste_usd(ll: Llamada, t: dict, solo_gateway=False) -> float:
     """Una llamada, con la caché en sus dos precios. El KeyError
     del alias es deliberado: un modelo sin tarifa para la corrida
-    entera, y no se estima."""
+    entera, y no se estima. `solo_gateway` deja fuera lo que el
+    gateway no factura --- las tarifas de A_MANO ---: es la única
+    cifra que puede cuadrar contra `/spend/logs`."""
     dentro = (ll.nueva + ll.escrita * ESCRITURA
               + ll.leida * LECTURA) * t[ll.alias]["entrada"] / 1e6
-    modelo = dentro + ll.salida * t[ll.alias]["salida"] / 1e6
-    return (modelo * (BATCH if ll.batch else 1.0)
-            + ll.herramientas * t["herramienta_usd"]
+    modelo = ((dentro + ll.salida * t[ll.alias]["salida"] / 1e6)
+              * (BATCH if ll.batch else 1.0))
+    if solo_gateway:
+        return modelo
+    return (modelo + ll.herramientas * t["herramienta_usd"]
             + ll.reranks * t["rerank_usd"])
 
 
@@ -128,8 +132,12 @@ def metrica(llamadas, casos: dict, t: dict) -> dict:
     # reintentos, `thread_id` mal formados. Sacarlo del numerador
     # es la forma cómoda de que la métrica salga bien.
     huerfano = 0.0
+    # Lo que el gateway factura de verdad: solo tokens. Es la
+    # cifra del cuadre; el total sigue mandando en por_correcta.
+    pasarela = 0.0
     for ll in llamadas:
         eur = coste_usd(ll, t) * t["usd_eur"]
+        pasarela += coste_usd(ll, t, solo_gateway=True) * t["usd_eur"]
         if ll.caso in gasto:
             gasto[ll.caso] += eur
         else:
@@ -143,7 +151,8 @@ def metrica(llamadas, casos: dict, t: dict) -> dict:
     humano = len(escalados) * EUR_HUMANO
     total = sum(gasto.values()) + huerfano + humano
     return {"total": total, "huerfano": huerfano,
-            "modelo": total - humano, "casos": len(casos),
+            "modelo": total - humano, "gasto_gateway": pasarela,
+            "casos": len(casos),
             "correctas": len(correctas),
             "escalados": len(escalados),
             # El numerador de `por_caso` es `modelo`. El tiempo
@@ -157,17 +166,20 @@ def metrica(llamadas, casos: dict, t: dict) -> dict:
 
 def cuadrar(m: dict, t: dict, desde: date, hasta: date) -> str:
     """Contra quien cobra (11.5). El `spend` del gateway es la
-    verdad y esta cuenta es una reconstrucción: por encima del 2%
-    lo roto es la tarifa o el desglose de caché, y una métrica que
-    no cuadra con la factura se quema en el primer comité."""
+    verdad, y se compara con `gasto_gateway` --- solo tokens: el
+    core y el rerank de A_MANO no pasan por su contador, y meterlos
+    aquí sería comparar la cuenta con la factura de otro ---. Por
+    encima del 2% lo roto es la tarifa o el desglose de caché, y
+    una métrica que no cuadra se quema en el primer comité."""
     base = os.environ["OPENAI_API_BASE"].removesuffix("/v1")
     r = httpx.get(f"{base}/spend/logs", params={
         "start_date": desde.isoformat(),
         "end_date": hasta.isoformat()}, headers={
         "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"})
     real = sum(f["spend"] for f in r.json()) * t["usd_eur"]
-    desvio = abs(m["modelo"] - real) / max(real, 1e-9)
-    return (f"CUADRE {m['modelo']:.2f} calculados vs {real:.2f}"
+    desvio = abs(m["gasto_gateway"] - real) / max(real, 1e-9)
+    return (f"CUADRE {m['gasto_gateway']:.2f} calculados vs"
+            f" {real:.2f}"
             f" facturados ({desvio:.1%})"
             + ("  publicable" if desvio <= 0.02 else "  NO"))
 

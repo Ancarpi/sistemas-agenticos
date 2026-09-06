@@ -20,7 +20,7 @@ from psycopg_pool import AsyncConnectionPool
 import identidad                            # el fichero del 18.3
 from herramientas import (buscar_transferencia, escalar_a_humano,
                           historial_cuenta, marcar_resuelta)  # 4.1
-from src.core.hitl import encolar           # la cola del 35.6
+from src.core.hitl import encolar, sujeto_id   # la cola del 35.6
 from src.core.politica import autorizar     # el motor del 26.5
 from src.core.models import get_embeddings, get_model    # el 0.4
 from trazas import atributos                # el fichero del 36.6
@@ -143,7 +143,11 @@ async def ejecutar(agente_id, sujeto, texto, proposito,
                    humano=None):
     """El hilo no se inventa aquí: es el `hilo(grafo, sujeto)` del
     18.3 --- con el agente delante, porque el checkpointer indexa
-    por thread_id ---, y `sujeto` llega con su clase: `cliente:C-99`.
+    por thread_id ---, y `sujeto` llega con su clase (`cliente:C-99`):
+    la clase viaja en el hilo; al `ns` y a las columnas llega el id
+    a secas, la grafía única del 35.6. Y `pk["tenant"]` tiene que
+    ser el mismo `TENANT` que barre la supresión del 34.7: dos
+    tenants distintos son filas que ningún barrido encuentra.
     `humano` es quien delega y cómo se autenticó --- `{"id":
     "E-123", "auth": "strong"}` ---, los dos de la sesión del canal
     y ninguno del agente (35.3). Vale `None` en el worker nocturno
@@ -153,7 +157,8 @@ async def ejecutar(agente_id, sujeto, texto, proposito,
            "proposito": proposito, "entorno": ENTORNO,
            "agente": {"id": pk["id"], "version": pk["version"]},
            "hilo": identidad.hilo(pk["id"], sujeto),       # 18.3
-           "ns": (pk["tenant"], proposito, sujeto)}  # jamás el agente
+           "ns": (pk["tenant"], proposito,       # jamás el agente
+                  sujeto_id(sujeto))}     # y el id a secas (35.6)
     cfg = {"configurable": {"thread_id": ctx["hilo"]},
            "metadata": atributos(pk, ctx)}                 # 36.1
     return await compilar(pk, sello_catalogo(), propio).ainvoke(

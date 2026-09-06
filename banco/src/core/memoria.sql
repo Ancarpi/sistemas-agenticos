@@ -7,8 +7,10 @@
 SET search_path = banco, public;
 
 -- Los siete tipos del 34.1, con su TTL y su dueño. `dias` en
--- NULL es «no caduca por tiempo», y solo lo llevan los dos que
--- versiona un PR.
+-- NULL es «no caduca por tiempo», por dos razones distintas:
+-- `procedural` caduca por despliegue (lo versiona un PR) y
+-- `episodic` no lleva reloj porque su plazo lo fija la
+-- retención del 16.6, no un TTL.
 CREATE TABLE IF NOT EXISTS ttl_memoria (
     tipo  text PRIMARY KEY,
     dias  integer CHECK (dias IS NULL OR dias > 0),

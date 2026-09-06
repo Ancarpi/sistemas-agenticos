@@ -8,7 +8,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from cumplimiento import AVISOS, POOL, anotar, anotar_aviso
+from src.core.cumplimiento import (AVISOS, POOL, anotar,
+                                   anotar_aviso)
 from src.rag.gobierno import procedencia   # las fichas del 24.6
 from src.rag.hibrida import NIVELES
 

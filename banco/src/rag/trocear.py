@@ -66,14 +66,14 @@ def secciones(texto: str) -> list[tuple[str, str]]:
     for linea in texto.splitlines():
         if VALLA.match(linea):
             dentro = not dentro
-        cabecera = None if dentro else TITULO.match(linea)
-        if cabecera is None:
+        marca = None if dentro else TITULO.match(linea)
+        if marca is None:
             cuerpo.append(linea)
             continue
         if any(c.strip() for c in cuerpo):
             salida.append((" > ".join(pila), "\n".join(cuerpo)))
-        nivel = len(cabecera.group(1))
-        pila = pila[:nivel - 1] + [cabecera.group(2).strip()]
+        nivel = len(marca.group(1))
+        pila = pila[:nivel - 1] + [marca.group(2).strip()]
         cuerpo = []
     if any(c.strip() for c in cuerpo):
         salida.append((" > ".join(pila), "\n".join(cuerpo)))
